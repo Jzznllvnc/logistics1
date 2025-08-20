@@ -5,24 +5,51 @@ $error_message = '';
 $remembered_user = $_COOKIE['remember_user'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+    $username    = $_POST['username'] ?? '';
+    $password    = $_POST['password'] ?? '';
     $remember_me = isset($_POST['remember_me']);
 
+    // authenticate user via auth.php
     if (authenticateUser($username, $password)) {
+        $_SESSION['username'] = $username;
+        $_SESSION['role']     = getUserRole($username); // helper function in auth.php
+        $_SESSION['logged_in'] = true;
+        session_regenerate_id(true); // prevent session fixation
+
+        // remember me
         if ($remember_me) {
-            // Set cookie for 30 days
-            setcookie('remember_user', $username, time() + (86400 * 30), "/");
+            setcookie('remember_user', $username, time() + (86400 * 30), "/"); // 30 days
         } else {
-            // Unset the cookie
             if (isset($_COOKIE['remember_user'])) {
-                setcookie('remember_user', '', time() - 3600, "/");
+                setcookie('remember_user', '', time() - 3600, "/"); // clear cookie
             }
         }
-        header("Location: ../pages/dashboard.php");
+
+        // role-based redirect (same as in auth.php)
+        switch ($_SESSION['role']) {
+            case 'smart_warehousing':
+                header("Location: ../pages/smart_warehousing.php");
+                break;
+            case 'procurement':
+                header("Location: ../pages/procurement_sourcing.php");
+                break;
+            case 'plt':
+                header("Location: ../pages/project_logistics_tracker.php");
+                break;
+            case 'alms':
+                header("Location: ../pages/asset_lifecycle_maintenance.php");
+                break;
+            case 'dtrs':
+                header("Location: ../pages/document_tracking_records.php");
+                break;
+            case 'admin':
+            default:
+                header("Location: ../pages/dashboard.php");
+                break;
+        }
         exit();
     } else {
-        $error_message = "Invalid username or password.";
+        $error_message = "❌ Invalid username or password.";
     }
 }
 ?>
@@ -34,8 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Login - SLATE System</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
   <link rel="stylesheet" href="../assets/css/login.css" />
-  <!-- Font Awesome is now loaded via a more reliable CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
   <div class="main-container">
@@ -50,7 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <h2>Login</h2>
           <form action="login.php" method="POST">
             <?php if (!empty($error_message)): ?>
-                <p style="color: red; margin-bottom: 10px;">&lrm;<?php echo $error_message; ?></p>
+                <p style="color: red; margin-bottom: 10px;">
+                  <?php echo htmlspecialchars($error_message); ?>
+                </p>
             <?php endif; ?>
             <input type="text" name="username" id="username" placeholder="Username" required value="<?php echo htmlspecialchars($remembered_user); ?>">
             <div class="password-wrapper">
@@ -76,14 +104,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <script>
     (function() {
-      var passwordInput = document.getElementById('password');
-      var toggleButton = document.querySelector('.toggle-password');
+      const passwordInput = document.getElementById('password');
+      const toggleButton = document.querySelector('.toggle-password');
       if (!passwordInput || !toggleButton) return;
 
       toggleButton.addEventListener('click', function () {
-        var isPassword = passwordInput.getAttribute('type') === 'password';
+        const isPassword = passwordInput.getAttribute('type') === 'password';
         passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-        var icon = this.querySelector('i');
+        const icon = this.querySelector('i');
         if (icon) {
           icon.classList.toggle('fa-eye');
           icon.classList.toggle('fa-eye-slash');
@@ -93,4 +121,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     })();
   </script>
 </body>
-</html> 
+</html>
