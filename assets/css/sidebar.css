@@ -1,0 +1,214 @@
+/* FOUC Prevention - Hide content until fully loaded */
+html.loading body,
+html.preload body {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+html.loaded body {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Prevent transitions during initial load */
+html.preload *,
+html.preload *::before,
+html.preload *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+.sidebar {
+  width: 280px;
+  min-width: 250px;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 20px;
+  transition: all 0.5s ease;
+  transform: translateX(0);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  border-right: 1px solid var(--border-color);
+  z-index: 50;
+}
+
+/* Ensure sidebar is hidden during FOUC prevention */
+html.preload .sidebar,
+html.loading .sidebar {
+  opacity: 0;
+  visibility: hidden;
+}
+
+html.loaded .sidebar {
+  opacity: 1;
+  visibility: visible;
+}
+
+.system-name {
+  font-size: 1.2em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #66808f;
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-color);
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.logo img {
+  width: 100px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  color: var(--sidebar-text);
+  padding: 12px;
+  font-size: 0.85em;
+  margin-bottom: 10px;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.5s ease;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-icon {
+    margin-right: 15px;
+    font-size: 1.2em;
+    flex-shrink: 0;
+    line-height: 1;
+    color: var(--sidebar-text);
+}
+
+.sidebar a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--primary-color);
+}
+
+.sidebar a:hover .sidebar-icon {
+  color: var(--primary-color);
+}
+
+.sidebar a.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--primary-color);
+}
+
+.sidebar a.active .sidebar-icon {
+  color: var(--primary-color);
+}
+
+.sidebar-sub-item {
+  padding-left: 30px;
+  font-size: 0.95em;
+  margin-bottom: 5px;
+}
+
+.sidebar-sub-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--primary-color);
+}
+
+.sidebar-sub-item:hover .sidebar-icon {
+  color: var(--primary-color);
+}
+
+.sidebar-sub-item.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--primary-color);
+}
+
+.sidebar-sub-item.active .sidebar-icon {
+  color: var(--primary-color);
+}
+
+.sidebar.collapsed,
+.sidebar.initial-collapsed {
+  transform: translateX(-100%);
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.main-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  height: 100vh;
+  margin-left: 250px;
+  transition: margin-left 0.5s ease;
+}
+
+.main-content-wrapper.expanded,
+.main-content-wrapper.initial-expanded {
+  margin-left: 0;
+}
+
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    z-index: 100;
+    width: 250px;
+    min-width: 250px;
+    transform: translateX(-100%);
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  }
+
+  body.sidebar-active .sidebar {
+      transform: translateX(0);
+  }
+
+  .main-content-wrapper {
+    width: 100%;
+    margin-left: 0;
+    height: auto;
+    overflow-y: visible;
+    transition: margin-left 0.5s ease;
+  }
+
+  body.sidebar-active .main-content-wrapper {
+    margin-left: 250px;
+  }
+}
