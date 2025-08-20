@@ -46,12 +46,12 @@
         <i class="fa-solid fa-angles-left close-icon" id="xmarkIcon"></i>
       </div>
       <div>
-        <h1>Admin Panel <span class="system-title">| LOGISTICS 1</span></h1>
+        <h1><?php echo ($_SESSION['role'] === 'admin') ? 'Admin Panel' : 'Staff Panel'; ?> <span class="system-title">| LOGISTICS 1</span></h1>
       </div>
         <div class="theme-toggle-container">
             <div class="admin-profile-dropdown">
                 <div class="admin-profile flex items-center bg-[var(--card-bg)] rounded-full shadow-[inset_0_0_0_2px_var(--border-color)] p-2 pr-2" id="adminProfileToggle">
-                    <span class="admin-name ml-2 mr-1 text-[var(--text-color)]">Administrator</span>
+                    <span class="admin-name ml-2 mr-1 text-[var(--text-color)]"><?php echo ($_SESSION['role'] === 'admin') ? 'Administrator' : ucfirst($_SESSION['username'] ?? 'User'); ?></span>
                     <img src="../assets/images/admin.png" alt="Admin Avatar" class="admin-avatar h-7 w-7 rounded-full">
                     <svg class="w-4 h-4 text-[var(--text-color)] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path>

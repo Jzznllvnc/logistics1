@@ -15,6 +15,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logistics 1 - PLT</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
 </head>
@@ -44,11 +47,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
       </script>
       <?php include '../partials/header.php'; ?>
 
-      <h2 class="page-title">Project Logistics Tracker (PLT)</h2>
-      <div style="text-align: center; padding: 50px; color: #666;">
-        <h3>Empty page, work in progress</h3>
-        <p>This module is under development.</p>
-      </div>
+      <h1 class="page-title" style="font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 2.5rem; margin-bottom: 0.3rem;">Project Logistics Tracker (PLT)</h1>
 
     </div>
   </div>

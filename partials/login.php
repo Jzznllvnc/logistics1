@@ -25,28 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // role-based redirect (same as in auth.php)
-        switch ($_SESSION['role']) {
-            case 'smart_warehousing':
-                header("Location: ../pages/smart_warehousing.php");
-                break;
-            case 'procurement':
-                header("Location: ../pages/procurement_sourcing.php");
-                break;
-            case 'plt':
-                header("Location: ../pages/project_logistics_tracker.php");
-                break;
-            case 'alms':
-                header("Location: ../pages/asset_lifecycle_maintenance.php");
-                break;
-            case 'dtrs':
-                header("Location: ../pages/document_tracking_records.php");
-                break;
-            case 'admin':
-            default:
-                header("Location: ../pages/dashboard.php");
-                break;
-        }
+        // role-based redirect - now all users go to dashboard with role-specific content
+        header("Location: ../pages/dashboard.php");
         exit();
     } else {
         $error_message = "❌ Invalid username or password.";
