@@ -147,6 +147,13 @@ function initGlobalUI() {
         logoutButton.dataset.listenerAttached = 'true';
     }
 }
-
+document.addEventListener('click', function (event) {
+    const openModal = document.querySelector('.modal.show-modal');
+    
+    // If a modal is open and the user clicks directly on the modal backdrop (not the content)
+    if (openModal && event.target === openModal) {
+        window.closeModal(openModal);
+    }
+});
 window.initGlobalUI = initGlobalUI;
 document.addEventListener('DOMContentLoaded', initGlobalUI);
