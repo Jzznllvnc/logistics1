@@ -10,8 +10,8 @@ if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'plt') {
     exit();
 }
 
-// Handle form submissions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Handle form submissions (Admin Only)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SESSION['role'] === 'admin') {
     $action = $_POST['action'] ?? '';
     $suppliers = $_POST['assigned_suppliers'] ?? [];
 
@@ -50,6 +50,7 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
   <style>
+    /* ... (CSS styles remain the same) ... */
     .plt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
     .btn-add { background: var(--primary-btn-bg); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; }
     .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
@@ -75,7 +76,9 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
       <?php include '../partials/header.php'; ?>
       <div class="plt-header">
         <h1 class="page-title" style="margin: 0;">Project Logistics Tracker (PLT)</h1>
+        <?php if ($_SESSION['role'] === 'admin'): ?>
         <button type="button" class="btn-add" onclick="openCreateProjectModal()"><i class="fas fa-plus"></i> New Project</button>
+        <?php endif; ?>
       </div>
       
       <div class="project-grid">
@@ -88,40 +91,32 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
             <span class="status-pill status-<?php echo strtolower(str_replace(' ', '-', $project['status'])); ?>"><?php echo htmlspecialchars($project['status']); ?></span>
           </div>
           <div style="font-size: 0.9em; margin-top: 10px;"><strong>Resources:</strong> <?php echo htmlspecialchars($project['assigned_suppliers'] ?? 'None'); ?></div>
+          <?php if ($_SESSION['role'] === 'admin'): ?>
           <div class="project-actions actions">
             <a class="edit" onclick='openEditProjectModal(<?php echo json_encode($project); ?>, <?php echo json_encode($allSuppliers); ?>)'><i class="fas fa-pencil-alt"></i> Edit</a>
             <a class="delete" onclick="confirmDeleteProject(<?php echo $project['id']; ?>)"><i class="fas fa-trash-alt"></i> Delete</a>
           </div>
+          <?php endif; ?>
         </div>
         <?php endforeach; ?>
       </div>
     </div>
   </div>
 
+  <?php if ($_SESSION['role'] === 'admin'): ?>
   <div id="projectModal" class="modal" style="display:none;">
     <div class="modal-content bg-[var(--card-bg)] p-8 rounded-lg shadow-xl relative">
       <h2 id="modalTitle" class="text-2xl font-bold mb-4"></h2>
       <form id="projectForm" method="POST" action="project_logistics_tracker.php">
-        <input type="hidden" name="action" id="formAction">
-        <input type="hidden" name="project_id" id="projectId">
+        <input type="hidden" name="action" id="formAction"><input type="hidden" name="project_id" id="projectId">
         <div class="form-group"><label>Project Name</label><input type="text" name="project_name" id="project_name" required></div>
         <div class="form-group"><label>Description</label><textarea name="description" id="description" rows="4"></textarea></div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
           <div class="form-group"><label>Start Date</label><input type="date" name="start_date" id="start_date"></div>
           <div class="form-group"><label>End Date</label><input type="date" name="end_date" id="end_date"></div>
         </div>
-        <div class="form-group"><label>Status</label>
-          <select name="status" id="status">
-            <option>Not Started</option><option>In Progress</option><option>Completed</option>
-          </select>
-        </div>
-        <div class="form-group"><label>Assign Resources (Suppliers)</label>
-          <select name="assigned_suppliers[]" id="assigned_suppliers" multiple size="5">
-            <?php foreach($allSuppliers as $supplier): ?>
-            <option value="<?php echo $supplier['id']; ?>"><?php echo htmlspecialchars($supplier['supplier_name']); ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
+        <div class="form-group"><label>Status</label><select name="status" id="status"><option>Not Started</option><option>In Progress</option><option>Completed</option></select></div>
+        <div class="form-group"><label>Assign Resources (Suppliers)</label><select name="assigned_suppliers[]" id="assigned_suppliers" multiple size="5"><?php foreach($allSuppliers as $supplier): ?><option value="<?php echo $supplier['id']; ?>"><?php echo htmlspecialchars($supplier['supplier_name']); ?></option><?php endforeach; ?></select></div>
         <div class="form-actions flex justify-end gap-4 mt-6">
           <button type="button" class="btn bg-gray-300" onclick="closeModal(document.getElementById('projectModal'))">Cancel</button>
           <button type="submit" class="btn btn-danger bg-green-500 text-white">Save Project</button>
@@ -129,6 +124,7 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
       </form>
     </div>
   </div>
+  <?php endif; ?>
 
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
