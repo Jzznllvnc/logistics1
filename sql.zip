@@ -1,0 +1,83 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.0
+-- https://www.phpmyadmin.net/
+--
+-- Host: localhost:3306
+-- Generation Time: Aug 21, 2025 at 04:21 PM
+-- Server version: 8.0.30
+-- PHP Version: 8.1.10
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `slate1`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `inventory`
+--
+
+CREATE TABLE `inventory` (
+  `id` int NOT NULL,
+  `item_name` varchar(255) NOT NULL,
+  `quantity` int NOT NULL DEFAULT '0',
+  `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `inventory`
+--
+
+INSERT INTO `inventory` (`id`, `item_name`, `quantity`, `last_updated`) VALUES
+(4, 'tape', 23, '2025-08-21 16:19:06'),
+(5, 'Standard Pallets (48x40)', 150, '2025-08-21 16:15:36'),
+(6, 'Euro Pallets (1200x800)', 80, '2025-08-21 16:15:36'),
+(7, 'Heat Treated Pallets (ISPM-15)', 65, '2025-08-21 16:15:36'),
+(8, 'Shrink Wrap Rolls', 250, '2025-08-21 16:15:36'),
+(9, 'Packing Tape Rolls', 400, '2025-08-21 16:15:36'),
+(10, 'Cardboard Boxes (Large)', 800, '2025-08-21 16:15:36'),
+(11, 'Cardboard Boxes (Medium)', 1200, '2025-08-21 16:15:36'),
+(12, 'Cardboard Boxes (Small)', 1500, '2025-08-21 16:15:36'),
+(13, 'Bubble Wrap Rolls', 75, '2025-08-21 16:15:36'),
+(14, 'Shipping Labels (Pack of 1000)', 50, '2025-08-21 16:15:36'),
+(15, 'Bill of Lading Forms (Pack of 500)', 25, '2025-08-21 16:15:36'),
+(16, 'Packing Peanuts (Large Bag)', 40, '2025-08-21 16:15:36'),
+(17, 'Cargo Straps', 120, '2025-08-21 16:15:36'),
+(18, 'Safety Box Cutters', 30, '2025-08-21 16:15:36'),
+(19, 'Work Gloves (Pairs)', 90, '2025-08-21 16:15:36');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `inventory`
+--
+ALTER TABLE `inventory`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `item_name` (`item_name`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `inventory`
+--
+ALTER TABLE `inventory`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
