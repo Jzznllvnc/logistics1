@@ -26,6 +26,13 @@
   }
 })();
 </script>
+<script>
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) {
+      window.location.reload();
+    }
+  });
+</script>
 
 <div class="header">
   <div class="hamburger" id="hamburger">
@@ -46,7 +53,7 @@
             </div>
             <div class="dropdown-menu" id="adminDropdownMenu">
                 <a href="#"><i data-lucide="scroll-text" class="dropdown-icon w-5 h-5"></i> Reports</a>
-                <a href="#" id="logoutButton"><i data-lucide="log-out" class="dropdown-icon w-5 h-5"></i> Logout</a>
+                <a href="#" id="logoutButton" onclick="sessionStorage.setItem('logout_in_progress', 'true');"><i data-lucide="log-out" class="dropdown-icon w-5 h-5"></i> Logout</a>
             </div>
         </div>
         <span class="theme-label ml-4"></span>
@@ -58,7 +65,6 @@
 </div>
 <div class="header-line"></div>
 
-<!-- Logout Confirmation Modal -->
 <div id="logoutConfirmModal" class="modal hidden fixed inset-0 flex items-center justify-center z-50">
     <div class="modal-content bg-[var(--card-bg)] p-10 rounded-3xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto relative flex flex-col items-center justify-center text-center">
       <i data-lucide="user-round-minus" class="w-24 h-24 mb-4"></i>
@@ -71,7 +77,6 @@
     </div>
 </div>
 
-<!-- Custom Confirmation Modal -->
 <div id="customConfirmModal" class="modal hidden fixed inset-0 flex items-center justify-center z-50">
     <div class="modal-content bg-[var(--card-bg)] p-10 rounded-3xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto relative flex flex-col items-center justify-center text-center">
         <div id="confirmModalIcon" class="w-28 h-28 mb-4 text-yellow-500 flex items-center justify-center">
@@ -86,7 +91,5 @@
     </div>
 </div>
 
-<!-- Custom Alert Component -->
 <script src="../assets/js/custom-alerts.js"></script>
-<!-- Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>

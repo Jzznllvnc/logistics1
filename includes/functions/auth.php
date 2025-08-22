@@ -20,9 +20,7 @@ $_SESSION['last_activity'] = time();
 // --- Include Database Connection ---
 require_once __DIR__ . '/../config/db.php';
 
-/**
- * Authenticate a user by querying the database.
- */
+// --- Database-driven User Functions ---
 function authenticateUser($username, $password) {
     $conn = getDbConnection();
     $stmt = $conn->prepare("SELECT password FROM users WHERE username = ?");
@@ -31,20 +29,13 @@ function authenticateUser($username, $password) {
     $result = $stmt->get_result();
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
-        if ($password === $user['password']) { // NOTE: For production, use password_verify()
-            $stmt->close();
-            $conn->close();
-            return true;
+        if ($password === $user['password']) {
+            $stmt->close(); $conn->close(); return true;
         }
     }
-    $stmt->close();
-    $conn->close();
-    return false;
+    $stmt->close(); $conn->close(); return false;
 }
 
-/**
- * Get the role of a user from the database.
- */
 function getUserRole($username) {
     $conn = getDbConnection();
     $stmt = $conn->prepare("SELECT role FROM users WHERE username = ?");
@@ -53,18 +44,12 @@ function getUserRole($username) {
     $result = $stmt->get_result();
     if ($result->num_rows === 1) {
         $role = $result->fetch_assoc()['role'];
-        $stmt->close();
-        $conn->close();
-        return $role;
+        $stmt->close(); $conn->close(); return $role;
     }
-    $stmt->close();
-    $conn->close();
-    return null;
+    $stmt->close(); $conn->close(); return null;
 }
 
-/**
- * Require login (protect pages).
- */
+// --- Page Security Functions ---
 function requireLogin() {
     if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         header("Location: ../partials/login.php");
@@ -72,9 +57,6 @@ function requireLogin() {
     }
 }
 
-/**
- * Require admin role (protect admin-only pages).
- */
 function requireAdmin() {
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         header("Location: dashboard.php");
@@ -82,18 +64,9 @@ function requireAdmin() {
     }
 }
 
-/**
- * Logout the current user.
- */
 function logout() {
     session_unset();
     session_destroy();
-    
-    // Headers to prevent caching
-    header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-    header("Pragma: no-cache");
-    header("Expires: 0");
-
     header("Location: ../partials/login.php");
     exit();
 }

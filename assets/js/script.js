@@ -142,7 +142,7 @@ function initGlobalUI() {
             window.openModal(logoutConfirmModal);
         });
         confirmLogoutBtn.addEventListener('click', function() {
-            window.location.href = '../partials/login.php?action=logout';
+            window.location.href = '../pages/dashboard.php?action=logout';
         });
         logoutButton.dataset.listenerAttached = 'true';
     }

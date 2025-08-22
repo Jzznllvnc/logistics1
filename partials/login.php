@@ -1,6 +1,10 @@
 <?php
 require_once '../includes/functions/auth.php';
 
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    logout();
+}
+
 $error_message = '';
 $remembered_user = $_COOKIE['remember_user'] ?? '';
 
@@ -9,44 +13,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password    = $_POST['password'] ?? '';
     $remember_me = isset($_POST['remember_me']);
 
-    // authenticate user via auth.php
     if (authenticateUser($username, $password)) {
         $_SESSION['username'] = $username;
-        $_SESSION['role']     = getUserRole($username); // helper function in auth.php
+        $_SESSION['role']     = getUserRole($username);
         $_SESSION['logged_in'] = true;
-        session_regenerate_id(true); // prevent session fixation
+        $_SESSION['last_activity'] = time();
+        session_regenerate_id(true);
 
-        // remember me
         if ($remember_me) {
-            setcookie('remember_user', $username, time() + (86400 * 30), "/"); // 30 days
+            setcookie('remember_user', $username, time() + (86400 * 30), "/");
         } else {
             if (isset($_COOKIE['remember_user'])) {
-                setcookie('remember_user', '', time() - 3600, "/"); // clear cookie
+                setcookie('remember_user', '', time() - 3600, "/");
             }
         }
-
-        // role-based redirect (same as in auth.php)
-        switch ($_SESSION['role']) {
-            case 'smart_warehousing':
-                header("Location: ../pages/smart_warehousing.php");
-                break;
-            case 'procurement':
-                header("Location: ../pages/procurement_sourcing.php");
-                break;
-            case 'plt':
-                header("Location: ../pages/project_logistics_tracker.php");
-                break;
-            case 'alms':
-                header("Location: ../pages/asset_lifecycle_maintenance.php");
-                break;
-            case 'dtrs':
-                header("Location: ../pages/document_tracking_records.php");
-                break;
-            case 'admin':
-            default:
-                header("Location: ../pages/dashboard.php");
-                break;
-        }
+        
+        // All users now redirect to the main dashboard
+        header("Location: ../pages/dashboard.php");
         exit();
     } else {
         $error_message = "❌ Invalid username or password.";
@@ -61,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Login - SLATE System</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
   <link rel="stylesheet" href="../assets/css/login.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
   <div class="main-container">
@@ -69,12 +52,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="welcome-panel">
         <img src="../assets/images/hero.png" alt="Freight Management System Logo" class="hero-image">
       </div>
-
       <div class="login-panel">
         <div class="login-box">
           <img src="../assets/images/slate1.png" alt="Logo" />
           <h2>Login</h2>
           <form action="login.php" method="POST">
+            <?php if (isset($_GET['session_expired'])): ?>
+                <p style="color: #f59e0b; margin-bottom: 10px;">
+                    Your session has expired due to inactivity. Please log in again.
+                </p>
+            <?php endif; ?>
             <?php if (!empty($error_message)): ?>
                 <p style="color: red; margin-bottom: 10px;">
                   <?php echo htmlspecialchars($error_message); ?>
@@ -99,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 
   <footer>
-    &copy; 2025 SLATE Freight Management System. All rights reserved.
+    &copy; <?php echo date("Y"); ?> SLATE Freight Management System. All rights reserved.
   </footer>
 
   <script>
@@ -118,6 +105,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
       });
+    })();
+  </script>
+  <script>
+    // Final check to prevent back button after logout
+    (function() {
+      if (sessionStorage.getItem('logout_in_progress')) {
+        sessionStorage.removeItem('logout_in_progress');
+        // Replace the current history entry with the login page
+        window.location.replace('login.php');
+      }
     })();
   </script>
 </body>
