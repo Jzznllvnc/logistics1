@@ -158,6 +158,9 @@ function openCreateSupplierModal() {
     if(window.openModal) window.openModal(document.getElementById('supplierModal'));
 }
 
+// Make function globally accessible for onclick handlers
+window.openCreateSupplierModal = openCreateSupplierModal;
+
 function openEditSupplierModal(supplier) {
     document.getElementById('supplierForm').reset();
     document.getElementById('modalTitle').innerText = 'Edit Supplier';
@@ -171,8 +174,10 @@ function openEditSupplierModal(supplier) {
     if(window.openModal) window.openModal(document.getElementById('supplierModal'));
 }
 
-function confirmDeleteSupplier(supplierId) {
-    if (confirm('Are you sure you want to delete this supplier? This will also delete all associated purchase orders.')) {
+async function confirmDeleteSupplier(supplierId) {
+    const confirmed = await window.confirmDelete('this supplier');
+    
+    if (confirmed) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = 'procurement_sourcing.php';

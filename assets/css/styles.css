@@ -35,6 +35,7 @@ html.preload *::after {
   --scrollbar-thumb-hover-color: #556b7a;
   --subtitle-color: #464646;
   --description-color: #52555a;
+  --close-btn-hover-bg: #f0f0f0;
   
   /* Scrollbar colors */
   --scrollbar-track: #f1f1f1;
@@ -56,6 +57,7 @@ html.preload *::after {
   --cancel-btn-bg: #3d3d3d;
   --subtitle-color: #b0b0b0;
   --description-color: #a0a0a0;
+  --close-btn-hover-bg: rgba(255, 255, 255, 0.1);
   
   /* Dark mode scrollbar colors */
   --scrollbar-track: #2d2d2d;
@@ -407,23 +409,43 @@ h2.page-title {
 
 .close-button {
   color: var(--text-color);
-  position: absolute;
-  top: 15px;
-  right: 25px;
+  position: relative;
+  top: 0;
+  right: 0;
   font-size: 28px;
   font-weight: bold;
   cursor: pointer;
-  transition: color 0.5s ease;
+  transition: all 0.3s ease;
   background: none;
   border: none;
-  padding: 0;
+  padding: 8px;
   line-height: 1;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .close-button:hover,
 .close-button:focus {
   color: var(--danger-color);
+  background-color: var(--close-btn-hover-bg);
   text-decoration: none;
+}
+
+/* Modal content styling */
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.modal-subtitle {
+  font-size: 0.9rem;
+  color: var(--description-color);
+  margin-bottom: 1.5rem;
 }
 
 /* Form actions */
@@ -601,7 +623,7 @@ h2.page-title {
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .btn-primary:hover {
@@ -613,6 +635,71 @@ h2.page-title {
 .btn-primary:active {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+}
+
+/* Secondary button with red hover (for Stock Out) */
+.btn-secondary-danger {
+  background: #e0e0e0;
+  color: #495057;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-secondary-danger:hover {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-secondary-danger:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+}
+
+/* Primary button with red gradient (for destructive actions like Stock Out) */
+.btn-primary-danger {
+  background: linear-gradient(to right, #dc3545, #c82333);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-primary-danger:hover {
+  background: linear-gradient(to right, #c82333, #a71e2a);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.btn-primary-danger:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+}
+
+/* Custom SVG icon filters for delete confirmations */
+.custom-svg-red {
+  filter: brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%) contrast(100%);
+}
+
+.dark-mode .custom-svg-red {
+  filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7500%) hue-rotate(109deg) brightness(99%) contrast(107%);
 }
 
 /* Action dropdown styles */

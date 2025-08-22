@@ -65,16 +65,16 @@ $documents = getAllDocuments();
         <?php endif; ?>
       </script>
       <?php include '../partials/header.php'; ?>
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="font-semibold page-title">Document Tracking & Records (DTRS)</h1>
-        <button type="button" id="uploadDocumentBtn" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md flex items-center">
-          <i data-lucide="upload" class="w-5 h-5 mr-2"></i>Upload Document
-        </button>
-      </div>
+      <h1 class="font-semibold mb-6 page-title">Document Tracking & Records (DTRS)</h1>
       
       <!-- Document Records - Now Full Width -->
       <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
-        <h2 class="text-2xl font-semibold mb-5 text-[var(--text-color)]">Document Records</h2>
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-2xl font-semibold text-[var(--text-color)]">Document Records</h2>
+          <button type="button" id="uploadDocumentBtn" class="btn-primary">
+            <i data-lucide="upload" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Upload Document</span>
+          </button>
+        </div>
         <div class="table-container">
           <table class="data-table">
             <thead>
@@ -106,12 +106,13 @@ $documents = getAllDocuments();
   <!-- Upload Document Modal -->
   <div id="uploadDocumentModal" class="modal hidden">
     <div class="modal-content p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-semibold text-[var(--text-color)]">Upload New Document</h2>
-        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="modal-title">Upload Document</h2>
+        <button type="button" class="close-button" onclick="closeModal('uploadModal')">
           <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
+      <p class="modal-subtitle">Upload a document to the system.</p>
       
       <form action="document_tracking_records.php" method="POST" enctype="multipart/form-data" id="uploadDocumentForm">
         <div class="mb-5">
@@ -139,7 +140,7 @@ $documents = getAllDocuments();
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('uploadDocumentModal'))">
             Cancel
           </button>
-          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+          <button type="submit" class="btn-primary">
             Upload Document
           </button>
         </div>

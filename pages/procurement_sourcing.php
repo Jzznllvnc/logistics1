@@ -109,11 +109,11 @@ $purchaseOrders = getRecentPurchaseOrders();
       
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
-          <div class="flex justify-between items-center">
-            <h2 class="text-2xl font-semibold mb-5 text-[var(--text-color)]">Supplier Management</h2>
+          <div class="flex justify-between items-center mb-5">
+            <h2 class="text-2xl font-semibold text-[var(--text-color)]">Supplier Management</h2>
             <?php if ($_SESSION['role'] === 'admin'): ?>
-            <button type="button" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg no-underline inline-block mb-5 hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center" onclick="openCreateSupplierModal()">
-              <i data-lucide="plus" class="w-5 h-5 mr-2"></i>Add Supplier
+            <button type="button" class="btn-primary" onclick="openCreateSupplierModal()">
+              <i data-lucide="plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Add Supplier</span>
             </button>
             <?php endif; ?>
           </div>
@@ -139,7 +139,7 @@ $purchaseOrders = getRecentPurchaseOrders();
                   <td class="py-3 px-4 border-b border-[var(--card-border)]">
                     <div class="relative">
                       <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleSupplierDropdown(<?php echo $supplier['id']; ?>)">
-                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                        <i data-lucide="more-horizontal" class="w-6 h-6"></i>
                       </button>
                       <div id="supplier-dropdown-<?php echo $supplier['id']; ?>" class="action-dropdown bg-white border border-gray-200 rounded-md shadow-lg w-32 hidden">
                         <button type="button" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)' class="w-full text-left px-3 py-2 text-sm flex items-center">
@@ -164,8 +164,8 @@ $purchaseOrders = getRecentPurchaseOrders();
         <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
           <div class="flex justify-between items-center mb-5">
             <h2 class="text-2xl font-semibold text-[var(--text-color)]">Recent Purchase Orders</h2>
-            <button type="button" id="createPOBtn" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md flex items-center">
-              <i data-lucide="plus" class="w-5 h-5 mr-2"></i>Create PO
+            <button type="button" id="createPOBtn" class="btn-primary">
+              <i data-lucide="plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Create PO</span>
             </button>
           </div>
           <div class="table-container">
@@ -200,12 +200,13 @@ $purchaseOrders = getRecentPurchaseOrders();
   <?php if ($_SESSION['role'] === 'admin'): ?>
   <div id="supplierModal" class="modal hidden">
     <div class="modal-content p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 id="modalTitle" class="text-2xl font-semibold text-[var(--text-color)]">Add New Supplier</h2>
-        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <div class="flex justify-between items-center mb-2">
+        <h2 id="modalTitle" class="modal-title">Add New Supplier</h2>
+        <button type="button" class="close-button" onclick="closeModal('supplierModal')">
           <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
+      <p class="modal-subtitle">Update supplier details.</p>
       
       <form id="supplierForm" method="POST" action="procurement_sourcing.php">
         <input type="hidden" name="action" id="formAction">
@@ -240,7 +241,7 @@ $purchaseOrders = getRecentPurchaseOrders();
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('supplierModal'))">
             Cancel
           </button>
-          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+          <button type="submit" class="btn-primary">
             Save Supplier
           </button>
         </div>
@@ -252,12 +253,13 @@ $purchaseOrders = getRecentPurchaseOrders();
   <!-- Create Purchase Order Modal -->
   <div id="createPOModal" class="modal hidden">
     <div class="modal-content p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-semibold text-[var(--text-color)]">Create Purchase Order</h2>
-        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="modal-title">Create Purchase Order</h2>
+        <button type="button" class="close-button" onclick="closeModal('createPOModal')">
           <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
+      <p class="modal-subtitle">Create a purchase order.</p>
       
       <form action="procurement_sourcing.php" method="POST" id="createPOForm">
         <input type="hidden" name="action" value="create_po">
@@ -291,7 +293,7 @@ $purchaseOrders = getRecentPurchaseOrders();
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('createPOModal'))">
             Cancel
           </button>
-          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+          <button type="submit" class="btn-primary">
             Create PO
           </button>
         </div>

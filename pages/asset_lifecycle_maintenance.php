@@ -114,11 +114,11 @@ $schedules = getMaintenanceSchedules();
       
       <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
         <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
-          <div class="flex justify-between items-center">
-            <h2 class="text-2xl font-semibold mb-5 text-[var(--text-color)]">Asset Registry</h2>
+          <div class="flex justify-between items-center mb-5">
+            <h2 class="text-2xl font-semibold text-[var(--text-color)]">Asset Registry</h2>
             <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
-            <button type="button" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg no-underline inline-block mb-5 hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center" onclick="openCreateAssetModal()">
-              <i data-lucide="plus" class="w-5 h-5 mr-2"></i>Register Asset
+            <button type="button" class="btn-primary" onclick="openCreateAssetModal()">
+              <i data-lucide="plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Register Asset</span>
             </button>
             <?php endif; ?>
           </div>
@@ -142,7 +142,7 @@ $schedules = getMaintenanceSchedules();
                   <td class="py-3 px-4 border-b border-[var(--card-border)]">
                     <div class="relative">
                       <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleAssetDropdown(<?php echo $asset['id']; ?>)">
-                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                        <i data-lucide="more-horizontal" class="w-6 h-6"></i>
                       </button>
                       <div id="asset-dropdown-<?php echo $asset['id']; ?>" class="action-dropdown bg-white border border-gray-200 rounded-md shadow-lg w-32 hidden">
                         <button type="button" onclick='openEditAssetModal(<?php echo json_encode($asset); ?>)' class="w-full text-left px-3 py-2 text-sm flex items-center">
@@ -168,8 +168,8 @@ $schedules = getMaintenanceSchedules();
       <div class="mt-8 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
         <div class="flex justify-between items-center mb-5">
           <h2 class="text-2xl font-semibold text-[var(--text-color)]">Maintenance Schedule</h2>
-          <button type="button" id="scheduleTaskBtn" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md flex items-center">
-            <i data-lucide="calendar-plus" class="w-5 h-5 mr-2"></i>Schedule Task
+          <button type="button" id="scheduleTaskBtn" class="btn-primary">
+            <i data-lucide="calendar-plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Schedule Task</span>
           </button>
         </div>
         <div class="table-container">
@@ -212,12 +212,13 @@ $schedules = getMaintenanceSchedules();
   <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
   <div id="assetModal" class="modal hidden">
     <div class="modal-content p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 id="modalTitle" class="text-2xl font-semibold text-[var(--text-color)]">Register New Asset</h2>
-        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="modal-title" id="assetModalTitle">Register New Asset</h2>
+        <button type="button" class="close-button" onclick="closeModal('assetModal')">
           <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
+      <p class="modal-subtitle">Add a new logistics asset to register.</p>
       
       <form id="assetForm" method="POST" action="asset_lifecycle_maintenance.php">
         <input type="hidden" name="action" id="formAction">
@@ -251,7 +252,7 @@ $schedules = getMaintenanceSchedules();
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('assetModal'))">
             Cancel
           </button>
-          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+          <button type="submit" class="btn-primary">
             Save Asset
           </button>
         </div>
@@ -263,13 +264,13 @@ $schedules = getMaintenanceSchedules();
   <!-- Schedule Maintenance Modal -->
   <div id="scheduleMaintenanceModal" class="modal hidden">
     <div class="modal-content p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-semibold text-[var(--text-color)]">Schedule Maintenance</h2>
-        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="modal-title" id="maintenanceModalTitle">Schedule Maintenance Task</h2>
+        <button type="button" class="close-button" onclick="closeModal('scheduleMaintenanceModal')">
           <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
-      
+      <p class="modal-subtitle">Schedule a maintenance task for a logistics asset.</p>
       <form action="asset_lifecycle_maintenance.php" method="POST" id="scheduleMaintenanceForm">
         <input type="hidden" name="action" value="schedule_maintenance">
         
@@ -297,7 +298,7 @@ $schedules = getMaintenanceSchedules();
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('scheduleMaintenanceModal'))">
             Cancel
           </button>
-          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+          <button type="submit" class="btn-primary">
             Schedule Task
           </button>
         </div>

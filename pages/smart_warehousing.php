@@ -147,11 +147,11 @@ $allInventory = getInventory(); // For the modal datalist
               </div>
             </div>
             <div class="h-8 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
-            <button id="stockInBtn" type="button" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2 px-2 sm:py-2.5 sm:px-4 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md flex items-center text-sm sm:text-base whitespace-nowrap">
-              <i data-lucide="plus" class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2"></i><span class="hidden sm:inline">Stock In</span>
+            <button id="stockInBtn" type="button" class="btn-primary text-sm sm:text-base whitespace-nowrap">
+              <i data-lucide="plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Stock In</span>
             </button>
-            <button id="stockOutBtn" type="button" class="px-2 py-2 sm:px-4 sm:py-2.5 rounded-md border-none cursor-pointer font-semibold transition-all duration-500 shadow-md bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-lg flex items-center text-sm sm:text-base whitespace-nowrap">
-              <i data-lucide="minus" class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2"></i><span class="hidden sm:inline">Stock Out</span>
+            <button id="stockOutBtn" type="button" class="btn-secondary-danger text-sm sm:text-base whitespace-nowrap">
+              <i data-lucide="minus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Stock Out</span>
             </button>
           </div>
         </div>
@@ -180,7 +180,7 @@ $allInventory = getInventory(); // For the modal datalist
                       <td>
                         <div class="relative">
                           <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleActionDropdown(<?php echo $item['id']; ?>)">
-                            <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                            <i data-lucide="more-horizontal" class="w-6 h-6"></i>
                           </button>
                           <div id="dropdown-<?php echo $item['id']; ?>" class="action-dropdown bg-white border border-gray-200 rounded-md shadow-lg w-32 hidden">
                             <button type="button" onclick='openEditModal(<?php echo json_encode($item); ?>)' class="w-full text-left px-3 py-2 text-sm flex items-center">
@@ -252,22 +252,24 @@ $allInventory = getInventory(); // For the modal datalist
   <?php if ($_SESSION['role'] === 'admin'): ?>
   <div id="editItemModal" class="modal hidden">
     <div class="modal-content p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-[var(--text-color)]">Edit Item Name</h2>
-        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="modal-title">Edit Item Name</h2>
+        <button type="button" class="close-button">
           <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
+      <p class="modal-subtitle">Update item name.</p>
+
       <form id="editItemForm" method="POST" action="smart_warehousing.php">
         <input type="hidden" name="action" value="update_item">
         <input type="hidden" name="item_id" id="edit_item_id">
-        <div class="form-group mb-5">
+        <div class="form-group mb-2">
           <label for="item_name_edit" class="block font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
           <input type="text" name="item_name_edit" id="item_name_edit" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
         </div>
         <div class="form-actions flex justify-end gap-4 mt-6">
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('editItemModal'))">Cancel</button>
-          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">Save Changes</button>
+          <button type="submit" class="btn-primary">Save Changes</button>
         </div>
       </form>
     </div>
@@ -277,13 +279,13 @@ $allInventory = getInventory(); // For the modal datalist
   <!-- Stock Management Modal -->
   <div id="stockManagementModal" class="modal hidden">
     <div class="modal-content p-8">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-2xl font-semibold text-[var(--text-color)]" id="modalTitle">Manage Stock Levels</h2>
-        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="modal-title" id="modalTitle">Manage Stock Levels</h2>
+        <button type="button" class="close-button">
           <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
-      <p class="text-base text-gray-500 dark:text-gray-400 mb-6">Use this form to add new items or update quantities.</p>
+      <p class="modal-subtitle">Add/Remove new items or update quantities.</p>
       
       <form action="smart_warehousing.php" method="POST" id="stockManagementForm">
         <input type="hidden" name="action" id="stockAction" value="">
@@ -309,7 +311,7 @@ $allInventory = getInventory(); // For the modal datalist
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('stockManagementModal'))">
             Cancel
           </button>
-          <button type="submit" id="confirmStockBtn" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+          <button type="submit" id="confirmStockBtn" class="btn-primary">
             Confirm
           </button>
         </div>

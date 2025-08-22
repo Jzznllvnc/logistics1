@@ -213,5 +213,111 @@ document.addEventListener('mouseleave', function () {
         delete openModal._backdropMouseDown;
     }
 });
+
+// Custom Confirmation Modal Functions
+window.showCustomConfirm = function(options = {}) {
+    const {
+        title = 'Confirm Action',
+        message = 'Are you sure you want to continue?',
+        confirmText = 'Confirm',
+        cancelText = 'Cancel',
+        icon = 'alert-triangle',
+        iconColor = 'text-yellow-500',
+        confirmButtonClass = 'btn-primary-danger',
+        onConfirm = () => {},
+        onCancel = () => {}
+    } = options;
+
+    const modal = document.getElementById('customConfirmModal');
+    const titleElement = document.getElementById('confirmModalTitle');
+    const messageElement = document.getElementById('confirmModalMessage');
+    const iconElement = document.getElementById('confirmModalIcon');
+    const confirmButton = document.getElementById('confirmModalConfirm');
+    const cancelButton = document.getElementById('confirmModalCancel');
+
+    if (!modal || !titleElement || !messageElement || !iconElement || !confirmButton || !cancelButton) {
+        console.warn('Custom confirmation modal elements not found, falling back to browser confirm');
+        return Promise.resolve(confirm(message));
+    }
+
+    // Set content
+    titleElement.textContent = title;
+    messageElement.textContent = message;
+    confirmButton.textContent = confirmText;
+    cancelButton.textContent = cancelText;
+    
+    // Auto-detect delete operations and force custom SVG
+    const isDeleteOperation = title.toLowerCase().includes('delete') || 
+                             message.toLowerCase().includes('delete') || 
+                             confirmText.toLowerCase().includes('delete') ||
+                             icon === 'trash-2' || 
+                             icon.startsWith('custom-');
+    
+    // Set icon
+    if (isDeleteOperation) {
+        // Force custom SVG for all delete operations
+        iconElement.className = `w-36 h-36 mb-4 flex items-center justify-center`;
+        iconElement.innerHTML = `<img src="../assets/icons/trash.svg" alt="Delete Icon" class="custom-svg-red w-36 h-36">`;
+    } else if (icon.startsWith('custom-')) {
+        // Use other custom SVG files
+        const svgFileName = icon.replace('custom-', '') + '.svg';
+        iconElement.className = `w-36 h-36 mb-4 flex items-center justify-center`;
+        iconElement.innerHTML = `<img src="../assets/icons/${svgFileName}" alt="Icon" class="w-36 h-36">`;
+    } else {
+        // Use Lucide icon
+        iconElement.className = `w-36 h-36 mb-4 ${iconColor} flex items-center justify-center`;
+        iconElement.innerHTML = `<i data-lucide="${icon}" class="w-36 h-36"></i>`;
+    }
+    
+    // Set confirm button style
+    confirmButton.className = confirmButtonClass;
+
+    // Return a promise that resolves with the user's choice
+    return new Promise((resolve) => {
+        const handleConfirm = () => {
+            cleanup();
+            onConfirm();
+            resolve(true);
+        };
+
+        const handleCancel = () => {
+            cleanup();
+            onCancel();
+            resolve(false);
+        };
+
+        const cleanup = () => {
+            confirmButton.removeEventListener('click', handleConfirm);
+            cancelButton.removeEventListener('click', handleCancel);
+            window.closeModal(modal);
+        };
+
+        // Add event listeners
+        confirmButton.addEventListener('click', handleConfirm);
+        cancelButton.addEventListener('click', handleCancel);
+
+        // Show modal
+        window.openModal(modal);
+        
+        // Re-initialize Lucide icons for the new icon
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+};
+
+// Convenience function for delete confirmations
+window.confirmDelete = function(itemName = 'this item') {
+    return window.showCustomConfirm({
+        title: 'Delete Confirmation',
+        message: `Are you sure you want to permanently delete ${itemName}? This action cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        icon: 'custom-trash',
+        iconColor: 'text-red-500',
+        confirmButtonClass: 'btn-primary-danger'
+    });
+};
+
 window.initGlobalUI = initGlobalUI;
 document.addEventListener('DOMContentLoaded', initGlobalUI);

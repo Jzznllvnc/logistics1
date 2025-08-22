@@ -35,11 +35,11 @@ function openStockModal(action) {
     if (action === 'stock-in') {
         modalTitle.textContent = 'Stock In Items';
         confirmStockBtn.textContent = 'Stock In';
-        confirmStockBtn.className = 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md';
+        confirmStockBtn.className = 'btn-primary';
     } else if (action === 'stock-out') {
         modalTitle.textContent = 'Stock Out Items';
         confirmStockBtn.textContent = 'Stock Out';
-        confirmStockBtn.className = 'px-5 py-2.5 rounded-md border-none cursor-pointer font-semibold transition-all duration-300 shadow-md bg-red-500 text-white hover:bg-red-600';
+        confirmStockBtn.className = 'btn-primary-danger';
     }
 
     // Open the modal using the global function
@@ -684,8 +684,6 @@ function initSmartWarehousing() {
     initStockManagement();
     initInventorySearch();
     initAjaxForms(); // Initialize AJAX forms
-    
-    console.log('Smart Warehousing page initialized');
 }
 
 // Make the initializer globally available for PJAX
@@ -730,8 +728,10 @@ function openEditModal(item) {
  * Confirms and submits a request to delete an inventory item.
  * @param {number} itemId - The ID of the item to delete.
  */
-function confirmDeleteItem(itemId) {
-    if (confirm('Are you sure you want to permanently delete this item? This action cannot be undone.')) {
+async function confirmDeleteItem(itemId) {
+    const confirmed = await window.confirmDelete('this item');
+    
+    if (confirmed) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = 'smart_warehousing.php'; // Submits back to the same page

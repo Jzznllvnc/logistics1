@@ -153,14 +153,17 @@ document.addEventListener('DOMContentLoaded', function() {
 // --- Asset Modal Functions ---
 function openCreateAssetModal() {
     document.getElementById('assetForm').reset();
-    document.getElementById('modalTitle').innerText = 'Register New Asset';
+    document.getElementById('assetModalTitle').innerText = 'Register New Asset';
     document.getElementById('formAction').value = 'create_asset';
     if (window.openModal) window.openModal(document.getElementById('assetModal'));
 }
 
+// Make function globally accessible for onclick handlers
+window.openCreateAssetModal = openCreateAssetModal;
+
 function openEditAssetModal(asset) {
     document.getElementById('assetForm').reset();
-    document.getElementById('modalTitle').innerText = 'Edit Asset';
+    document.getElementById('assetModalTitle').innerText = 'Edit Asset';
     document.getElementById('formAction').value = 'update_asset';
     document.getElementById('assetId').value = asset.id;
     document.getElementById('asset_name').value = asset.asset_name;
@@ -170,8 +173,10 @@ function openEditAssetModal(asset) {
     if (window.openModal) window.openModal(document.getElementById('assetModal'));
 }
 
-function confirmDeleteAsset(assetId) {
-    if (confirm('Are you sure you want to delete this asset? This will also remove all its maintenance history.')) {
+async function confirmDeleteAsset(assetId) {
+    const confirmed = await window.confirmDelete('this asset');
+    
+    if (confirmed) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = 'asset_lifecycle_maintenance.php';

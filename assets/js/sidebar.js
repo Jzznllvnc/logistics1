@@ -180,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const hasContent = computedStyle.content !== 'none' && computedStyle.content !== '';
                     
                     if (!hasContent) {
-                        console.log('FontAwesome not loaded, attempting to reload...');
                         // Force reload FontAwesome if not working
                         const existingFA = document.querySelector('link[href*="font-awesome"]');
                         if (existingFA) {
@@ -209,7 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             const hasContent2 = computedStyle2.content !== 'none' && computedStyle2.content !== '';
                             
                             if (!hasContent2) {
-                                console.log('Primary FontAwesome failed, loading fallback...');
                                 const fallbackFA = document.createElement('link');
                                 fallbackFA.rel = 'stylesheet';
                                 fallbackFA.href = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css';

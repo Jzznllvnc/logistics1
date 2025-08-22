@@ -2,16 +2,19 @@
 
 function openCreateProjectModal() {
     document.getElementById('projectForm').reset();
-    document.getElementById('modalTitle').innerText = 'Create New Project';
+    document.getElementById('projectModalTitle').innerText = 'Create New Project';
     document.getElementById('formAction').value = 'create_project';
     // Clear supplier selections
     Array.from(document.querySelectorAll('#assigned_suppliers option')).forEach(opt => opt.selected = false);
     if (window.openModal) window.openModal(document.getElementById('projectModal'));
 }
 
+// Make function globally accessible for onclick handlers
+window.openCreateProjectModal = openCreateProjectModal;
+
 function openEditProjectModal(project, allSuppliers) {
     document.getElementById('projectForm').reset();
-    document.getElementById('modalTitle').innerText = 'Edit Project';
+    document.getElementById('projectModalTitle').innerText = 'Edit Project';
     document.getElementById('formAction').value = 'update_project';
     document.getElementById('projectId').value = project.id;
     document.getElementById('project_name').value = project.project_name;
@@ -34,8 +37,10 @@ function openEditProjectModal(project, allSuppliers) {
     if (window.openModal) window.openModal(document.getElementById('projectModal'));
 }
 
-function confirmDeleteProject(projectId) {
-    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+async function confirmDeleteProject(projectId) {
+    const confirmed = await window.confirmDelete('this project');
+    
+    if (confirmed) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = 'project_logistics_tracker.php';

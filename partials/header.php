@@ -60,16 +60,32 @@
 
 <!-- Logout Confirmation Modal -->
 <div id="logoutConfirmModal" class="modal hidden fixed inset-0 flex items-center justify-center z-50">
-    <div class="modal-content bg-[var(--card-bg)] p-10 rounded-3xl shadow-xl w-11/12 md:w-1/3 lg:w-1/4 max-h-[90vh] overflow-y-auto relative flex flex-col items-center justify-center text-center">
-      <i data-lucide="log-out" class="text-gray-500 w-20 h-20 mb-8"></i>
-      <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-8">Confirm Logout</h2>
-      <p class="mb-4 text-[var(--text-color)]">Are you sure you want to log out?</p>
-      <div class="form-actions flex justify-center pt-4 border-gray-200 dark:border-gray-700 mt-4">
+    <div class="modal-content bg-[var(--card-bg)] p-10 rounded-3xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto relative flex flex-col items-center justify-center text-center">
+      <i data-lucide="user-round-minus" class="w-24 h-24 mb-4"></i>
+      <h2 class="modal-title mb-4">Confirm Logout</h2>
+      <p class="mb-6 text-[var(--text-color)]">Are you sure you want to log out? You will need to login again to continue.</p>
+      <div class="form-actions flex justify-center pt-4 border-gray-200 dark:border-gray-700">
         <button type="button" class="btn bg-[var(--cancel-btn-bg)] hover:bg-gray-400 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onclick="window.closeModal(document.getElementById('logoutConfirmModal'))">No, cancel</button>
         <button id="confirmLogoutBtn" class="btn btn-danger bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Yes, logout</button>
       </div>
     </div>
 </div>
+
+<!-- Custom Confirmation Modal -->
+<div id="customConfirmModal" class="modal hidden fixed inset-0 flex items-center justify-center z-50">
+    <div class="modal-content bg-[var(--card-bg)] p-10 rounded-3xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto relative flex flex-col items-center justify-center text-center">
+        <div id="confirmModalIcon" class="w-28 h-28 mb-4 text-yellow-500 flex items-center justify-center">
+            <i data-lucide="alert-triangle" class="w-28 h-28"></i>
+        </div>
+        <h2 id="confirmModalTitle" class="modal-title mb-4">Confirm Action</h2>
+        <p id="confirmModalMessage" class="mb-6 text-[var(--text-color)]">Are you sure you want to continue?</p>
+        <div class="form-actions flex justify-center pt-4 border-gray-200 dark:border-gray-700">
+            <button type="button" id="confirmModalCancel" class="btn bg-[var(--cancel-btn-bg)] hover:bg-gray-400 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Cancel</button>
+            <button type="button" id="confirmModalConfirm" class="btn btn-danger bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Confirm</button>
+        </div>
+    </div>
+</div>
+
 <!-- Custom Alert Component -->
 <script src="../assets/js/custom-alerts.js"></script>
 <!-- Lucide Icons -->

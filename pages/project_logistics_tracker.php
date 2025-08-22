@@ -89,8 +89,8 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
       <div class="flex justify-between items-center mb-6">
         <h1 class="font-semibold page-title">Project Logistics Tracker (PLT)</h1>
         <?php if ($_SESSION['role'] === 'admin'): ?>
-        <button type="button" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg no-underline inline-block hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center" onclick="openCreateProjectModal()">
-          <i data-lucide="plus" class="w-5 h-5 mr-2"></i>New Project
+        <button type="button" class="btn-primary" onclick="openCreateProjectModal()">
+          <i data-lucide="plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">New Project</span>
         </button>
         <?php endif; ?>
       </div>
@@ -129,9 +129,9 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
   <?php if ($_SESSION['role'] === 'admin'): ?>
   <div id="projectModal" class="modal hidden">
     <div class="modal-content p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 id="modalTitle" class="text-2xl font-semibold text-[var(--text-color)]">Create New Project</h2>
-        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="modal-title" id="projectModalTitle">Create New Project</h2>
+        <button type="button" class="close-button" onclick="closeModal('projectModal')">
           <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
@@ -184,7 +184,7 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('projectModal'))">
             Cancel
           </button>
-          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+          <button type="submit" class="btn-primary">
             Save Project
           </button>
         </div>
