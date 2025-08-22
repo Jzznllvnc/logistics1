@@ -175,7 +175,12 @@ class CustomAlert {
             font-size: 14px;
             opacity: 0.9;
         `;
-        messageElement.textContent = message;
+        // Support HTML content in messages
+        if (message.includes('<') && message.includes('>')) {
+            messageElement.innerHTML = message;
+        } else {
+            messageElement.textContent = message;
+        }
 
         // Create close button
         const closeBtn = document.createElement('button');

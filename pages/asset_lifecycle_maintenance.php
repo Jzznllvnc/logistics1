@@ -21,14 +21,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $purchase_date = $_POST['purchase_date'] ?? null;
             $status = $_POST['status'] ?? '';
             if ($action === 'create_asset') {
-                createAsset($name, $type, $purchase_date, $status);
+                if (createAsset($name, $type, $purchase_date, $status)) {
+                    $_SESSION['flash_message'] = "Asset <strong>" . htmlspecialchars($name) . "</strong> registered successfully.";
+                    $_SESSION['flash_message_type'] = 'success';
+                } else {
+                    $_SESSION['flash_message'] = "Failed to register asset. Please try again.";
+                    $_SESSION['flash_message_type'] = 'error';
+                }
             } else {
                 $id = $_POST['asset_id'] ?? 0;
-                updateAsset($id, $name, $type, $purchase_date, $status);
+                if (updateAsset($id, $name, $type, $purchase_date, $status)) {
+                    $_SESSION['flash_message'] = "Asset <strong>" . htmlspecialchars($name) . "</strong> updated successfully.";
+                    $_SESSION['flash_message_type'] = 'success';
+                } else {
+                    $_SESSION['flash_message'] = "Failed to update asset. Please try again.";
+                    $_SESSION['flash_message_type'] = 'error';
+                }
             }
         } elseif ($action === 'delete_asset') {
             $id = $_POST['asset_id'] ?? 0;
-            deleteAsset($id);
+            if (deleteAsset($id)) {
+                $_SESSION['flash_message'] = "Asset deleted successfully.";
+                $_SESSION['flash_message_type'] = 'success';
+            } else {
+                $_SESSION['flash_message'] = "Failed to delete asset. Please try again.";
+                $_SESSION['flash_message_type'] = 'error';
+            }
         }
     }
     
@@ -37,15 +55,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $asset_id = $_POST['asset_id_maint'] ?? 0;
         $description = $_POST['task_description'] ?? '';
         $scheduled_date = $_POST['scheduled_date'] ?? null;
-        createMaintenanceSchedule($asset_id, $description, $scheduled_date);
+        if (createMaintenanceSchedule($asset_id, $description, $scheduled_date)) {
+            $_SESSION['flash_message'] = "Maintenance task scheduled successfully.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else {
+            $_SESSION['flash_message'] = "Failed to schedule maintenance task. Please try again.";
+            $_SESSION['flash_message_type'] = 'error';
+        }
     } elseif ($action === 'update_maintenance_status') {
         $schedule_id = $_POST['schedule_id'] ?? 0;
         $new_status = $_POST['new_status'] ?? '';
-        updateMaintenanceStatus($schedule_id, $new_status);
+        if (updateMaintenanceStatus($schedule_id, $new_status)) {
+            $_SESSION['flash_message'] = "Maintenance status updated to <strong>" . htmlspecialchars($new_status) . "</strong>.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else {
+            $_SESSION['flash_message'] = "Failed to update maintenance status. Please try again.";
+            $_SESSION['flash_message_type'] = 'error';
+        }
     }
     
     header("Location: asset_lifecycle_maintenance.php");
     exit();
+}
+
+// Check for flash messages
+if (isset($_SESSION['flash_message'])) {
+    $message = $_SESSION['flash_message'];
+    $message_type = $_SESSION['flash_message_type'] ?? 'info';
+    unset($_SESSION['flash_message'], $_SESSION['flash_message_type']);
+} else {
+    $message = '';
+    $message_type = '';
 }
 
 $assets = getAllAssets();
@@ -59,120 +99,231 @@ $schedules = getMaintenanceSchedules();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logistics 1 - ALMS</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
-  <style>
-    .alms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .card-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; }
-    .table { width: 100%; border-collapse: collapse; }
-    .table th, .table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--card-border); }
-    .table th { background-color: rgba(128,128,128,0.05); text-transform: uppercase; font-size: 13px; }
-    .actions a { margin-right: 15px; cursor: pointer; }
-    .btn-add { background: var(--primary-btn-bg); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 20px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-weight: 500; margin-bottom: 5px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--input-text); }
-    @media (max-width: 1024px) { .alms-grid { grid-template-columns: 1fr; } }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
   <div class="sidebar" id="sidebar"> <?php include '../partials/sidebar.php'; ?> </div>
   <div class="main-content-wrapper" id="mainContentWrapper">
     <div class="content" id="mainContent">
       <?php include '../partials/header.php'; ?>
-      <h1 class="page-title" style="font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 2.5rem; margin-bottom: 2rem;">Asset Lifecycle & Maintenance (ALMS)</h1>
+      <h1 class="font-semibold mb-6 page-title">Asset Lifecycle & Maintenance (ALMS)</h1>
       
-      <div class="alms-grid">
-        <div class="card">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 class="card-title">Asset Registry</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
+        <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+          <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-semibold mb-5 text-[var(--text-color)]">Asset Registry</h2>
             <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
-            <button type="button" class="btn-add" onclick="openCreateAssetModal()"><i class="fas fa-plus"></i> Register Asset</button>
+            <button type="button" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg no-underline inline-block mb-5 hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center" onclick="openCreateAssetModal()">
+              <i data-lucide="plus" class="w-5 h-5 mr-2"></i>Register Asset
+            </button>
             <?php endif; ?>
           </div>
-          <table class="table">
-            <thead><tr><th>Name</th><th>Type</th><th>Status</th><?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?><th>Actions</th><?php endif; ?></tr></thead>
-            <tbody>
-              <?php foreach($assets as $asset): ?>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?><th>Action</th><?php endif; ?>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach($assets as $asset): ?>
+                <tr>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['asset_name']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['asset_type']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['status']); ?></td>
+                  <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]">
+                    <div class="relative">
+                      <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleAssetDropdown(<?php echo $asset['id']; ?>)">
+                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                      </button>
+                      <div id="asset-dropdown-<?php echo $asset['id']; ?>" class="action-dropdown bg-white border border-gray-200 rounded-md shadow-lg w-32 hidden">
+                        <button type="button" onclick='openEditAssetModal(<?php echo json_encode($asset); ?>)' class="w-full text-left px-3 py-2 text-sm flex items-center">
+                          <i data-lucide="edit-3" class="w-4 h-4 mr-2 text-blue-500"></i>
+                          Edit
+                        </button>
+                        <button type="button" onclick="confirmDeleteAsset(<?php echo $asset['id']; ?>)" class="w-full text-left px-3 py-2 text-sm flex items-center text-red-600">
+                          <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                  <?php endif; ?>
+                </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-2xl font-semibold text-[var(--text-color)]">Maintenance Schedule</h2>
+          <button type="button" id="scheduleTaskBtn" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md flex items-center">
+            <i data-lucide="calendar-plus" class="w-5 h-5 mr-2"></i>Schedule Task
+          </button>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
               <tr>
-                <td><?php echo htmlspecialchars($asset['asset_name']); ?></td>
-                <td><?php echo htmlspecialchars($asset['asset_type']); ?></td>
-                <td><?php echo htmlspecialchars($asset['status']); ?></td>
-                <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
-                <td class="actions">
-                  <a class="edit" onclick='openEditAssetModal(<?php echo json_encode($asset); ?>)'><i class="fas fa-pencil-alt"></i></a>
-                  <a class="delete" onclick="confirmDeleteAsset(<?php echo $asset['id']; ?>)"><i class="fas fa-trash-alt"></i></a>
+                <th class="w-1/4">Asset</th>
+                <th class="w-1/5">Task</th>
+                <th class="w-1/5">Scheduled Date</th>
+                <th class="w-1/5">Status</th>
+                <th class="w-32">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach($schedules as $schedule): ?>
+              <tr>
+                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['asset_name']); ?></td>
+                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['task_description']); ?></td>
+                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo date('M d, Y', strtotime($schedule['scheduled_date'])); ?></td>
+                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['status']); ?></td>
+                <td class="py-3 px-4 border-b border-[var(--card-border)]">
+                  <?php if($schedule['status'] === 'Scheduled'): ?>
+                  <form action="asset_lifecycle_maintenance.php" method="POST" class="m-0">
+                    <input type="hidden" name="action" value="update_maintenance_status">
+                    <input type="hidden" name="schedule_id" value="<?php echo $schedule['id']; ?>">
+                    <input type="hidden" name="new_status" value="Completed">
+                    <button type="submit" class="bg-emerald-500 text-white py-1 px-2.5 text-xs rounded-md hover:bg-emerald-600 transition-colors">Mark as Complete</button>
+                  </form>
+                  <?php endif; ?>
                 </td>
-                <?php endif; ?>
               </tr>
               <?php endforeach; ?>
             </tbody>
           </table>
         </div>
-
-        <div class="card">
-          <h2 class="card-title">Schedule Maintenance</h2>
-          <form action="asset_lifecycle_maintenance.php" method="POST">
-            <input type="hidden" name="action" value="schedule_maintenance">
-            <div class="form-group"><label>Asset</label><select name="asset_id_maint" required><option value="">-- Select Asset --</option><?php foreach($assets as $asset): ?><option value="<?php echo $asset['id']; ?>"><?php echo htmlspecialchars($asset['asset_name']); ?></option><?php endforeach; ?></select></div>
-            <div class="form-group"><label>Task Description</label><textarea name="task_description" rows="3" required></textarea></div>
-            <div class="form-group"><label>Scheduled Date</label><input type="date" name="scheduled_date" required></div>
-            <button type="submit" class="btn-add" style="width: 100%;">Schedule Task</button>
-          </form>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top: 30px;">
-        <h2 class="card-title">Maintenance Schedule</h2>
-        <table class="table">
-          <thead><tr><th>Asset</th><th>Task</th><th>Scheduled Date</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody>
-            <?php foreach($schedules as $schedule): ?>
-            <tr>
-              <td><?php echo htmlspecialchars($schedule['asset_name']); ?></td>
-              <td><?php echo htmlspecialchars($schedule['task_description']); ?></td>
-              <td><?php echo date('M d, Y', strtotime($schedule['scheduled_date'])); ?></td>
-              <td><?php echo htmlspecialchars($schedule['status']); ?></td>
-              <td>
-                <?php if($schedule['status'] === 'Scheduled'): ?>
-                <form action="asset_lifecycle_maintenance.php" method="POST" style="margin:0;">
-                  <input type="hidden" name="action" value="update_maintenance_status">
-                  <input type="hidden" name="schedule_id" value="<?php echo $schedule['id']; ?>">
-                  <input type="hidden" name="new_status" value="Completed">
-                  <button type="submit" class="btn-add" style="background: #10b981; padding: 5px 10px; font-size: 0.8em;">Mark as Complete</button>
-                </form>
-                <?php endif; ?>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
 
   <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
-  <div id="assetModal" class="modal" style="display:none;">
-    <div class="modal-content bg-[var(--card-bg)] p-8 rounded-lg shadow-xl relative">
-      <h2 id="modalTitle" class="text-2xl font-bold mb-4"></h2>
+  <div id="assetModal" class="modal hidden">
+    <div class="modal-content p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 id="modalTitle" class="text-2xl font-semibold text-[var(--text-color)]">Register New Asset</h2>
+        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        </button>
+      </div>
+      
       <form id="assetForm" method="POST" action="asset_lifecycle_maintenance.php">
-        <input type="hidden" name="action" id="formAction"><input type="hidden" name="asset_id" id="assetId">
-        <div class="form-group"><label>Asset Name</label><input type="text" name="asset_name" id="asset_name" required></div>
-        <div class="form-group"><label>Asset Type</label><input type="text" name="asset_type" id="asset_type" placeholder="e.g., Vehicle, Equipment"></div>
-        <div class="form-group"><label>Purchase Date</label><input type="date" name="purchase_date" id="purchase_date"></div>
-        <div class="form-group"><label>Status</label><select name="status" id="status"><option>Operational</option><option>Under Maintenance</option><option>Decommissioned</option></select></div>
-        <div class="form-actions flex justify-end gap-4 mt-6">
-          <button type="button" class="btn bg-gray-300" onclick="closeModal(document.getElementById('assetModal'))">Cancel</button>
-          <button type="submit" class="btn btn-danger bg-green-500 text-white">Save Asset</button>
+        <input type="hidden" name="action" id="formAction">
+        <input type="hidden" name="asset_id" id="assetId">
+        
+        <div class="mb-5">
+          <label for="asset_name" class="block font-semibold mb-2 text-[var(--text-color)]">Asset Name</label>
+          <input type="text" name="asset_name" id="asset_name" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter asset name">
+        </div>
+        
+        <div class="mb-5">
+          <label for="asset_type" class="block font-semibold mb-2 text-[var(--text-color)]">Asset Type</label>
+          <input type="text" name="asset_type" id="asset_type" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="e.g., Vehicle, Equipment">
+        </div>
+        
+        <div class="mb-5">
+          <label for="purchase_date" class="block font-semibold mb-2 text-[var(--text-color)]">Purchase Date</label>
+          <input type="date" name="purchase_date" id="purchase_date" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+        </div>
+        
+        <div class="mb-6">
+          <label for="status" class="block font-semibold mb-2 text-[var(--text-color)]">Status</label>
+          <select name="status" id="status" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+            <option value="Operational">Operational</option>
+            <option value="Under Maintenance">Under Maintenance</option>
+            <option value="Decommissioned">Decommissioned</option>
+          </select>
+        </div>
+        
+        <div class="flex justify-end gap-3">
+          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('assetModal'))">
+            Cancel
+          </button>
+          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+            Save Asset
+          </button>
         </div>
       </form>
     </div>
   </div>
   <?php endif; ?>
 
+  <!-- Schedule Maintenance Modal -->
+  <div id="scheduleMaintenanceModal" class="modal hidden">
+    <div class="modal-content p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold text-[var(--text-color)]">Schedule Maintenance</h2>
+        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        </button>
+      </div>
+      
+      <form action="asset_lifecycle_maintenance.php" method="POST" id="scheduleMaintenanceForm">
+        <input type="hidden" name="action" value="schedule_maintenance">
+        
+        <div class="mb-5">
+          <label for="asset_id_maint" class="block font-semibold mb-2 text-[var(--text-color)]">Asset</label>
+          <select name="asset_id_maint" id="asset_id_maint" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+            <option value="">-- Select Asset --</option>
+            <?php foreach($assets as $asset): ?>
+              <option value="<?php echo $asset['id']; ?>"><?php echo htmlspecialchars($asset['asset_name']); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        
+        <div class="mb-5">
+          <label for="task_description" class="block font-semibold mb-2 text-[var(--text-color)]">Task Description</label>
+          <textarea name="task_description" id="task_description" rows="3" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Describe the maintenance task"></textarea>
+        </div>
+        
+        <div class="mb-6">
+          <label for="scheduled_date" class="block font-semibold mb-2 text-[var(--text-color)]">Scheduled Date</label>
+          <input type="date" name="scheduled_date" id="scheduled_date" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+        </div>
+        
+        <div class="flex justify-end gap-3">
+          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('scheduleMaintenanceModal'))">
+            Cancel
+          </button>
+          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+            Schedule Task
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
   <script src="../assets/js/alms.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  
+  <?php if ($message && !empty(trim($message))): ?>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.showCustomAlert) {
+            showCustomAlert(<?php echo json_encode($message); ?>, <?php echo json_encode($message_type); ?>);
+        } else {
+            // Fallback - strip HTML for plain alert
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = <?php echo json_encode($message); ?>;
+            alert(tempDiv.textContent || tempDiv.innerText || '');
+        }
+    });
+  </script>
+  <?php endif; ?>
 </body>
 </html>

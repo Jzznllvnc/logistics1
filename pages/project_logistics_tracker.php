@@ -23,17 +23,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SESSION['role'] === 'admin') {
         $end = $_POST['end_date'] ?? null;
 
         if ($action === 'create_project') {
-            createProject($name, $desc, $status, $start, $end, $suppliers);
+            if (createProject($name, $desc, $status, $start, $end, $suppliers)) {
+                $_SESSION['flash_message'] = "Project <strong>" . htmlspecialchars($name) . "</strong> created successfully.";
+                $_SESSION['flash_message_type'] = 'success';
+            } else {
+                $_SESSION['flash_message'] = "Failed to create project. Please try again.";
+                $_SESSION['flash_message_type'] = 'error';
+            }
         } else {
             $id = $_POST['project_id'] ?? 0;
-            updateProject($id, $name, $desc, $status, $start, $end, $suppliers);
+            if (updateProject($id, $name, $desc, $status, $start, $end, $suppliers)) {
+                $_SESSION['flash_message'] = "Project <strong>" . htmlspecialchars($name) . "</strong> updated successfully.";
+                $_SESSION['flash_message_type'] = 'success';
+            } else {
+                $_SESSION['flash_message'] = "Failed to update project. Please try again.";
+                $_SESSION['flash_message_type'] = 'error';
+            }
         }
     } elseif ($action === 'delete_project') {
         $id = $_POST['project_id'] ?? 0;
-        deleteProject($id);
+        if (deleteProject($id)) {
+            $_SESSION['flash_message'] = "Project deleted successfully.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else {
+            $_SESSION['flash_message'] = "Failed to delete project. Please try again.";
+            $_SESSION['flash_message_type'] = 'error';
+        }
     }
     header("Location: project_logistics_tracker.php");
     exit();
+}
+
+// Check for flash messages
+if (isset($_SESSION['flash_message'])) {
+    $message = $_SESSION['flash_message'];
+    $message_type = $_SESSION['flash_message_type'] ?? 'info';
+    unset($_SESSION['flash_message'], $_SESSION['flash_message_type']);
+} else {
+    $message = '';
+    $message_type = '';
 }
 
 $projects = getAllProjects();
@@ -47,54 +75,49 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logistics 1 - PLT</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
-  <style>
-    /* ... (CSS styles remain the same) ... */
-    .plt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-    .btn-add { background: var(--primary-btn-bg); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; }
-    .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
-    .project-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-    .project-card h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; }
-    .project-card p { color: #888; margin-bottom: 15px; flex-grow: 1; }
-    .project-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; }
-    .status-pill { padding: 4px 10px; border-radius: 15px; font-weight: 500; }
-    .status-in-progress { background: #3b82f6; color: white; }
-    .status-completed { background: #10b981; color: white; }
-    .status-not-started { background: #6b7280; color: white; }
-    .project-actions { margin-top: 15px; border-top: 1px solid var(--card-border); padding-top: 15px; text-align: right; }
-    .actions a { margin-left: 15px; cursor: pointer; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-weight: 500; margin-bottom: 5px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--input-text); }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
   <div class="sidebar" id="sidebar"> <?php include '../partials/sidebar.php'; ?> </div>
   <div class="main-content-wrapper" id="mainContentWrapper">
     <div class="content" id="mainContent">
       <?php include '../partials/header.php'; ?>
-      <div class="plt-header">
-        <h1 class="page-title" style="margin: 0;">Project Logistics Tracker (PLT)</h1>
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="font-semibold page-title">Project Logistics Tracker (PLT)</h1>
         <?php if ($_SESSION['role'] === 'admin'): ?>
-        <button type="button" class="btn-add" onclick="openCreateProjectModal()"><i class="fas fa-plus"></i> New Project</button>
+        <button type="button" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg no-underline inline-block hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center" onclick="openCreateProjectModal()">
+          <i data-lucide="plus" class="w-5 h-5 mr-2"></i>New Project
+        </button>
         <?php endif; ?>
       </div>
       
-      <div class="project-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         <?php foreach($projects as $project): ?>
-        <div class="project-card">
-          <h3><?php echo htmlspecialchars($project['project_name']); ?></h3>
-          <p><?php echo htmlspecialchars($project['description']); ?></p>
-          <div class="project-meta">
+        <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-5 shadow-sm flex flex-col h-full">
+          <h3 class="text-xl font-semibold mb-2.5 text-[var(--text-color)]"><?php echo htmlspecialchars($project['project_name']); ?></h3>
+          <p class="description-text flex-grow"><?php echo htmlspecialchars($project['description']); ?></p>
+          <div class="flex justify-between items-center text-sm mb-2.5">
             <div><strong>Timeline:</strong> <?php echo date('M d', strtotime($project['start_date'])); ?> - <?php echo date('M d, Y', strtotime($project['end_date'])); ?></div>
-            <span class="status-pill status-<?php echo strtolower(str_replace(' ', '-', $project['status'])); ?>"><?php echo htmlspecialchars($project['status']); ?></span>
+            <span class="py-1 px-2.5 rounded-2xl font-medium text-white <?php 
+              $status_class = '';
+              switch(strtolower(str_replace(' ', '-', $project['status']))) {
+                case 'in-progress': $status_class = 'bg-blue-500'; break;
+                case 'completed': $status_class = 'bg-emerald-500'; break;
+                case 'not-started': $status_class = 'bg-gray-500'; break;
+                default: $status_class = 'bg-gray-500';
+              }
+              echo $status_class;
+            ?>"><?php echo htmlspecialchars($project['status']); ?></span>
           </div>
-          <div style="font-size: 0.9em; margin-top: 10px;"><strong>Resources:</strong> <?php echo htmlspecialchars($project['assigned_suppliers'] ?? 'None'); ?></div>
+          <div class="text-sm mb-2.5"><strong>Resources:</strong> <?php echo htmlspecialchars($project['assigned_suppliers'] ?? 'None'); ?></div>
           <?php if ($_SESSION['role'] === 'admin'): ?>
-          <div class="project-actions actions">
-            <a class="edit" onclick='openEditProjectModal(<?php echo json_encode($project); ?>, <?php echo json_encode($allSuppliers); ?>)'><i class="fas fa-pencil-alt"></i> Edit</a>
-            <a class="delete" onclick="confirmDeleteProject(<?php echo $project['id']; ?>)"><i class="fas fa-trash-alt"></i> Delete</a>
+          <div class="mt-4 border-t border-[var(--card-border)] pt-4 text-right">
+            <a class="ml-4 cursor-pointer hover:text-blue-500 transition-colors inline-flex items-center" onclick='openEditProjectModal(<?php echo json_encode($project); ?>, <?php echo json_encode($allSuppliers); ?>)'><i data-lucide="edit-3" class="w-4 h-4 mr-1"></i> Edit</a>
+            <a class="ml-4 cursor-pointer hover:text-red-500 transition-colors inline-flex items-center" onclick="confirmDeleteProject(<?php echo $project['id']; ?>)"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i> Delete</a>
           </div>
           <?php endif; ?>
         </div>
@@ -104,22 +127,66 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
   </div>
 
   <?php if ($_SESSION['role'] === 'admin'): ?>
-  <div id="projectModal" class="modal" style="display:none;">
-    <div class="modal-content bg-[var(--card-bg)] p-8 rounded-lg shadow-xl relative">
-      <h2 id="modalTitle" class="text-2xl font-bold mb-4"></h2>
+  <div id="projectModal" class="modal hidden">
+    <div class="modal-content p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 id="modalTitle" class="text-2xl font-semibold text-[var(--text-color)]">Create New Project</h2>
+        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        </button>
+      </div>
+      
       <form id="projectForm" method="POST" action="project_logistics_tracker.php">
-        <input type="hidden" name="action" id="formAction"><input type="hidden" name="project_id" id="projectId">
-        <div class="form-group"><label>Project Name</label><input type="text" name="project_name" id="project_name" required></div>
-        <div class="form-group"><label>Description</label><textarea name="description" id="description" rows="4"></textarea></div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-          <div class="form-group"><label>Start Date</label><input type="date" name="start_date" id="start_date"></div>
-          <div class="form-group"><label>End Date</label><input type="date" name="end_date" id="end_date"></div>
+        <input type="hidden" name="action" id="formAction">
+        <input type="hidden" name="project_id" id="projectId">
+        
+        <div class="mb-5">
+          <label for="project_name" class="block font-semibold mb-2 text-[var(--text-color)]">Project Name</label>
+          <input type="text" name="project_name" id="project_name" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter project name">
         </div>
-        <div class="form-group"><label>Status</label><select name="status" id="status"><option>Not Started</option><option>In Progress</option><option>Completed</option></select></div>
-        <div class="form-group"><label>Assign Resources (Suppliers)</label><select name="assigned_suppliers[]" id="assigned_suppliers" multiple size="5"><?php foreach($allSuppliers as $supplier): ?><option value="<?php echo $supplier['id']; ?>"><?php echo htmlspecialchars($supplier['supplier_name']); ?></option><?php endforeach; ?></select></div>
-        <div class="form-actions flex justify-end gap-4 mt-6">
-          <button type="button" class="btn bg-gray-300" onclick="closeModal(document.getElementById('projectModal'))">Cancel</button>
-          <button type="submit" class="btn btn-danger bg-green-500 text-white">Save Project</button>
+        
+        <div class="mb-5">
+          <label for="description" class="block font-semibold mb-2 text-[var(--text-color)]">Description</label>
+          <textarea name="description" id="description" rows="4" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter project description"></textarea>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <div>
+            <label for="start_date" class="block font-semibold mb-2 text-[var(--text-color)]">Start Date</label>
+            <input type="date" name="start_date" id="start_date" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+          </div>
+          <div>
+            <label for="end_date" class="block font-semibold mb-2 text-[var(--text-color)]">End Date</label>
+            <input type="date" name="end_date" id="end_date" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+          </div>
+        </div>
+        
+        <div class="mb-5">
+          <label for="status" class="block font-semibold mb-2 text-[var(--text-color)]">Status</label>
+          <select name="status" id="status" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+        
+        <div class="mb-6">
+          <label for="assigned_suppliers" class="block font-semibold mb-2 text-[var(--text-color)]">Assign Resources (Suppliers)</label>
+          <select name="assigned_suppliers[]" id="assigned_suppliers" multiple size="5" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+            <?php foreach($allSuppliers as $supplier): ?>
+              <option value="<?php echo $supplier['id']; ?>"><?php echo htmlspecialchars($supplier['supplier_name']); ?></option>
+            <?php endforeach; ?>
+          </select>
+          <p class="text-sm text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple suppliers</p>
+        </div>
+        
+        <div class="flex justify-end gap-3">
+          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('projectModal'))">
+            Cancel
+          </button>
+          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+            Save Project
+          </button>
         </div>
       </form>
     </div>
@@ -129,5 +196,22 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
   <script src="../assets/js/plt.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  
+  <?php if ($message && !empty(trim($message))): ?>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.showCustomAlert) {
+            showCustomAlert(<?php echo json_encode($message); ?>, <?php echo json_encode($message_type); ?>);
+        } else {
+            // Fallback - strip HTML for plain alert
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = <?php echo json_encode($message); ?>;
+            alert(tempDiv.textContent || tempDiv.innerText || '');
+        }
+    });
+  </script>
+  <?php endif; ?>
 </body>
 </html>

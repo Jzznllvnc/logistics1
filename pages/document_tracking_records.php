@@ -40,74 +40,121 @@ $documents = getAllDocuments();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logistics 1 - DTRS</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
-  <style>
-    .dtrs-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
-    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .card-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; }
-    .table { width: 100%; border-collapse: collapse; }
-    .table th, .table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--card-border); }
-    .table th { background-color: rgba(128,128,128,0.05); text-transform: uppercase; font-size: 13px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-weight: 500; margin-bottom: 5px; }
-    .form-group input { width: 100%; padding: 8px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--input-text); }
-    .btn-upload { background: var(--primary-btn-bg); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
-    @media (max-width: 1024px) { .dtrs-grid { grid-template-columns: 1fr; } }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
   <div class="sidebar" id="sidebar"> <?php include '../partials/sidebar.php'; ?> </div>
   <div class="main-content-wrapper" id="mainContentWrapper">
     <div class="content" id="mainContent">
       <script>
-        <?php if ($message): ?>
+        <?php if ($message && !empty(trim($message))): ?>
         document.addEventListener('DOMContentLoaded', () => {
             if (window.showCustomAlert) {
-                showCustomAlert("<?php echo htmlspecialchars($message); ?>", "<?php echo htmlspecialchars($message_type); ?>");
+                showCustomAlert(<?php echo json_encode($message); ?>, <?php echo json_encode($message_type); ?>);
+            } else {
+                // Fallback - strip HTML for plain alert
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = <?php echo json_encode($message); ?>;
+                alert(tempDiv.textContent || tempDiv.innerText || '');
             }
         });
         <?php endif; ?>
       </script>
       <?php include '../partials/header.php'; ?>
-      <h1 class="page-title" style="font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 2.5rem; margin-bottom: 2rem;">Document Tracking & Records (DTRS)</h1>
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="font-semibold page-title">Document Tracking & Records (DTRS)</h1>
+        <button type="button" id="uploadDocumentBtn" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md flex items-center">
+          <i data-lucide="upload" class="w-5 h-5 mr-2"></i>Upload Document
+        </button>
+      </div>
       
-      <div class="dtrs-grid">
-        <div class="card">
-          <h2 class="card-title">Upload New Document</h2>
-          <form action="document_tracking_records.php" method="POST" enctype="multipart/form-data">
-            <div class="form-group"><label>Document File</label><input type="file" name="documentFile" required></div>
-            <div class="form-group"><label>Document Type</label><input type="text" name="document_type" placeholder="e.g., Bill of Lading, Invoice" required></div>
-            <div class="form-group"><label>Reference #</label><input type="text" name="reference_number" placeholder="e.g., INV-12345, BOL-ABCDE"></div>
-            <div class="form-group"><label>Expiry Date (Optional)</label><input type="date" name="expiry_date"></div>
-            <button type="submit" class="btn-upload" style="width: 100%;">Upload Document</button>
-          </form>
-        </div>
-
-        <div class="card">
-          <h2 class="card-title">Document Records</h2>
-          <div style="overflow-x: auto;">
-            <table class="table">
-              <thead><tr><th>File Name</th><th>Type</th><th>Reference #</th><th>Expiry</th><th>Uploaded</th></tr></thead>
-              <tbody>
-                <?php foreach($documents as $doc): ?>
-                <tr>
-                  <td><a href="../<?php echo htmlspecialchars($doc['file_path']); ?>" target="_blank" style="color: var(--primary-color); text-decoration: underline;"><?php echo htmlspecialchars($doc['file_name']); ?></a></td>
-                  <td><?php echo htmlspecialchars($doc['document_type']); ?></td>
-                  <td><?php echo htmlspecialchars($doc['reference_number']); ?></td>
-                  <td><?php echo $doc['expiry_date'] ? date('M d, Y', strtotime($doc['expiry_date'])) : 'N/A'; ?></td>
-                  <td><?php echo date('M d, Y', strtotime($doc['upload_date'])); ?></td>
-                </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div>
+      <!-- Document Records - Now Full Width -->
+      <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+        <h2 class="text-2xl font-semibold mb-5 text-[var(--text-color)]">Document Records</h2>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>File Name</th>
+                <th>Type</th>
+                <th>Reference #</th>
+                <th>Expiry</th>
+                <th>Uploaded</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach($documents as $doc): ?>
+              <tr>
+                <td class="py-3 px-4 border-b border-[var(--card-border)]"><a href="../<?php echo htmlspecialchars($doc['file_path']); ?>" target="_blank" class="text-[var(--primary-color)] underline hover:text-blue-600 transition-colors"><?php echo htmlspecialchars($doc['file_name']); ?></a></td>
+                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($doc['document_type']); ?></td>
+                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($doc['reference_number']); ?></td>
+                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo $doc['expiry_date'] ? date('M d, Y', strtotime($doc['expiry_date'])) : 'N/A'; ?></td>
+                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo date('M d, Y', strtotime($doc['upload_date'])); ?></td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Upload Document Modal -->
+  <div id="uploadDocumentModal" class="modal hidden">
+    <div class="modal-content p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold text-[var(--text-color)]">Upload New Document</h2>
+        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        </button>
+      </div>
+      
+      <form action="document_tracking_records.php" method="POST" enctype="multipart/form-data" id="uploadDocumentForm">
+        <div class="mb-5">
+          <label for="documentFile" class="block font-semibold mb-2 text-[var(--text-color)]">Document File</label>
+          <input type="file" name="documentFile" id="documentFile" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt">
+          <p class="text-sm text-gray-500 mt-1">Supported formats: PDF, DOC, DOCX, JPG, PNG, TXT</p>
+        </div>
+        
+        <div class="mb-5">
+          <label for="document_type" class="block font-semibold mb-2 text-[var(--text-color)]">Document Type</label>
+          <input type="text" name="document_type" id="document_type" placeholder="e.g., Bill of Lading, Invoice" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+        </div>
+        
+        <div class="mb-5">
+          <label for="reference_number" class="block font-semibold mb-2 text-[var(--text-color)]">Reference Number</label>
+          <input type="text" name="reference_number" id="reference_number" placeholder="e.g., INV-12345, BOL-ABCDE" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+        </div>
+        
+        <div class="mb-6">
+          <label for="expiry_date" class="block font-semibold mb-2 text-[var(--text-color)]">Expiry Date (Optional)</label>
+          <input type="date" name="expiry_date" id="expiry_date" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+        </div>
+        
+        <div class="flex justify-end gap-3">
+          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('uploadDocumentModal'))">
+            Cancel
+          </button>
+          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+            Upload Document
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
+  <script src="../assets/js/dtrs.js"></script>
+  <script>
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  </script>
 </body>
 </html>

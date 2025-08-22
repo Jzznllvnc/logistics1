@@ -9,6 +9,35 @@ if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'smart_warehousing') 
     exit();
 }
 
+// Handle AJAX pagination requests
+if (isset($_GET['ajax']) && $_GET['ajax'] === 'pagination') {
+    $itemsPerPage = 10;
+    $currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+    $offset = ($currentPage - 1) * $itemsPerPage;
+    
+    $totalItems = getTotalInventoryCount();
+    $totalPages = ceil($totalItems / $itemsPerPage);
+    $inventory = getPaginatedInventory($offset, $itemsPerPage);
+    
+    // Return JSON response
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => true,
+        'inventory' => $inventory,
+        'currentPage' => $currentPage,
+        'totalPages' => $totalPages,
+        'totalItems' => $totalItems,
+        'itemsPerPage' => $itemsPerPage,
+        'isAdmin' => $_SESSION['role'] === 'admin'
+    ]);
+    exit();
+}
+
+// Pagination settings
+$itemsPerPage = 10;
+$currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($currentPage - 1) * $itemsPerPage;
+
 // ... (All the PHP logic for handling POST requests remains the same) ...
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -43,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else { $_SESSION['flash_message'] = "Failed to delete item."; $_SESSION['flash_message_type'] = 'error'; }
         }
     }
-    header("Location: smart_warehousing.php");
+    header("Location: smart_warehousing.php?page=" . $currentPage);
     exit();
 }
 
@@ -56,7 +85,11 @@ if (isset($_SESSION['flash_message'])) {
     $message = '';
 }
 
-$inventory = getInventory();
+// Get total count and paginated inventory
+$totalItems = getTotalInventoryCount();
+$totalPages = ceil($totalItems / $itemsPerPage);
+$inventory = getPaginatedInventory($offset, $itemsPerPage);
+$allInventory = getInventory(); // For the modal datalist
 ?>
 
 <!DOCTYPE html>
@@ -67,31 +100,11 @@ $inventory = getInventory();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logistics 1 - SWS</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
-  <style>
-    /* ... (All the CSS styles remain the same) ... */
-    .sws-container { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
-    .sws-form-card, .sws-inventory-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-color); }
-    .form-group input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--input-text); }
-    .form-actions { display: flex; gap: 10px; }
-    .btn-stock-in { background: #10b981; color: white; }
-    .btn-stock-out { background: #ef4444; color: white; }
-    .inventory-table { width: 100%; border-collapse: collapse; }
-    .inventory-table th, .inventory-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--card-border); }
-    .inventory-table th { background-color: rgba(128,128,128,0.05); font-size: 13px; text-transform: uppercase; }
-    .low-stock { color: #f59e0b; font-weight: bold; }
-    .item-actions a { margin-right: 15px; cursor: pointer; }
-    .item-actions a.edit:hover { color: #3b82f6; }
-    .item-actions a.delete:hover { color: #ef4444; }
-    .modal-content { max-width: 500px; }
-    .inventory-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    #inventorySearchInput { padding: 8px 12px; width: 250px; border-radius: 6px; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--input-text); }
-    @media (max-width: 900px) { .sws-container { grid-template-columns: 1fr; } }
-    @media (max-width: 600px) { .inventory-header { flex-direction: column; align-items: flex-start; gap: 15px; } #inventorySearchInput { width: 100%; } }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
   <div class="sidebar" id="sidebar"> <?php include '../partials/sidebar.php'; ?> </div>
@@ -109,61 +122,77 @@ $inventory = getInventory();
       </script>
       <?php include '../partials/header.php'; ?>
 
-      <h1 class="page-title" style="font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 2.5rem; margin-bottom: 2rem;">Smart Warehousing System (SWS)</h1>
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="font-semibold page-title">Smart Warehousing System (SWS)</h1>
+      </div>
       
-      <div class="sws-container">
-        <div class="sws-form-card">
-          <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 20px;">Manage Stock Levels</h2>
-          <p style="font-size: 0.9rem; color: #888; margin-top: -15px; margin-bottom: 20px;">Use this form to add new items or update quantities.</p>
-          <form action="smart_warehousing.php" method="POST">
-            <div class="form-group">
-              <label for="item_name">Item Name</label>
-              <input type="text" id="item_name" name="item_name" list="inventory_items" placeholder="Type to see stock levels..." required>
-              <datalist id="inventory_items">
-                <?php foreach ($inventory as $item): ?>
-                    <option value="<?php echo htmlspecialchars($item['item_name']); ?>">
-                        <?php echo htmlspecialchars($item['item_name']) . ' (' . htmlspecialchars($item['quantity']) . ' in stock)'; ?>
-                    </option>
-                <?php endforeach; ?>
-              </datalist>
+      <!-- Current Inventory Section - Now Full Width -->
+      <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+        <div class="flex justify-between items-center mb-5 flex-col lg:flex-row gap-4 lg:gap-0 lg:justify-between justify-center">
+          <h2 class="text-2xl font-semibold text-[var(--text-color)]">Current Inventory</h2>
+          <div class="flex gap-2 lg:gap-3 w-full lg:w-auto items-center flex-wrap sm:flex-nowrap justify-center lg:justify-end">
+            <div class="relative w-32 sm:w-36 md:w-40 lg:w-48">
+              <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+              <input type="text" id="inventorySearchInput" placeholder="Search by item name..." class="py-2 pl-10 pr-3 w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
             </div>
-            <div class="form-group">
-              <label for="quantity">Quantity</label>
-              <input type="number" id="quantity" name="quantity" min="1" placeholder="e.g., 50" required>
+            <div class="relative w-24 sm:w-28 md:w-32 lg:w-36">
+              <select id="inventoryFilter" class="py-2 px-3 pr-8 w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)] appearance-none cursor-pointer">
+                <option value="all">All Items</option>
+                <option value="low-stock">Low Stock (&lt;10)</option>
+                <option value="normal-stock">Normal Stock (10-100)</option>
+                <option value="high-stock">High Stock (&gt;100)</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <i data-lucide="list-filter" class="w-5 h-5"></i>
+              </div>
             </div>
-            <div class="form-actions">
-              <button type="submit" name="action" value="stock-in" class="btn btn-stock-in">Stock In</button>
-              <button type="submit" name="action" value="stock-out" class="btn btn-stock-out">Stock Out</button>
-            </div>
-          </form>
-        </div>
-        <div class="sws-inventory-card">
-          <div class="inventory-header">
-            <h2 style="font-size: 1.5rem; font-weight: 600; margin: 0;">Current Inventory</h2>
-            <input type="text" id="inventorySearchInput" placeholder="🔎 Search by item name...">
+            <div class="h-8 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
+            <button id="stockInBtn" type="button" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2 px-2 sm:py-2.5 sm:px-4 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md flex items-center text-sm sm:text-base whitespace-nowrap">
+              <i data-lucide="plus" class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2"></i><span class="hidden sm:inline">Stock In</span>
+            </button>
+            <button id="stockOutBtn" type="button" class="px-2 py-2 sm:px-4 sm:py-2.5 rounded-md border-none cursor-pointer font-semibold transition-all duration-500 shadow-md bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5 hover:shadow-lg flex items-center text-sm sm:text-base whitespace-nowrap">
+              <i data-lucide="minus" class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2"></i><span class="hidden sm:inline">Stock Out</span>
+            </button>
           </div>
-          <table class="inventory-table">
+        </div>
+        <div class="table-container">
+          <table class="data-table">
             <thead>
               <tr>
-                <th>Item Name</th><th>Quantity</th><th>Last Updated</th>
-                <?php if ($_SESSION['role'] === 'admin'): ?><th>Actions</th><?php endif; ?>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Last Updated</th>
+                <?php if ($_SESSION['role'] === 'admin'): ?><th>Action</th><?php endif; ?>
               </tr>
             </thead>
             <tbody id="inventoryTableBody">
               <?php if (empty($inventory)): ?>
-                <tr><td colspan="<?php echo ($_SESSION['role'] === 'admin') ? '4' : '3'; ?>" style="text-align: center; padding: 20px; color: #888;">No items in inventory.</td></tr>
+                <tr><td colspan="<?php echo ($_SESSION['role'] === 'admin') ? '4' : '3'; ?>" class="table-empty">No items in inventory.</td></tr>
               <?php else: foreach ($inventory as $item): ?>
                   <tr>
                     <td><?php echo htmlspecialchars($item['item_name']); ?></td>
-                    <td class="<?php echo ($item['quantity'] < 10) ? 'low-stock' : ''; ?>">
+                    <td class="<?php echo ($item['quantity'] < 10) ? 'table-status-low' : 'table-status-normal'; ?>">
                       <?php echo htmlspecialchars($item['quantity']); ?>
                       <?php if ($item['quantity'] < 10): ?> (Low Stock)<?php endif; ?>
                     </td>
                     <td><?php echo date('M d, Y g:i A', strtotime($item['last_updated'])); ?></td>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
-                      <td class="item-actions">
-                        <a class="edit" onclick='openEditModal(<?php echo json_encode($item); ?>)'><i class="fas fa-pencil-alt"></i></a>
-                        <a class="delete" onclick="confirmDeleteItem(<?php echo $item['id']; ?>)"><i class="fas fa-trash-alt"></i></a>
+                      <td>
+                        <div class="relative">
+                          <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleActionDropdown(<?php echo $item['id']; ?>)">
+                            <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                          </button>
+                          <div id="dropdown-<?php echo $item['id']; ?>" class="action-dropdown bg-white border border-gray-200 rounded-md shadow-lg w-32 hidden">
+                            <button type="button" onclick='openEditModal(<?php echo json_encode($item); ?>)' class="w-full text-left px-3 py-2 text-sm flex items-center">
+                              <i data-lucide="edit-3" class="w-4 h-4 mr-2 text-blue-500"></i>
+                              Edit
+                            </button>
+                            <button type="button" onclick="confirmDeleteItem(<?php echo $item['id']; ?>)" class="w-full text-left px-3 py-2 text-sm flex items-center text-red-600">
+                              <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                              Delete
+                            </button>
+                          </div>
+                        </div>
                       </td>
                     <?php endif; ?>
                   </tr>
@@ -171,29 +200,122 @@ $inventory = getInventory();
             </tbody>
           </table>
         </div>
+        
+        <!-- Pagination -->
+        <?php if ($totalPages > 1): ?>
+        <div class="flex justify-center items-center mt-6 gap-2" id="paginationContainer">
+          <?php if ($currentPage > 1): ?>
+            <button onclick="loadPage(<?php echo $currentPage - 1; ?>)" class="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+              <i data-lucide="chevron-left" class="w-4 h-4 mr-1"></i>
+              Previous
+            </button>
+          <?php endif; ?>
+          
+          <?php
+          $startPage = max(1, $currentPage - 2);
+          $endPage = min($totalPages, $currentPage + 2);
+          
+          if ($startPage > 1): ?>
+            <button onclick="loadPage(1)" class="px-3 py-2 text-sm rounded-md <?php echo ($currentPage == 1) ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'; ?>">1</button>
+            <?php if ($startPage > 2): ?>
+              <span class="px-2 text-gray-500">...</span>
+            <?php endif; ?>
+          <?php endif; ?>
+          
+          <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+            <button onclick="loadPage(<?php echo $i; ?>)" class="px-3 py-2 text-sm rounded-md <?php echo ($currentPage == $i) ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'; ?>" data-page="<?php echo $i; ?>"><?php echo $i; ?></button>
+          <?php endfor; ?>
+          
+          <?php if ($endPage < $totalPages): ?>
+            <?php if ($endPage < $totalPages - 1): ?>
+              <span class="px-2 text-gray-500">...</span>
+            <?php endif; ?>
+            <button onclick="loadPage(<?php echo $totalPages; ?>)" class="px-3 py-2 text-sm rounded-md <?php echo ($currentPage == $totalPages) ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'; ?>"><?php echo $totalPages; ?></button>
+          <?php endif; ?>
+          
+          <?php if ($currentPage < $totalPages): ?>
+            <button onclick="loadPage(<?php echo $currentPage + 1; ?>)" class="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+              Next
+              <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+            </button>
+          <?php endif; ?>
+        </div>
+        
+        <div class="text-center text-sm text-gray-500 mt-2" id="paginationInfo">
+          Showing <?php echo (($currentPage - 1) * $itemsPerPage) + 1; ?> to <?php echo min($currentPage * $itemsPerPage, $totalItems); ?> of <?php echo $totalItems; ?> items
+        </div>
+        <?php endif; ?>
       </div>
     </div>
   </div>
 
   <?php if ($_SESSION['role'] === 'admin'): ?>
-  <div id="editItemModal" class="modal" style="display:none;">
-    <div class="modal-content bg-[var(--card-bg)] p-8 rounded-lg shadow-xl relative">
-      <h2 class="text-2xl font-bold mb-4">Edit Item Name</h2>
+  <div id="editItemModal" class="modal hidden">
+    <div class="modal-content p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-[var(--text-color)]">Edit Item Name</h2>
+        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        </button>
+      </div>
       <form id="editItemForm" method="POST" action="smart_warehousing.php">
         <input type="hidden" name="action" value="update_item">
         <input type="hidden" name="item_id" id="edit_item_id">
-        <div class="form-group">
-          <label for="item_name_edit">Item Name</label>
-          <input type="text" name="item_name_edit" id="item_name_edit" required>
+        <div class="form-group mb-5">
+          <label for="item_name_edit" class="block font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
+          <input type="text" name="item_name_edit" id="item_name_edit" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
         </div>
         <div class="form-actions flex justify-end gap-4 mt-6">
-          <button type="button" class="btn bg-gray-300" onclick="closeModal(document.getElementById('editItemModal'))">Cancel</button>
-          <button type="submit" class="btn btn-danger bg-green-500 text-white">Save Changes</button>
+          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('editItemModal'))">Cancel</button>
+          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">Save Changes</button>
         </div>
       </form>
     </div>
   </div>
   <?php endif; ?>
+
+  <!-- Stock Management Modal -->
+  <div id="stockManagementModal" class="modal hidden">
+    <div class="modal-content p-8">
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="text-2xl font-semibold text-[var(--text-color)]" id="modalTitle">Manage Stock Levels</h2>
+        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        </button>
+      </div>
+      <p class="text-base text-gray-500 dark:text-gray-400 mb-6">Use this form to add new items or update quantities.</p>
+      
+      <form action="smart_warehousing.php" method="POST" id="stockManagementForm">
+        <input type="hidden" name="action" id="stockAction" value="">
+        
+        <div class="mb-5">
+          <label for="modal_item_name" class="block font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
+          <input type="text" id="modal_item_name" name="item_name" list="inventory_items" placeholder="Type to see stock levels..." required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
+          <datalist id="inventory_items">
+            <?php foreach ($allInventory as $item): ?>
+                <option value="<?php echo htmlspecialchars($item['item_name']); ?>">
+                    <?php echo htmlspecialchars($item['item_name']) . ' (' . htmlspecialchars($item['quantity']) . ' in stock)'; ?>
+                </option>
+            <?php endforeach; ?>
+          </datalist>
+        </div>
+        
+        <div class="mb-6">
+          <label for="modal_quantity" class="block font-semibold mb-2 text-[var(--text-color)]">Quantity</label>
+          <input type="number" id="modal_quantity" name="quantity" min="1" placeholder="e.g., 50" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
+        </div>
+        
+        <div class="flex justify-end gap-3">
+          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('stockManagementModal'))">
+            Cancel
+          </button>
+          <button type="submit" id="confirmStockBtn" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+            Confirm
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>

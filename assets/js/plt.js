@@ -47,3 +47,18 @@ function confirmDeleteProject(projectId) {
         form.submit();
     }
 }
+
+// Initialize Lucide Icons
+function initLucideIcons() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+// Make Lucide icon initialization globally available for this page
+window.refreshLucideIcons = initLucideIcons;
+
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    initLucideIcons();
+});

@@ -32,6 +32,14 @@ html.preload *::after {
   --primary-btn-bg: linear-gradient(to right, #0072ff, #00c6ff);
   --primary-btn-hover-bg: linear-gradient(to right, #0052cc, #009ee3);
   --cancel-btn-bg: #e0e0e0;
+  --scrollbar-thumb-hover-color: #556b7a;
+  --subtitle-color: #464646;
+  --description-color: #52555a;
+  
+  /* Scrollbar colors */
+  --scrollbar-track: #f1f1f1;
+  --scrollbar-thumb: #c1c1c1;
+  --scrollbar-thumb-hover: #a8a8a8;
 }
 
 .dark-mode {
@@ -45,7 +53,46 @@ html.preload *::after {
   --input-border: #444;
   --input-text: #f5f5f5;
   --border-color: rgba(255, 255, 255, 0.1);
-  --cancel-btn-bg: #444;
+  --cancel-btn-bg: #3d3d3d;
+  --subtitle-color: #b0b0b0;
+  --description-color: #a0a0a0;
+  
+  /* Dark mode scrollbar colors */
+  --scrollbar-track: #2d2d2d;
+  --scrollbar-thumb: #555555;
+  --scrollbar-thumb-hover: #777777;
+}
+
+/* Custom Scrollbar Styles */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 body {
@@ -69,7 +116,7 @@ input:-webkit-autofill:active {
 
 .content {
   flex: 1;
-  padding: 30px;
+  padding: 40px;
 }
 
 /* Header content styles */
@@ -280,6 +327,21 @@ input:checked + .slider:before {
   content: '🌙';
 }
 
+/* Page title and subtitle styles */
+.page-title {
+  color: var(--text-color);
+}
+
+.page-subtitle {
+  color: var(--subtitle-color);
+}
+
+.description-text {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  color: var(--description-color);
+}
+
 h2.page-title {
   font-size: 1.7em;
   font-weight: 600;
@@ -318,11 +380,29 @@ h2.page-title {
   z-index: 50;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-content {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  margin: auto;
 }
 
 .modal-content h2 {
   color: var(--text-color);
-  margin-bottom: 20px;
+}
+
+.modal-content p {
+  font-size: 0.9rem;
 }
 
 .close-button {
@@ -334,6 +414,10 @@ h2.page-title {
   font-weight: bold;
   cursor: pointer;
   transition: color 0.5s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  line-height: 1;
 }
 
 .close-button:hover,
@@ -411,5 +495,299 @@ h2.page-title {
       left: auto;
       top: 45px;
   }
+}
+
+/* Custom page titles */
+.page-title {
+  font-family: 'Inter Tight', sans-serif; 
+  font-weight: 600; 
+  font-size: 2.5rem; 
+  margin-bottom: 2px;
+}
+
+/* Additional utility classes and component styles */
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: #888;
+  margin-top: -15px;
+  margin-bottom: 20px;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.grid-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.full-width-btn {
+  width: 100%;
+}
+
+.grid-span-two {
+  grid-column: 2 / -1;
+}
+
+.status-badge {
+  background: #ffc107;
+  color: #333;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+}
+
+.resource-info {
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+.overflow-auto {
+  overflow-x: auto;
+}
+
+.file-link {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.card-margin-top {
+  margin-top: 30px;
+}
+
+.form-no-margin {
+  margin: 0;
+}
+
+.btn-small {
+  padding: 5px 10px;
+  font-size: 0.8em;
+}
+
+.btn-success {
+  background: #10b981;
+}
+
+/* Primary button with blue-to-cyan gradient */
+.btn-primary {
+  background: linear-gradient(to right, #3b82f6, #06b6d4);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(to right, #2563eb, #0891b2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+}
+
+/* Action dropdown styles */
+.action-dropdown-btn {
+  position: relative;
+  z-index: 1;
+}
+
+.action-dropdown {
+  min-width: 120px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-color);
+}
+
+.action-dropdown button {
+  color: var(--text-color);
+  border: none;
+  background: none;
+  transition: background-color 0.2s ease;
+}
+
+.action-dropdown button:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.action-dropdown .text-red-600:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Dark mode support for dropdowns */
+.dark-mode .action-dropdown {
+  background: var(--card-bg);
+  border-color: var(--card-border);
+}
+
+/* Smart dropdown positioning - handled by JavaScript */
+/* .dropdown-below and .dropdown-above classes removed - positioning handled by JS */
+
+/* Action dropdown button hover states */
+.action-dropdown-btn {
+  transition: background-color 0.2s ease;
+}
+
+.action-dropdown-btn:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Dark mode hover for action buttons */
+:root.dark-mode .action-dropdown-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Light mode hover for action buttons */
+:root:not(.dark-mode) .action-dropdown-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Action dropdown menu item hover states */
+.action-dropdown button:hover {
+  background-color: var(--dropdown-item-hover);
+}
+
+/* Dark mode hover for dropdown items */
+:root.dark-mode .action-dropdown button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Light mode hover for dropdown items */
+:root:not(.dark-mode) .action-dropdown button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure dropdowns appear above other content */
+.action-dropdown {
+  z-index: 40 !important;
+  position: fixed !important; /* Use fixed positioning for better control */
+}
+
+/* Table Styling System */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card-bg);
+  color: var(--text-color);
+}
+
+.data-table thead tr {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.dark-mode .data-table thead tr {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.data-table th {
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  text-align: left;
+  color: var(--text-color);
+}
+
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--card-border);
+  color: var(--text-color);
+}
+
+.data-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark-mode .data-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Table status indicators */
+.table-status-low {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.table-status-normal {
+  color: var(--text-color);
+}
+
+.table-status-high {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.table-status-danger {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.table-status-success {
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* Table container */
+.table-container {
+  overflow-x: auto;
+  overflow-y: visible; /* Allow dropdowns to extend beyond container */
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+}
+
+/* Empty state */
+.table-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Table header styles for dark mode */
+.dark-mode th {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-color);
+}
+
+/* Light mode table header (ensure consistency) */
+th {
+  background-color: rgba(0, 0, 0, 0.03);
+  color: var(--text-color);
 }
 

@@ -24,14 +24,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $phone = $_POST['phone'] ?? '';
             $address = $_POST['address'] ?? '';
             if ($action === 'create_supplier') {
-                createSupplier($name, $contact, $email, $phone, $address);
+                if (createSupplier($name, $contact, $email, $phone, $address)) {
+                    $_SESSION['flash_message'] = "Supplier <strong>" . htmlspecialchars($name) . "</strong> created successfully.";
+                    $_SESSION['flash_message_type'] = 'success';
+                } else {
+                    $_SESSION['flash_message'] = "Failed to create supplier. Please try again.";
+                    $_SESSION['flash_message_type'] = 'error';
+                }
             } else {
                 $id = $_POST['supplier_id'] ?? 0;
-                updateSupplier($id, $name, $contact, $email, $phone, $address);
+                if (updateSupplier($id, $name, $contact, $email, $phone, $address)) {
+                    $_SESSION['flash_message'] = "Supplier <strong>" . htmlspecialchars($name) . "</strong> updated successfully.";
+                    $_SESSION['flash_message_type'] = 'success';
+                } else {
+                    $_SESSION['flash_message'] = "Failed to update supplier. Please try again.";
+                    $_SESSION['flash_message_type'] = 'error';
+                }
             }
         } elseif ($action === 'delete_supplier') {
             $id = $_POST['supplier_id'] ?? 0;
-            deleteSupplier($id);
+            if (deleteSupplier($id)) {
+                $_SESSION['flash_message'] = "Supplier deleted successfully.";
+                $_SESSION['flash_message_type'] = 'success';
+            } else {
+                $_SESSION['flash_message'] = "Failed to delete supplier. Please try again.";
+                $_SESSION['flash_message_type'] = 'error';
+            }
         }
     }
 
@@ -40,11 +58,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $supplier_id = $_POST['supplier_id_po'] ?? 0;
         $item_name = $_POST['item_name_po'] ?? '';
         $quantity = $_POST['quantity_po'] ?? 0;
-        createPurchaseOrder($supplier_id, $item_name, $quantity);
+        if (createPurchaseOrder($supplier_id, $item_name, $quantity)) {
+            $_SESSION['flash_message'] = "Purchase order created successfully for <strong>" . htmlspecialchars($quantity) . "</strong> x <strong>" . htmlspecialchars($item_name) . "</strong>.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else {
+            $_SESSION['flash_message'] = "Failed to create purchase order. Please try again.";
+            $_SESSION['flash_message_type'] = 'error';
+        }
     }
     
     header("Location: procurement_sourcing.php");
     exit();
+}
+
+// Check for flash messages
+if (isset($_SESSION['flash_message'])) {
+    $message = $_SESSION['flash_message'];
+    $message_type = $_SESSION['flash_message_type'] ?? 'info';
+    unset($_SESSION['flash_message'], $_SESSION['flash_message_type']);
+} else {
+    $message = '';
+    $message_type = '';
 }
 
 // Fetch data for the page
@@ -60,118 +94,230 @@ $purchaseOrders = getRecentPurchaseOrders();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logistics 1 - PSM</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
-  <style>
-    /* ... (CSS styles remain the same) ... */
-    .psm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
-    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .card-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; }
-    .full-width { grid-column: 1 / -1; }
-    .table { width: 100%; border-collapse: collapse; }
-    .table th, .table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--card-border); }
-    .table th { background-color: rgba(128,128,128,0.05); text-transform: uppercase; font-size: 13px; }
-    .actions a { margin-right: 15px; cursor: pointer; }
-    .actions a.edit:hover { color: #3b82f6; }
-    .actions a.delete:hover { color: #ef4444; }
-    .btn-add { background: var(--primary-btn-bg); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; margin-bottom: 20px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-weight: 500; margin-bottom: 5px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--input-text); }
-    @media (max-width: 1200px) { .psm-grid { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 768px) { .psm-grid { grid-template-columns: 1fr; } }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
   <div class="sidebar" id="sidebar"> <?php include '../partials/sidebar.php'; ?> </div>
   <div class="main-content-wrapper" id="mainContentWrapper">
     <div class="content" id="mainContent">
       <?php include '../partials/header.php'; ?>
-      <h1 class="page-title" style="font-family: 'Inter Tight', sans-serif; font-weight: 600; font-size: 2.5rem; margin-bottom: 2rem;">Procurement & Sourcing (PSM)</h1>
+      <h1 class="font-semibold mb-6 page-title">Procurement & Sourcing (PSM)</h1>
       
-      <div class="psm-grid">
-        <div class="card full-width">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 class="card-title">Supplier Management</h2>
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+          <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-semibold mb-5 text-[var(--text-color)]">Supplier Management</h2>
             <?php if ($_SESSION['role'] === 'admin'): ?>
-            <button type="button" class="btn-add" onclick="openCreateSupplierModal()"><i class="fas fa-plus"></i> Add Supplier</button>
+            <button type="button" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg no-underline inline-block mb-5 hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center" onclick="openCreateSupplierModal()">
+              <i data-lucide="plus" class="w-5 h-5 mr-2"></i>Add Supplier
+            </button>
             <?php endif; ?>
           </div>
-          <table class="table">
-            <thead><tr><th>Supplier Name</th><th>Contact Person</th><th>Email</th><th>Phone</th><?php if ($_SESSION['role'] === 'admin'): ?><th>Actions</th><?php endif; ?></tr></thead>
-            <tbody>
-              <?php foreach($suppliers as $supplier): ?>
-              <tr>
-                <td><?php echo htmlspecialchars($supplier['supplier_name']); ?></td>
-                <td><?php echo htmlspecialchars($supplier['contact_person']); ?></td>
-                <td><?php echo htmlspecialchars($supplier['email']); ?></td>
-                <td><?php echo htmlspecialchars($supplier['phone']); ?></td>
-                <?php if ($_SESSION['role'] === 'admin'): ?>
-                <td class="actions">
-                  <a class="edit" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)'><i class="fas fa-pencil-alt"></i></a>
-                  <a class="delete" onclick="confirmDeleteSupplier(<?php echo $supplier['id']; ?>)"><i class="fas fa-trash-alt"></i></a>
-                </td>
-                <?php endif; ?>
-              </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="card">
-          <h2 class="card-title">Create Purchase Order</h2>
-          <form action="procurement_sourcing.php" method="POST">
-            <input type="hidden" name="action" value="create_po">
-            <div class="form-group"><label>Supplier</label><select name="supplier_id_po" required><option value="">-- Select Supplier --</option><?php foreach($suppliers as $supplier): ?><option value="<?php echo $supplier['id']; ?>"><?php echo htmlspecialchars($supplier['supplier_name']); ?></option><?php endforeach; ?></select></div>
-            <div class="form-group"><label>Item</label><select name="item_name_po" required><option value="">-- Select Item --</option><?php foreach($inventoryItems as $item): ?><option value="<?php echo htmlspecialchars($item['item_name']); ?>"><?php echo htmlspecialchars($item['item_name']); ?></option><?php endforeach; ?></select></div>
-            <div class="form-group"><label>Quantity</label><input type="number" name="quantity_po" min="1" required></div>
-            <button type="submit" class="btn btn-add" style="width: 100%;">Create PO</button>
-          </form>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Supplier Name</th>
+                  <th>Contact Person</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <?php if ($_SESSION['role'] === 'admin'): ?><th>Action</th><?php endif; ?>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach($suppliers as $supplier): ?>
+                <tr>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['supplier_name']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['contact_person']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['email']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['phone']); ?></td>
+                  <?php if ($_SESSION['role'] === 'admin'): ?>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]">
+                    <div class="relative">
+                      <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleSupplierDropdown(<?php echo $supplier['id']; ?>)">
+                        <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                      </button>
+                      <div id="supplier-dropdown-<?php echo $supplier['id']; ?>" class="action-dropdown bg-white border border-gray-200 rounded-md shadow-lg w-32 hidden">
+                        <button type="button" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)' class="w-full text-left px-3 py-2 text-sm flex items-center">
+                          <i data-lucide="edit-3" class="w-4 h-4 mr-2 text-blue-500"></i>
+                          Edit
+                        </button>
+                        <button type="button" onclick="confirmDeleteSupplier(<?php echo $supplier['id']; ?>)" class="w-full text-left px-3 py-2 text-sm flex items-center text-red-600">
+                          <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                  <?php endif; ?>
+                </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
         </div>
         
-        <div class="card" style="grid-column: 2 / -1;">
-          <h2 class="card-title">Recent Purchase Orders</h2>
-          <table class="table">
-            <thead><tr><th>Supplier</th><th>Item</th><th>Qty</th><th>Status</th><th>Date</th></tr></thead>
-            <tbody>
-              <?php foreach($purchaseOrders as $po): ?>
-              <tr>
-                <td><?php echo htmlspecialchars($po['supplier_name']); ?></td>
-                <td><?php echo htmlspecialchars($po['item_name']); ?></td>
-                <td><?php echo htmlspecialchars($po['quantity']); ?></td>
-                <td><span style="background: #ffc107; color: #333; padding: 3px 8px; border-radius: 12px; font-size: 0.8em;"><?php echo htmlspecialchars($po['status']); ?></span></td>
-                <td><?php echo date('M d, Y', strtotime($po['order_date'])); ?></td>
-              </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
+        <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+          <div class="flex justify-between items-center mb-5">
+            <h2 class="text-2xl font-semibold text-[var(--text-color)]">Recent Purchase Orders</h2>
+            <button type="button" id="createPOBtn" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md flex items-center">
+              <i data-lucide="plus" class="w-5 h-5 mr-2"></i>Create PO
+            </button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Supplier</th>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach($purchaseOrders as $po): ?>
+                <tr>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['supplier_name']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['item_name']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['quantity']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><span class="bg-amber-400 text-gray-800 py-1 px-2 rounded-xl text-xs font-medium"><?php echo htmlspecialchars($po['status']); ?></span></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo date('M d, Y', strtotime($po['order_date'])); ?></td>
+                </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <?php if ($_SESSION['role'] === 'admin'): ?>
-  <div id="supplierModal" class="modal" style="display:none;">
-    <div class="modal-content bg-[var(--card-bg)] p-8 rounded-lg shadow-xl relative">
-      <h2 id="modalTitle" class="text-2xl font-bold mb-4"></h2>
+  <div id="supplierModal" class="modal hidden">
+    <div class="modal-content p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 id="modalTitle" class="text-2xl font-semibold text-[var(--text-color)]">Add New Supplier</h2>
+        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        </button>
+      </div>
+      
       <form id="supplierForm" method="POST" action="procurement_sourcing.php">
-        <input type="hidden" name="action" id="formAction"><input type="hidden" name="supplier_id" id="supplierId">
-        <div class="form-group"><label>Supplier Name</label><input type="text" name="supplier_name" id="supplier_name" required></div>
-        <div class="form-group"><label>Contact Person</label><input type="text" name="contact_person" id="contact_person"></div>
-        <div class="form-group"><label>Email</label><input type="email" name="email" id="email"></div>
-        <div class="form-group"><label>Phone</label><input type="tel" name="phone" id="phone"></div>
-        <div class="form-group"><label>Address</label><textarea name="address" id="address" rows="3"></textarea></div>
-        <div class="form-actions flex justify-end gap-4 mt-6">
-          <button type="button" class="btn bg-gray-300" onclick="closeModal(document.getElementById('supplierModal'))">Cancel</button>
-          <button type="submit" class="btn btn-danger bg-green-500 text-white">Save Supplier</button>
+        <input type="hidden" name="action" id="formAction">
+        <input type="hidden" name="supplier_id" id="supplierId">
+        
+        <div class="mb-5">
+          <label for="supplier_name" class="block font-semibold mb-2 text-[var(--text-color)]">Supplier Name</label>
+          <input type="text" name="supplier_name" id="supplier_name" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter supplier name">
+        </div>
+        
+        <div class="mb-5">
+          <label for="contact_person" class="block font-semibold mb-2 text-[var(--text-color)]">Contact Person</label>
+          <input type="text" name="contact_person" id="contact_person" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter contact person name">
+        </div>
+        
+        <div class="mb-5">
+          <label for="email" class="block font-semibold mb-2 text-[var(--text-color)]">Email</label>
+          <input type="email" name="email" id="email" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter email address">
+        </div>
+        
+        <div class="mb-5">
+          <label for="phone" class="block font-semibold mb-2 text-[var(--text-color)]">Phone</label>
+          <input type="tel" name="phone" id="phone" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter phone number">
+        </div>
+        
+        <div class="mb-6">
+          <label for="address" class="block font-semibold mb-2 text-[var(--text-color)]">Address</label>
+          <textarea name="address" id="address" rows="3" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter address"></textarea>
+        </div>
+        
+        <div class="flex justify-end gap-3">
+          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('supplierModal'))">
+            Cancel
+          </button>
+          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+            Save Supplier
+          </button>
         </div>
       </form>
     </div>
   </div>
   <?php endif; ?>
 
+  <!-- Create Purchase Order Modal -->
+  <div id="createPOModal" class="modal hidden">
+    <div class="modal-content p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold text-[var(--text-color)]">Create Purchase Order</h2>
+        <button type="button" class="close-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        </button>
+      </div>
+      
+      <form action="procurement_sourcing.php" method="POST" id="createPOForm">
+        <input type="hidden" name="action" value="create_po">
+        
+        <div class="mb-5">
+          <label for="supplier_id_po" class="block font-semibold mb-2 text-[var(--text-color)]">Supplier</label>
+          <select name="supplier_id_po" id="supplier_id_po" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+            <option value="">-- Select Supplier --</option>
+            <?php foreach($suppliers as $supplier): ?>
+              <option value="<?php echo $supplier['id']; ?>"><?php echo htmlspecialchars($supplier['supplier_name']); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        
+        <div class="mb-5">
+          <label for="item_name_po" class="block font-semibold mb-2 text-[var(--text-color)]">Item</label>
+          <select name="item_name_po" id="item_name_po" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+            <option value="">-- Select Item --</option>
+            <?php foreach($inventoryItems as $item): ?>
+              <option value="<?php echo htmlspecialchars($item['item_name']); ?>"><?php echo htmlspecialchars($item['item_name']); ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        
+        <div class="mb-6">
+          <label for="quantity_po" class="block font-semibold mb-2 text-[var(--text-color)]">Quantity</label>
+          <input type="number" name="quantity_po" id="quantity_po" min="1" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter quantity">
+        </div>
+        
+        <div class="flex justify-end gap-3">
+          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('createPOModal'))">
+            Cancel
+          </button>
+          <button type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-5 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-md">
+            Create PO
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
   <script src="../assets/js/procurement.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  
+  <?php if ($message && !empty(trim($message))): ?>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.showCustomAlert) {
+            showCustomAlert(<?php echo json_encode($message); ?>, <?php echo json_encode($message_type); ?>);
+        } else {
+            // Fallback - strip HTML for plain alert
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = <?php echo json_encode($message); ?>;
+            alert(tempDiv.textContent || tempDiv.innerText || '');
+        }
+    });
+  </script>
+  <?php endif; ?>
 </body>
 </html>

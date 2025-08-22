@@ -11,6 +11,16 @@ html.loaded body {
   transition: opacity 0.2s ease-in-out;
 }
 
+/* PJAX loading state */
+body.pjax-loading {
+  pointer-events: none;
+}
+
+body.pjax-loading .main-content-wrapper {
+  opacity: 0.7;
+  transition: opacity 0.2s ease-in-out;
+}
+
 /* Prevent transitions during initial load */
 html.preload *,
 html.preload *::before,
@@ -171,7 +181,7 @@ html.loaded .sidebar {
   flex-direction: column;
   overflow-y: auto;
   height: 100vh;
-  margin-left: 250px;
+  margin-left: 280px;
   transition: margin-left 0.5s ease;
 }
 
@@ -190,8 +200,8 @@ html.loaded .sidebar {
     position: fixed;
     height: 100%;
     z-index: 100;
-    width: 250px;
-    min-width: 250px;
+    width: 280px;
+    min-width: 280px;
     transform: translateX(-100%);
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
   }
@@ -209,6 +219,6 @@ html.loaded .sidebar {
   }
 
   body.sidebar-active .main-content-wrapper {
-    margin-left: 250px;
+    margin-left: 280px;
   }
 }

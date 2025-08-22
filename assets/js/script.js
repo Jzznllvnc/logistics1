@@ -146,13 +146,71 @@ function initGlobalUI() {
         });
         logoutButton.dataset.listenerAttached = 'true';
     }
+    
+    // Initialize Lucide Icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    /*
+    LUCIDE ICONS USAGE GUIDE:
+    
+    To use Lucide icons in HTML:
+    <i data-lucide="icon-name" class="w-4 h-4"></i>
+    
+    Common icon names:
+    - plus, minus, x, check
+    - user, users, settings, home
+    - edit-3, trash-2, eye, eye-off
+    - search, filter, calendar, clock
+    - chevron-left, chevron-right, chevron-up, chevron-down
+    - menu, more-horizontal, more-vertical
+    - download, upload, file, folder
+    - bell, mail, phone, map-pin
+    
+    After adding new Lucide icons via JavaScript, call:
+    lucide.createIcons();
+    
+    Full icon list: https://lucide.dev/icons/
+    */
 }
-document.addEventListener('click', function (event) {
+document.addEventListener('mousedown', function (event) {
     const openModal = document.querySelector('.modal.show-modal');
     
-    // If a modal is open and the user clicks directly on the modal backdrop (not the content)
-    if (openModal && event.target === openModal) {
+    // Only proceed if a modal is open
+    if (!openModal) return;
+    
+    // Check if the mousedown started on the backdrop (not content)
+    const isBackdropClick = event.target === openModal;
+    
+    if (isBackdropClick) {
+        // Store that we started on backdrop for mouseup check
+        openModal._backdropMouseDown = true;
+    }
+});
+
+document.addEventListener('mouseup', function (event) {
+    const openModal = document.querySelector('.modal.show-modal');
+    
+    // Only proceed if a modal is open and mousedown started on backdrop
+    if (!openModal || !openModal._backdropMouseDown) return;
+    
+    // Only close if mouseup is also on the backdrop (complete click on backdrop)
+    const isBackdropRelease = event.target === openModal;
+    
+    if (isBackdropRelease) {
         window.closeModal(openModal);
+    }
+    
+    // Clean up the flag
+    delete openModal._backdropMouseDown;
+});
+
+// Also clean up on mouse leave to handle edge cases
+document.addEventListener('mouseleave', function () {
+    const openModal = document.querySelector('.modal.show-modal');
+    if (openModal) {
+        delete openModal._backdropMouseDown;
     }
 });
 window.initGlobalUI = initGlobalUI;

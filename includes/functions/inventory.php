@@ -136,4 +136,47 @@ function deleteInventoryItem($id) {
     $conn->close();
     return $success;
 }
+
+/**
+ * Gets the total count of inventory items.
+ * @return int The total number of items in inventory.
+ */
+function getTotalInventoryCount() {
+    $conn = getDbConnection();
+    $result = $conn->query("SELECT COUNT(*) as total FROM inventory");
+    $count = 0;
+    
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $count = (int)$row['total'];
+    }
+    
+    $conn->close();
+    return $count;
+}
+
+/**
+ * Retrieves paginated inventory items.
+ * @param int $offset The starting point for the query.
+ * @param int $limit The maximum number of items to retrieve.
+ * @return array An array of inventory items.
+ */
+function getPaginatedInventory($offset, $limit) {
+    $conn = getDbConnection();
+    $stmt = $conn->prepare("SELECT id, item_name, quantity, last_updated FROM inventory ORDER BY item_name ASC LIMIT ?, ?");
+    $stmt->bind_param("ii", $offset, $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $items = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $items[] = $row;
+        }
+    }
+    
+    $stmt->close();
+    $conn->close();
+    return $items;
+}
 ?>

@@ -95,6 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function pjaxNavigate(url, addToHistory = true) {
         if (!isSameOriginAbsoluteUrl(url)) { window.location.href = url; return; }
         document.body.classList.add('pjax-loading');
+        
+        // Add loading state to prevent FOUC during transition
+        document.documentElement.classList.add('loading');
+        
         try {
             const response = await fetch(url, { credentials: 'same-origin' });
             const htmlText = await response.text();
@@ -109,6 +113,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     sidebar.classList.toggle('collapsed', savedCollapsed);
                     currentWrapper.classList.toggle('expanded', savedCollapsed);
                     document.body.classList.toggle('sidebar-active', !savedCollapsed);
+                } catch (_) {}
+
+                // Handle page-specific styles
+                try {
+                    // Remove existing page-specific styles and stylesheets
+                    const existingPageStyles = document.querySelectorAll('style[data-page-specific]');
+                    existingPageStyles.forEach(style => style.remove());
+                    const existingPageLinks = document.querySelectorAll('link[data-page-specific]');
+                    existingPageLinks.forEach(link => link.remove());
+                    
+                    // Extract and apply new page-specific inline styles
+                    const pageStyles = doc.querySelectorAll('head style');
+                    pageStyles.forEach(style => {
+                        const newStyle = document.createElement('style');
+                        newStyle.textContent = style.textContent;
+                        newStyle.setAttribute('data-page-specific', 'true');
+                        document.head.appendChild(newStyle);
+                    });
+                    
+                    // Extract and apply new page-specific external stylesheets
+                    const pageLinks = doc.querySelectorAll('head link[rel="stylesheet"]:not([href*="styles.css"]):not([href*="sidebar.css"]):not([href*="font-awesome"]):not([href*="tailwindcss"])');
+                    pageLinks.forEach(link => {
+                        const newLink = document.createElement('link');
+                        newLink.rel = 'stylesheet';
+                        newLink.href = link.href;
+                        newLink.setAttribute('data-page-specific', 'true');
+                        document.head.appendChild(newLink);
+                    });
                 } catch (_) {}
 
                 // Clone to avoid moving nodes across documents
@@ -137,6 +169,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Execute all scripts discovered in fetched document (external loaded once)
                 await executeScriptsFrom(doc, url);
 
+                // Ensure FontAwesome is loaded after PJAX navigation
+                setTimeout(() => {
+                    const testIcon = document.createElement('i');
+                    testIcon.className = 'fas fa-home';
+                    testIcon.style.display = 'none';
+                    document.body.appendChild(testIcon);
+                    
+                    const computedStyle = window.getComputedStyle(testIcon, ':before');
+                    const hasContent = computedStyle.content !== 'none' && computedStyle.content !== '';
+                    
+                    if (!hasContent) {
+                        console.log('FontAwesome not loaded, attempting to reload...');
+                        // Force reload FontAwesome if not working
+                        const existingFA = document.querySelector('link[href*="font-awesome"]');
+                        if (existingFA) {
+                            const newFA = document.createElement('link');
+                            newFA.rel = 'stylesheet';
+                            newFA.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css';
+                            newFA.crossOrigin = 'anonymous';
+                            document.head.appendChild(newFA);
+                        } else {
+                            // Add FontAwesome if it doesn't exist
+                            const faLink = document.createElement('link');
+                            faLink.rel = 'stylesheet';
+                            faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css';
+                            faLink.crossOrigin = 'anonymous';
+                            document.head.appendChild(faLink);
+                        }
+                        
+                        // Try fallback after short delay
+                        setTimeout(() => {
+                            const testIcon2 = document.createElement('i');
+                            testIcon2.className = 'fas fa-home';
+                            testIcon2.style.display = 'none';
+                            document.body.appendChild(testIcon2);
+                            
+                            const computedStyle2 = window.getComputedStyle(testIcon2, ':before');
+                            const hasContent2 = computedStyle2.content !== 'none' && computedStyle2.content !== '';
+                            
+                            if (!hasContent2) {
+                                console.log('Primary FontAwesome failed, loading fallback...');
+                                const fallbackFA = document.createElement('link');
+                                fallbackFA.rel = 'stylesheet';
+                                fallbackFA.href = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css';
+                                fallbackFA.crossOrigin = 'anonymous';
+                                document.head.appendChild(fallbackFA);
+                            }
+                            
+                            document.body.removeChild(testIcon2);
+                        }, 500);
+                    }
+                    
+                    document.body.removeChild(testIcon);
+                }, 200);
+
                 // Re-init global UI and mark active link
                 if (typeof window.initGlobalUI === 'function') {
                     window.initGlobalUI();
@@ -145,6 +232,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const page = new URL(url, window.location.href).pathname.split('/').pop();
                     const pageInitMap = {
+                        'smart_warehousing.php': 'initSmartWarehousing',
+                        'procurement_sourcing.php': 'initProcurement',
+                        'asset_lifecycle_maintenance.php': 'initALMS',
+                        'document_tracking_records.php': 'initDTRS',
                         // References to deleted modules removed
                     };
                     const initName = pageInitMap[page];
@@ -172,6 +263,15 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = url;
         } finally {
             document.body.classList.remove('pjax-loading');
+            
+            // Remove loading state and ensure content is visible
+            document.documentElement.classList.remove('loading');
+            document.documentElement.classList.add('loaded');
+            
+            // Brief delay to ensure styles are applied
+            setTimeout(() => {
+                document.documentElement.classList.remove('preload');
+            }, 50);
         }
     }
 
