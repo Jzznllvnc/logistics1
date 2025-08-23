@@ -105,7 +105,7 @@ $purchaseOrders = getRecentPurchaseOrders();
   <div class="main-content-wrapper" id="mainContentWrapper">
     <div class="content" id="mainContent">
       <?php include '../partials/header.php'; ?>
-      <h1 class="font-semibold mb-6 page-title">Procurement & Sourcing (PSM)</h1>
+      <h1 class="font-semibold page-title">Procurement & Sourcing</h1>
       
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
@@ -113,7 +113,7 @@ $purchaseOrders = getRecentPurchaseOrders();
             <h2 class="text-2xl font-semibold text-[var(--text-color)]">Supplier Management</h2>
             <?php if ($_SESSION['role'] === 'admin'): ?>
             <button type="button" class="btn-primary" onclick="openCreateSupplierModal()">
-              <i data-lucide="plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Add Supplier</span>
+              <i data-lucide="user-plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Add Supplier</span>
             </button>
             <?php endif; ?>
           </div>
@@ -141,13 +141,13 @@ $purchaseOrders = getRecentPurchaseOrders();
                       <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleSupplierDropdown(<?php echo $supplier['id']; ?>)">
                         <i data-lucide="more-horizontal" class="w-6 h-6"></i>
                       </button>
-                      <div id="supplier-dropdown-<?php echo $supplier['id']; ?>" class="action-dropdown bg-white border border-gray-200 rounded-md shadow-lg w-32 hidden">
-                        <button type="button" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)' class="w-full text-left px-3 py-2 text-sm flex items-center">
-                          <i data-lucide="edit-3" class="w-4 h-4 mr-2 text-blue-500"></i>
+                      <div id="supplier-dropdown-<?php echo $supplier['id']; ?>" class="action-dropdown hidden">
+                        <button type="button" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)'>
+                          <i data-lucide="edit-3" class="w-5 h-5 mr-3"></i>
                           Edit
                         </button>
-                        <button type="button" onclick="confirmDeleteSupplier(<?php echo $supplier['id']; ?>)" class="w-full text-left px-3 py-2 text-sm flex items-center text-red-600">
-                          <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                        <button type="button" onclick="confirmDeleteSupplier(<?php echo $supplier['id']; ?>)" class="text-red-600">
+                          <i data-lucide="trash-2" class="w-5 h-5 mr-3"></i>
                           Delete
                         </button>
                       </div>
@@ -165,7 +165,7 @@ $purchaseOrders = getRecentPurchaseOrders();
           <div class="flex justify-between items-center mb-5">
             <h2 class="text-2xl font-semibold text-[var(--text-color)]">Recent Purchase Orders</h2>
             <button type="button" id="createPOBtn" class="btn-primary">
-              <i data-lucide="plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Create PO</span>
+              <i data-lucide="shopping-cart" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Create PO</span>
             </button>
           </div>
           <div class="table-container">
@@ -199,42 +199,48 @@ $purchaseOrders = getRecentPurchaseOrders();
 
   <?php if ($_SESSION['role'] === 'admin'): ?>
   <div id="supplierModal" class="modal hidden">
-    <div class="modal-content p-8">
+    <div class="modal-content p-8 max-w-2xl">
       <div class="flex justify-between items-center mb-2">
-        <h2 id="modalTitle" class="modal-title">Add New Supplier</h2>
-        <button type="button" class="close-button" onclick="closeModal('supplierModal')">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        <h2 id="modalTitle" class="modal-title flex items-center min-w-0 flex-1">
+          <i data-lucide="building" class="w-6 h-6 mr-3 flex-shrink-0" id="supplierModalIcon"></i>
+          <span id="supplierModalTitleText" class="truncate">Add New Supplier</span>
+        </h2>
+        <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('supplierModal')">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <p class="modal-subtitle">Update supplier details.</p>
+      <p class="modal-subtitle" id="supplierModalSubtitle">Register a new supplier to your network.</p>
+      <div class="border-b border-[var(--card-border)] mb-5"></div>
       
       <form id="supplierForm" method="POST" action="procurement_sourcing.php">
         <input type="hidden" name="action" id="formAction">
         <input type="hidden" name="supplier_id" id="supplierId">
         
-        <div class="mb-5">
-          <label for="supplier_name" class="block font-semibold mb-2 text-[var(--text-color)]">Supplier Name</label>
-          <input type="text" name="supplier_name" id="supplier_name" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter supplier name">
-        </div>
-        
-        <div class="mb-5">
-          <label for="contact_person" class="block font-semibold mb-2 text-[var(--text-color)]">Contact Person</label>
-          <input type="text" name="contact_person" id="contact_person" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter contact person name">
-        </div>
-        
-        <div class="mb-5">
-          <label for="email" class="block font-semibold mb-2 text-[var(--text-color)]">Email</label>
-          <input type="email" name="email" id="email" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter email address">
-        </div>
-        
-        <div class="mb-5">
-          <label for="phone" class="block font-semibold mb-2 text-[var(--text-color)]">Phone</label>
-          <input type="tel" name="phone" id="phone" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter phone number">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="mb-5">
+            <label for="supplier_name" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Supplier Name</label>
+            <input type="text" name="supplier_name" id="supplier_name" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter supplier name">
+          </div>
+          
+          <div class="mb-5">
+            <label for="contact_person" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Contact Person</label>
+            <input type="text" name="contact_person" id="contact_person" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter contact person name">
+          </div>
+          
+          <div class="mb-5">
+            <label for="email" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Email</label>
+            <input type="email" name="email" id="email" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter email address">
+          </div>
+          
+          <div class="mb-5">
+            <label for="phone" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Phone</label>
+            <input type="tel" name="phone" id="phone" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter phone number">
+          </div>
         </div>
         
         <div class="mb-6">
-          <label for="address" class="block font-semibold mb-2 text-[var(--text-color)]">Address</label>
-          <textarea name="address" id="address" rows="3" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter address"></textarea>
+          <label for="address" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Address</label>
+          <textarea name="address" id="address" rows="3" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter supplier address"></textarea>
         </div>
         
         <div class="flex justify-end gap-3">
@@ -252,20 +258,24 @@ $purchaseOrders = getRecentPurchaseOrders();
 
   <!-- Create Purchase Order Modal -->
   <div id="createPOModal" class="modal hidden">
-    <div class="modal-content p-8">
+    <div class="modal-content p-8 max-w-lg">
       <div class="flex justify-between items-center mb-2">
-        <h2 class="modal-title">Create Purchase Order</h2>
-        <button type="button" class="close-button" onclick="closeModal('createPOModal')">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        <h2 class="modal-title flex items-center min-w-0 flex-1">
+          <i data-lucide="shopping-cart" class="w-6 h-6 mr-3 flex-shrink-0"></i>
+          <span class="truncate">Create Purchase Order</span>
+        </h2>
+        <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('createPOModal')">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <p class="modal-subtitle">Create a purchase order.</p>
+      <div class="border-b border-[var(--card-border)] mb-5"></div>
       
       <form action="procurement_sourcing.php" method="POST" id="createPOForm">
         <input type="hidden" name="action" value="create_po">
         
         <div class="mb-5">
-          <label for="supplier_id_po" class="block font-semibold mb-2 text-[var(--text-color)]">Supplier</label>
+          <label for="supplier_id_po" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Supplier</label>
           <select name="supplier_id_po" id="supplier_id_po" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
             <option value="">-- Select Supplier --</option>
             <?php foreach($suppliers as $supplier): ?>
@@ -275,7 +285,7 @@ $purchaseOrders = getRecentPurchaseOrders();
         </div>
         
         <div class="mb-5">
-          <label for="item_name_po" class="block font-semibold mb-2 text-[var(--text-color)]">Item</label>
+          <label for="item_name_po" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Item</label>
           <select name="item_name_po" id="item_name_po" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
             <option value="">-- Select Item --</option>
             <?php foreach($inventoryItems as $item): ?>
@@ -285,7 +295,7 @@ $purchaseOrders = getRecentPurchaseOrders();
         </div>
         
         <div class="mb-6">
-          <label for="quantity_po" class="block font-semibold mb-2 text-[var(--text-color)]">Quantity</label>
+          <label for="quantity_po" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Quantity</label>
           <input type="number" name="quantity_po" id="quantity_po" min="1" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter quantity">
         </div>
         

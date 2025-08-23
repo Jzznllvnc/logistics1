@@ -153,9 +153,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // --- Supplier Modal Functions ---
 function openCreateSupplierModal() {
     document.getElementById('supplierForm').reset();
-    document.getElementById('modalTitle').innerText = 'Add New Supplier';
+    document.getElementById('supplierModalIcon').setAttribute('data-lucide', 'user-plus');
+    document.getElementById('supplierModalTitleText').innerText = 'Add New Supplier';
+    document.getElementById('supplierModalSubtitle').innerText = 'Register a new supplier to your network.';
     document.getElementById('formAction').value = 'create_supplier';
-    if(window.openModal) window.openModal(document.getElementById('supplierModal'));
+    if(window.openModal) {
+        window.openModal(document.getElementById('supplierModal'));
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 }
 
 // Make function globally accessible for onclick handlers
@@ -163,7 +168,9 @@ window.openCreateSupplierModal = openCreateSupplierModal;
 
 function openEditSupplierModal(supplier) {
     document.getElementById('supplierForm').reset();
-    document.getElementById('modalTitle').innerText = 'Edit Supplier';
+    document.getElementById('supplierModalIcon').setAttribute('data-lucide', 'square-pen');
+    document.getElementById('supplierModalTitleText').innerText = 'Edit Supplier';
+    document.getElementById('supplierModalSubtitle').innerText = 'Update existing supplier information and contact details.';
     document.getElementById('formAction').value = 'update_supplier';
     document.getElementById('supplierId').value = supplier.id;
     document.getElementById('supplier_name').value = supplier.supplier_name;
@@ -171,7 +178,10 @@ function openEditSupplierModal(supplier) {
     document.getElementById('email').value = supplier.email;
     document.getElementById('phone').value = supplier.phone;
     document.getElementById('address').value = supplier.address;
-    if(window.openModal) window.openModal(document.getElementById('supplierModal'));
+    if(window.openModal) {
+        window.openModal(document.getElementById('supplierModal'));
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 }
 
 async function confirmDeleteSupplier(supplierId) {

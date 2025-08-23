@@ -122,8 +122,8 @@ $allInventory = getInventory(); // For the modal datalist
       </script>
       <?php include '../partials/header.php'; ?>
 
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="font-semibold page-title">Smart Warehousing System (SWS)</h1>
+      <div class="flex justify-between items-center">
+        <h1 class="font-semibold page-title">Smart Warehousing System</h1>
       </div>
       
       <!-- Current Inventory Section - Now Full Width -->
@@ -133,25 +133,26 @@ $allInventory = getInventory(); // For the modal datalist
           <div class="flex gap-2 lg:gap-3 w-full lg:w-auto items-center flex-wrap sm:flex-nowrap justify-center lg:justify-end">
             <div class="relative w-32 sm:w-36 md:w-40 lg:w-48">
               <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-              <input type="text" id="inventorySearchInput" placeholder="Search by item name..." class="py-2 pl-10 pr-3 w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
+              <input type="text" id="inventorySearchInput" placeholder="Search..." class="py-2 pl-10 pr-3 w-full rounded-full border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
             </div>
-            <div class="relative w-24 sm:w-28 md:w-32 lg:w-36">
-              <select id="inventoryFilter" class="py-2 px-3 pr-8 w-full rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)] appearance-none cursor-pointer">
+            <div class="relative inline-block">
+              <select id="inventoryFilter" class="py-2 pl-10 pr-3 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)] appearance-none cursor-pointer opacity-0 absolute inset-0 w-full h-full">
                 <option value="all">All Items</option>
                 <option value="low-stock">Low Stock (&lt;10)</option>
                 <option value="normal-stock">Normal Stock (10-100)</option>
                 <option value="high-stock">High Stock (&gt;100)</option>
               </select>
-              <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <i data-lucide="list-filter" class="w-5 h-5"></i>
+              <div class="flex items-center py-2 pl-4 pr-4 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] cursor-pointer">
+                <i data-lucide="list-filter" class="w-5 h-5 mr-2 text-[var(--input-text)]"></i>
+                <span class="text-[var(--input-text)] text-[1rem] whitespace-nowrap">Filter</span>
               </div>
             </div>
             <div class="h-8 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
             <button id="stockInBtn" type="button" class="btn-primary text-sm sm:text-base whitespace-nowrap">
-              <i data-lucide="plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Stock In</span>
+              <i data-lucide="package-plus" class="w-6 h-6 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Stock In</span>
             </button>
             <button id="stockOutBtn" type="button" class="btn-secondary-danger text-sm sm:text-base whitespace-nowrap">
-              <i data-lucide="minus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Stock Out</span>
+              <i data-lucide="package-minus" class="w-6 h-6 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Stock Out</span>
             </button>
           </div>
         </div>
@@ -182,13 +183,13 @@ $allInventory = getInventory(); // For the modal datalist
                           <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleActionDropdown(<?php echo $item['id']; ?>)">
                             <i data-lucide="more-horizontal" class="w-6 h-6"></i>
                           </button>
-                          <div id="dropdown-<?php echo $item['id']; ?>" class="action-dropdown bg-white border border-gray-200 rounded-md shadow-lg w-32 hidden">
-                            <button type="button" onclick='openEditModal(<?php echo json_encode($item); ?>)' class="w-full text-left px-3 py-2 text-sm flex items-center">
-                              <i data-lucide="edit-3" class="w-4 h-4 mr-2 text-blue-500"></i>
+                          <div id="dropdown-<?php echo $item['id']; ?>" class="action-dropdown hidden">
+                            <button type="button" onclick='openEditModal(<?php echo json_encode($item); ?>)'>
+                              <i data-lucide="edit-3" class="w-5 h-5 mr-3"></i>
                               Edit
                             </button>
-                            <button type="button" onclick="confirmDeleteItem(<?php echo $item['id']; ?>)" class="w-full text-left px-3 py-2 text-sm flex items-center text-red-600">
-                              <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                            <button type="button" onclick="confirmDeleteItem(<?php echo $item['id']; ?>)" class="text-red-600">
+                              <i data-lucide="trash-2" class="w-5 h-5 mr-3"></i>
                               Delete
                             </button>
                           </div>
@@ -205,7 +206,7 @@ $allInventory = getInventory(); // For the modal datalist
         <?php if ($totalPages > 1): ?>
         <div class="flex justify-center items-center mt-6 gap-2" id="paginationContainer">
           <?php if ($currentPage > 1): ?>
-            <button onclick="loadPage(<?php echo $currentPage - 1; ?>)" class="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+            <button onclick="loadPage(<?php echo $currentPage - 1; ?>)" class="pagination-btn">
               <i data-lucide="chevron-left" class="w-4 h-4 mr-1"></i>
               Previous
             </button>
@@ -216,32 +217,32 @@ $allInventory = getInventory(); // For the modal datalist
           $endPage = min($totalPages, $currentPage + 2);
           
           if ($startPage > 1): ?>
-            <button onclick="loadPage(1)" class="px-3 py-2 text-sm rounded-md <?php echo ($currentPage == 1) ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'; ?>">1</button>
+            <button onclick="loadPage(1)" class="pagination-btn <?php echo ($currentPage == 1) ? 'active' : ''; ?>">1</button>
             <?php if ($startPage > 2): ?>
-              <span class="px-2 text-gray-500">...</span>
+              <span class="pagination-ellipsis">...</span>
             <?php endif; ?>
           <?php endif; ?>
           
           <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
-            <button onclick="loadPage(<?php echo $i; ?>)" class="px-3 py-2 text-sm rounded-md <?php echo ($currentPage == $i) ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'; ?>" data-page="<?php echo $i; ?>"><?php echo $i; ?></button>
+            <button onclick="loadPage(<?php echo $i; ?>)" class="pagination-btn <?php echo ($currentPage == $i) ? 'active' : ''; ?>" data-page="<?php echo $i; ?>"><?php echo $i; ?></button>
           <?php endfor; ?>
           
           <?php if ($endPage < $totalPages): ?>
             <?php if ($endPage < $totalPages - 1): ?>
-              <span class="px-2 text-gray-500">...</span>
+              <span class="pagination-ellipsis">...</span>
             <?php endif; ?>
-            <button onclick="loadPage(<?php echo $totalPages; ?>)" class="px-3 py-2 text-sm rounded-md <?php echo ($currentPage == $totalPages) ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'; ?>"><?php echo $totalPages; ?></button>
+            <button onclick="loadPage(<?php echo $totalPages; ?>)" class="pagination-btn <?php echo ($currentPage == $totalPages) ? 'active' : ''; ?>"><?php echo $totalPages; ?></button>
           <?php endif; ?>
           
           <?php if ($currentPage < $totalPages): ?>
-            <button onclick="loadPage(<?php echo $currentPage + 1; ?>)" class="flex items-center px-3 py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+            <button onclick="loadPage(<?php echo $currentPage + 1; ?>)" class="pagination-btn">
               Next
               <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
             </button>
           <?php endif; ?>
         </div>
         
-        <div class="text-center text-sm text-gray-500 mt-2" id="paginationInfo">
+        <div class="pagination-info" id="paginationInfo">
           Showing <?php echo (($currentPage - 1) * $itemsPerPage) + 1; ?> to <?php echo min($currentPage * $itemsPerPage, $totalItems); ?> of <?php echo $totalItems; ?> items
         </div>
         <?php endif; ?>
@@ -253,18 +254,22 @@ $allInventory = getInventory(); // For the modal datalist
   <div id="editItemModal" class="modal hidden">
     <div class="modal-content p-8">
       <div class="flex justify-between items-center mb-2">
-        <h2 class="modal-title">Edit Item Name</h2>
-        <button type="button" class="close-button">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        <h2 class="modal-title flex items-center min-w-0 flex-1">
+          <i data-lucide="square-pen" class="w-6 h-6 mr-3 flex-shrink-0"></i>
+          <span class="truncate">Edit Item Name</span>
+        </h2>
+        <button type="button" class="close-button flex-shrink-0 ml-3">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <p class="modal-subtitle">Update item name.</p>
+      <div class="border-b border-[var(--card-border)] mb-5"></div>
 
       <form id="editItemForm" method="POST" action="smart_warehousing.php">
         <input type="hidden" name="action" value="update_item">
         <input type="hidden" name="item_id" id="edit_item_id">
         <div class="form-group mb-2">
-          <label for="item_name_edit" class="block font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
+          <label for="item_name_edit" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
           <input type="text" name="item_name_edit" id="item_name_edit" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
         </div>
         <div class="form-actions flex justify-end gap-4 mt-6">
@@ -278,20 +283,24 @@ $allInventory = getInventory(); // For the modal datalist
 
   <!-- Stock Management Modal -->
   <div id="stockManagementModal" class="modal hidden">
-    <div class="modal-content p-8">
+    <div class="modal-content p-8 max-w-lg">
       <div class="flex justify-between items-center mb-2">
-        <h2 class="modal-title" id="modalTitle">Manage Stock Levels</h2>
-        <button type="button" class="close-button">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        <h2 class="modal-title flex items-center min-w-0 flex-1" id="modalTitle">
+          <i data-lucide="package" class="w-7 h-7 mr-3 flex-shrink-0" id="stockModalIcon"></i>
+          <span id="stockModalTitleText" class="truncate">Manage Stock Levels</span>
+        </h2>
+        <button type="button" class="close-button flex-shrink-0 ml-3">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <p class="modal-subtitle">Add/Remove new items or update quantities.</p>
+      <p class="modal-subtitle" id="stockModalSubtitle">Add/Remove new items or update quantities.</p>
+      <div class="border-b border-[var(--card-border)] mb-5"></div>
       
       <form action="smart_warehousing.php" method="POST" id="stockManagementForm">
         <input type="hidden" name="action" id="stockAction" value="">
         
         <div class="mb-5">
-          <label for="modal_item_name" class="block font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
+          <label for="modal_item_name" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
           <input type="text" id="modal_item_name" name="item_name" list="inventory_items" placeholder="Type to see stock levels..." required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
           <datalist id="inventory_items">
             <?php foreach ($allInventory as $item): ?>
@@ -303,11 +312,11 @@ $allInventory = getInventory(); // For the modal datalist
         </div>
         
         <div class="mb-6">
-          <label for="modal_quantity" class="block font-semibold mb-2 text-[var(--text-color)]">Quantity</label>
+          <label for="modal_quantity" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Quantity</label>
           <input type="number" id="modal_quantity" name="quantity" min="1" placeholder="e.g., 50" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
         </div>
         
-        <div class="flex justify-end gap-3">
+        <div class="flex justify-end gap-3 pt-4">
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('stockManagementModal'))">
             Cancel
           </button>

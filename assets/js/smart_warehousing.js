@@ -1,7 +1,7 @@
 // Logistic1/assets/js/smart_warehousing.js
 
 // Global variables for modal elements
-let stockManagementModal, modalTitle, stockAction, confirmStockBtn;
+let stockManagementModal, modalTitle, stockModalSubtitle, stockAction, confirmStockBtn;
 let currentPaginationPage = 1; // Track current page
 
 /**
@@ -13,11 +13,12 @@ function openStockModal(action) {
     if (!stockManagementModal) {
         stockManagementModal = document.getElementById('stockManagementModal');
         modalTitle = document.getElementById('modalTitle');
+        stockModalSubtitle = document.getElementById('stockModalSubtitle');
         stockAction = document.getElementById('stockAction');
         confirmStockBtn = document.getElementById('confirmStockBtn');
     }
 
-    if (!stockManagementModal || !modalTitle || !stockAction || !confirmStockBtn) {
+    if (!stockManagementModal || !modalTitle || !stockModalSubtitle || !stockAction || !confirmStockBtn) {
         console.warn('Stock management modal elements not found');
         return;
     }
@@ -31,13 +32,21 @@ function openStockModal(action) {
     // Set action
     stockAction.value = action;
 
+    // Get icon and title text elements
+    const stockModalIcon = document.getElementById('stockModalIcon');
+    const stockModalTitleText = document.getElementById('stockModalTitleText');
+
     // Update modal content based on action
     if (action === 'stock-in') {
-        modalTitle.textContent = 'Stock In Items';
+        if (stockModalIcon) stockModalIcon.setAttribute('data-lucide', 'package-plus');
+        if (stockModalTitleText) stockModalTitleText.textContent = 'Stock In Items';
+        stockModalSubtitle.textContent = 'Add new items or increase existing inventory quantities.';
         confirmStockBtn.textContent = 'Stock In';
         confirmStockBtn.className = 'btn-primary';
     } else if (action === 'stock-out') {
-        modalTitle.textContent = 'Stock Out Items';
+        if (stockModalIcon) stockModalIcon.setAttribute('data-lucide', 'package-minus');
+        if (stockModalTitleText) stockModalTitleText.textContent = 'Stock Out Items';
+        stockModalSubtitle.textContent = 'Remove items or decrease existing inventory quantities.';
         confirmStockBtn.textContent = 'Stock Out';
         confirmStockBtn.className = 'btn-primary-danger';
     }
@@ -45,6 +54,8 @@ function openStockModal(action) {
     // Open the modal using the global function
     if (window.openModal) {
         window.openModal(stockManagementModal);
+        // Refresh icons after modal opens
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }
 
@@ -214,7 +225,7 @@ function updateTableContent(data) {
                         </button>
                         <div id="dropdown-${item.id}" class="action-dropdown bg-white border border-gray-200 rounded-md shadow-lg w-32 hidden">
                             <button type="button" onclick='openEditModal(${JSON.stringify(item)})' class="w-full text-left px-3 py-2 text-sm flex items-center">
-                                <i data-lucide="edit-3" class="w-4 h-4 mr-2 text-blue-500"></i>
+                                <i data-lucide="edit-3" class="w-4 h-4 mr-2"></i>
                                 Edit
                             </button>
                             <button type="button" onclick="confirmDeleteItem(${item.id})" class="w-full text-left px-3 py-2 text-sm flex items-center text-red-600">
@@ -263,7 +274,7 @@ function updatePaginationControls(data) {
     if (currentPage > 1) {
         const prevBtn = document.createElement('button');
         prevBtn.onclick = () => loadPage(currentPage - 1);
-        prevBtn.className = 'flex items-center px-3 py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors';
+        prevBtn.className = 'pagination-btn';
         prevBtn.innerHTML = '<i data-lucide="chevron-left" class="w-4 h-4 mr-1"></i>Previous';
         container.appendChild(prevBtn);
     }
@@ -276,13 +287,13 @@ function updatePaginationControls(data) {
     if (startPage > 1) {
         const firstBtn = document.createElement('button');
         firstBtn.onclick = () => loadPage(1);
-        firstBtn.className = 'px-3 py-2 text-sm rounded-md text-gray-600 hover:bg-gray-100';
+        firstBtn.className = `pagination-btn ${currentPage === 1 ? 'active' : ''}`;
         firstBtn.textContent = '1';
         container.appendChild(firstBtn);
         
         if (startPage > 2) {
             const ellipsis = document.createElement('span');
-            ellipsis.className = 'px-2 text-gray-500';
+            ellipsis.className = 'pagination-ellipsis';
             ellipsis.textContent = '...';
             container.appendChild(ellipsis);
         }
@@ -292,11 +303,7 @@ function updatePaginationControls(data) {
     for (let i = startPage; i <= endPage; i++) {
         const pageBtn = document.createElement('button');
         pageBtn.onclick = () => loadPage(i);
-        pageBtn.className = `px-3 py-2 text-sm rounded-md ${
-            currentPage === i 
-                ? 'bg-blue-500 text-white' 
-                : 'text-gray-600 hover:bg-gray-100'
-        }`;
+        pageBtn.className = `pagination-btn ${currentPage === i ? 'active' : ''}`;
         pageBtn.textContent = i;
         pageBtn.setAttribute('data-page', i);
         container.appendChild(pageBtn);
@@ -306,14 +313,14 @@ function updatePaginationControls(data) {
     if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
             const ellipsis = document.createElement('span');
-            ellipsis.className = 'px-2 text-gray-500';
+            ellipsis.className = 'pagination-ellipsis';
             ellipsis.textContent = '...';
             container.appendChild(ellipsis);
         }
         
         const lastBtn = document.createElement('button');
         lastBtn.onclick = () => loadPage(totalPages);
-        lastBtn.className = 'px-3 py-2 text-sm rounded-md text-gray-600 hover:bg-gray-100';
+        lastBtn.className = `pagination-btn ${currentPage === totalPages ? 'active' : ''}`;
         lastBtn.textContent = totalPages;
         container.appendChild(lastBtn);
     }
@@ -322,7 +329,7 @@ function updatePaginationControls(data) {
     if (currentPage < totalPages) {
         const nextBtn = document.createElement('button');
         nextBtn.onclick = () => loadPage(currentPage + 1);
-        nextBtn.className = 'flex items-center px-3 py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors';
+        nextBtn.className = 'pagination-btn';
         nextBtn.innerHTML = 'Next<i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>';
         container.appendChild(nextBtn);
     }
@@ -344,6 +351,7 @@ function updatePaginationInfo(data) {
     const startItem = ((currentPage - 1) * itemsPerPage) + 1;
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
     
+    infoElement.className = 'pagination-info';
     infoElement.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} items`;
 }
 
@@ -673,6 +681,7 @@ function initSmartWarehousing() {
     // Reset modal references to ensure fresh initialization
     stockManagementModal = null;
     modalTitle = null;
+    stockModalSubtitle = null;
     stockAction = null;
     confirmStockBtn = null;
     

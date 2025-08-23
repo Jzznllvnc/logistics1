@@ -153,9 +153,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // --- Asset Modal Functions ---
 function openCreateAssetModal() {
     document.getElementById('assetForm').reset();
-    document.getElementById('assetModalTitle').innerText = 'Register New Asset';
+    document.getElementById('assetModalIcon').setAttribute('data-lucide', 'file-box');
+    document.getElementById('assetModalTitleText').innerText = 'Register New Asset';
+    document.getElementById('assetModalSubtitle').innerText = 'Add a new logistics asset to the registry.';
     document.getElementById('formAction').value = 'create_asset';
-    if (window.openModal) window.openModal(document.getElementById('assetModal'));
+    if (window.openModal) {
+        window.openModal(document.getElementById('assetModal'));
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 }
 
 // Make function globally accessible for onclick handlers
@@ -163,14 +168,19 @@ window.openCreateAssetModal = openCreateAssetModal;
 
 function openEditAssetModal(asset) {
     document.getElementById('assetForm').reset();
-    document.getElementById('assetModalTitle').innerText = 'Edit Asset';
+    document.getElementById('assetModalIcon').setAttribute('data-lucide', 'square-pen');
+    document.getElementById('assetModalTitleText').innerText = 'Edit Asset';
+    document.getElementById('assetModalSubtitle').innerText = 'Update existing asset information and details.';
     document.getElementById('formAction').value = 'update_asset';
     document.getElementById('assetId').value = asset.id;
     document.getElementById('asset_name').value = asset.asset_name;
     document.getElementById('asset_type').value = asset.asset_type;
     document.getElementById('purchase_date').value = asset.purchase_date;
     document.getElementById('status').value = asset.status;
-    if (window.openModal) window.openModal(document.getElementById('assetModal'));
+    if (window.openModal) {
+        window.openModal(document.getElementById('assetModal'));
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 }
 
 async function confirmDeleteAsset(assetId) {

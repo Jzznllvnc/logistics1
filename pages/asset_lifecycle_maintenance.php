@@ -110,7 +110,7 @@ $schedules = getMaintenanceSchedules();
   <div class="main-content-wrapper" id="mainContentWrapper">
     <div class="content" id="mainContent">
       <?php include '../partials/header.php'; ?>
-      <h1 class="font-semibold mb-6 page-title">Asset Lifecycle & Maintenance (ALMS)</h1>
+      <h1 class="font-semibold page-title">Asset Lifecycle & Maintenance</h1>
       
       <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
         <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
@@ -118,7 +118,7 @@ $schedules = getMaintenanceSchedules();
             <h2 class="text-2xl font-semibold text-[var(--text-color)]">Asset Registry</h2>
             <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
             <button type="button" class="btn-primary" onclick="openCreateAssetModal()">
-              <i data-lucide="plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Register Asset</span>
+              <i data-lucide="file-box" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Register Asset</span>
             </button>
             <?php endif; ?>
           </div>
@@ -144,12 +144,12 @@ $schedules = getMaintenanceSchedules();
                       <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleAssetDropdown(<?php echo $asset['id']; ?>)">
                         <i data-lucide="more-horizontal" class="w-6 h-6"></i>
                       </button>
-                      <div id="asset-dropdown-<?php echo $asset['id']; ?>" class="action-dropdown bg-white border border-gray-200 rounded-md shadow-lg w-32 hidden">
-                        <button type="button" onclick='openEditAssetModal(<?php echo json_encode($asset); ?>)' class="w-full text-left px-3 py-2 text-sm flex items-center">
-                          <i data-lucide="edit-3" class="w-4 h-4 mr-2 text-blue-500"></i>
+                      <div id="asset-dropdown-<?php echo $asset['id']; ?>" class="action-dropdown hidden">
+                        <button type="button" onclick='openEditAssetModal(<?php echo json_encode($asset); ?>)'>
+                          <i data-lucide="edit-3" class="w-4 h-4 mr-2"></i>
                           Edit
                         </button>
-                        <button type="button" onclick="confirmDeleteAsset(<?php echo $asset['id']; ?>)" class="w-full text-left px-3 py-2 text-sm flex items-center text-red-600">
+                        <button type="button" onclick="confirmDeleteAsset(<?php echo $asset['id']; ?>)" class="text-red-600">
                           <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
                           Delete
                         </button>
@@ -211,44 +211,50 @@ $schedules = getMaintenanceSchedules();
 
   <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
   <div id="assetModal" class="modal hidden">
-    <div class="modal-content p-8">
+    <div class="modal-content p-8 max-w-xl">
       <div class="flex justify-between items-center mb-2">
-        <h2 class="modal-title" id="assetModalTitle">Register New Asset</h2>
-        <button type="button" class="close-button" onclick="closeModal('assetModal')">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        <h2 class="modal-title flex items-center min-w-0 flex-1" id="assetModalTitle">
+          <i data-lucide="package" class="w-6 h-6 mr-3 flex-shrink-0" id="assetModalIcon"></i>
+          <span id="assetModalTitleText" class="truncate">Register New Asset</span>
+        </h2>
+        <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('assetModal')">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <p class="modal-subtitle">Add a new logistics asset to register.</p>
+      <p class="modal-subtitle" id="assetModalSubtitle">Add a new logistics asset to the registry.</p>
+      <div class="border-b border-[var(--card-border)] mb-5"></div>
       
       <form id="assetForm" method="POST" action="asset_lifecycle_maintenance.php">
         <input type="hidden" name="action" id="formAction">
         <input type="hidden" name="asset_id" id="assetId">
         
-        <div class="mb-5">
-          <label for="asset_name" class="block font-semibold mb-2 text-[var(--text-color)]">Asset Name</label>
-          <input type="text" name="asset_name" id="asset_name" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter asset name">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="mb-5">
+            <label for="asset_name" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Asset Name</label>
+            <input type="text" name="asset_name" id="asset_name" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter asset name">
+          </div>
+          
+          <div class="mb-5">
+            <label for="asset_type" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Asset Type</label>
+            <input type="text" name="asset_type" id="asset_type" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="e.g., Vehicle, Equipment">
+          </div>
+          
+          <div class="mb-5">
+            <label for="purchase_date" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Purchase Date</label>
+            <input type="date" name="purchase_date" id="purchase_date" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+          </div>
+          
+          <div class="mb-6">
+            <label for="status" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Status</label>
+            <select name="status" id="status" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+              <option value="Operational">Operational</option>
+              <option value="Under Maintenance">Under Maintenance</option>
+              <option value="Decommissioned">Decommissioned</option>
+            </select>
+          </div>
         </div>
         
-        <div class="mb-5">
-          <label for="asset_type" class="block font-semibold mb-2 text-[var(--text-color)]">Asset Type</label>
-          <input type="text" name="asset_type" id="asset_type" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="e.g., Vehicle, Equipment">
-        </div>
-        
-        <div class="mb-5">
-          <label for="purchase_date" class="block font-semibold mb-2 text-[var(--text-color)]">Purchase Date</label>
-          <input type="date" name="purchase_date" id="purchase_date" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
-        </div>
-        
-        <div class="mb-6">
-          <label for="status" class="block font-semibold mb-2 text-[var(--text-color)]">Status</label>
-          <select name="status" id="status" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
-            <option value="Operational">Operational</option>
-            <option value="Under Maintenance">Under Maintenance</option>
-            <option value="Decommissioned">Decommissioned</option>
-          </select>
-        </div>
-        
-        <div class="flex justify-end gap-3">
+        <div class="flex justify-end gap-3 mt-5">
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('assetModal'))">
             Cancel
           </button>
@@ -263,19 +269,24 @@ $schedules = getMaintenanceSchedules();
 
   <!-- Schedule Maintenance Modal -->
   <div id="scheduleMaintenanceModal" class="modal hidden">
-    <div class="modal-content p-8">
+    <div class="modal-content p-8 max-w-lg">
       <div class="flex justify-between items-center mb-2">
-        <h2 class="modal-title" id="maintenanceModalTitle">Schedule Maintenance Task</h2>
-        <button type="button" class="close-button" onclick="closeModal('scheduleMaintenanceModal')">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        <h2 class="modal-title flex items-center min-w-0 flex-1">
+          <i data-lucide="calendar-plus" class="w-6 h-6 mr-3 flex-shrink-0"></i>
+          <span class="truncate">Schedule Maintenance Task</span>
+        </h2>
+        <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('scheduleMaintenanceModal')">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <p class="modal-subtitle">Schedule a maintenance task for a logistics asset.</p>
+      <p class="modal-subtitle" id="maintenanceModalSubtitle">Schedule a maintenance task for a logistics asset.</p>
+      <div class="border-b border-[var(--card-border)] mb-5"></div>
+
       <form action="asset_lifecycle_maintenance.php" method="POST" id="scheduleMaintenanceForm">
         <input type="hidden" name="action" value="schedule_maintenance">
         
         <div class="mb-5">
-          <label for="asset_id_maint" class="block font-semibold mb-2 text-[var(--text-color)]">Asset</label>
+          <label for="asset_id_maint" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Asset</label>
           <select name="asset_id_maint" id="asset_id_maint" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
             <option value="">-- Select Asset --</option>
             <?php foreach($assets as $asset): ?>
@@ -285,16 +296,16 @@ $schedules = getMaintenanceSchedules();
         </div>
         
         <div class="mb-5">
-          <label for="task_description" class="block font-semibold mb-2 text-[var(--text-color)]">Task Description</label>
+          <label for="task_description" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Task Description</label>
           <textarea name="task_description" id="task_description" rows="3" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Describe the maintenance task"></textarea>
         </div>
         
         <div class="mb-6">
-          <label for="scheduled_date" class="block font-semibold mb-2 text-[var(--text-color)]">Scheduled Date</label>
+          <label for="scheduled_date" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Scheduled Date</label>
           <input type="date" name="scheduled_date" id="scheduled_date" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
         </div>
         
-        <div class="flex justify-end gap-3">
+        <div class="flex justify-end gap-3 mt-5">
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('scheduleMaintenanceModal'))">
             Cancel
           </button>

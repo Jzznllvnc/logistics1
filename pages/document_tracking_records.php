@@ -65,14 +65,14 @@ $documents = getAllDocuments();
         <?php endif; ?>
       </script>
       <?php include '../partials/header.php'; ?>
-      <h1 class="font-semibold mb-6 page-title">Document Tracking & Records (DTRS)</h1>
+      <h1 class="font-semibold page-title">Document Tracking & Records</h1>
       
       <!-- Document Records - Now Full Width -->
       <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
         <div class="flex justify-between items-center mb-5">
           <h2 class="text-2xl font-semibold text-[var(--text-color)]">Document Records</h2>
           <button type="button" id="uploadDocumentBtn" class="btn-primary">
-            <i data-lucide="upload" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Upload Document</span>
+            <i data-lucide="cloud-upload" class="w-6 h-6 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Upload Document</span>
           </button>
         </div>
         <div class="table-container">
@@ -105,34 +105,38 @@ $documents = getAllDocuments();
 
   <!-- Upload Document Modal -->
   <div id="uploadDocumentModal" class="modal hidden">
-    <div class="modal-content p-8">
+    <div class="modal-content p-8 max-w-lg">
       <div class="flex justify-between items-center mb-2">
-        <h2 class="modal-title">Upload Document</h2>
-        <button type="button" class="close-button" onclick="closeModal('uploadModal')">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+        <h2 class="modal-title flex items-center min-w-0 flex-1">
+          <i data-lucide="file-plus-2" class="w-6 h-6 mr-3 flex-shrink-0"></i>
+          <span class="truncate">Upload Document</span>
+        </h2>
+        <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('uploadModal')">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <p class="modal-subtitle">Upload a document to the system.</p>
+      <div class="border-b border-[var(--card-border)] mb-5"></div>
       
       <form action="document_tracking_records.php" method="POST" enctype="multipart/form-data" id="uploadDocumentForm">
         <div class="mb-5">
-          <label for="documentFile" class="block font-semibold mb-2 text-[var(--text-color)]">Document File</label>
+          <label for="documentFile" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Document File</label>
           <input type="file" name="documentFile" id="documentFile" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt">
           <p class="text-sm text-gray-500 mt-1">Supported formats: PDF, DOC, DOCX, JPG, PNG, TXT</p>
         </div>
         
         <div class="mb-5">
-          <label for="document_type" class="block font-semibold mb-2 text-[var(--text-color)]">Document Type</label>
+          <label for="document_type" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Document Type</label>
           <input type="text" name="document_type" id="document_type" placeholder="e.g., Bill of Lading, Invoice" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
         </div>
         
         <div class="mb-5">
-          <label for="reference_number" class="block font-semibold mb-2 text-[var(--text-color)]">Reference Number</label>
+          <label for="reference_number" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Reference Number</label>
           <input type="text" name="reference_number" id="reference_number" placeholder="e.g., INV-12345, BOL-ABCDE" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
         </div>
         
         <div class="mb-6">
-          <label for="expiry_date" class="block font-semibold mb-2 text-[var(--text-color)]">Expiry Date (Optional)</label>
+          <label for="expiry_date" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Expiry Date (Optional)</label>
           <input type="date" name="expiry_date" id="expiry_date" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
         </div>
         

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 /* Enhanced FOUC Prevention */
 html.preload *,
@@ -36,6 +37,14 @@ html.preload *::after {
   --subtitle-color: #464646;
   --description-color: #52555a;
   --close-btn-hover-bg: #f0f0f0;
+  --placeholder-color: #939ca5;
+  
+  /* Pagination colors */
+  --pagination-text: #6b7280;
+  --pagination-text-hover: #2563eb;
+  --pagination-bg-hover: #f3f4f6;
+  --pagination-ellipsis: #9ca3af;
+  --pagination-info: #6b7280;
   
   /* Scrollbar colors */
   --scrollbar-track: #f1f1f1;
@@ -58,6 +67,14 @@ html.preload *::after {
   --subtitle-color: #b0b0b0;
   --description-color: #a0a0a0;
   --close-btn-hover-bg: rgba(255, 255, 255, 0.1);
+  --placeholder-color: #8a9299;
+  
+  /* Dark mode pagination colors */
+  --pagination-text: #d1d5db;
+  --pagination-text-hover: #60a5fa;
+  --pagination-bg-hover: #374151;
+  --pagination-ellipsis: #6b7280;
+  --pagination-info: #d1d5db;
   
   /* Dark mode scrollbar colors */
   --scrollbar-track: #2d2d2d;
@@ -332,6 +349,10 @@ input:checked + .slider:before {
 /* Page title and subtitle styles */
 .page-title {
   color: var(--text-color);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 2.5rem;
+  margin-bottom: 15px;
 }
 
 .page-subtitle {
@@ -401,6 +422,13 @@ h2.page-title {
 
 .modal-content h2 {
   color: var(--text-color);
+  font-size: 1.4rem;
+}
+
+.modal-content input::placeholder,
+.modal-content textarea::placeholder {
+  color: var(--placeholder-color);
+  font-size: 0.9rem;
 }
 
 .modal-content p {
@@ -443,7 +471,7 @@ h2.page-title {
 }
 
 .modal-subtitle {
-  font-size: 0.9rem;
+  font-size: 0.95rem !important;
   color: var(--description-color);
   margin-bottom: 1.5rem;
 }
@@ -517,14 +545,6 @@ h2.page-title {
       left: auto;
       top: 45px;
   }
-}
-
-/* Custom page titles */
-.page-title {
-  font-family: 'Inter Tight', sans-serif; 
-  font-weight: 600; 
-  font-size: 2.5rem; 
-  margin-bottom: 2px;
 }
 
 /* Additional utility classes and component styles */
@@ -709,10 +729,13 @@ h2.page-title {
 }
 
 .action-dropdown {
-  min-width: 120px;
+  min-width: 150px;
   border: 1px solid var(--card-border);
   background: var(--card-bg);
   color: var(--text-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px;
 }
 
 .action-dropdown button {
@@ -720,6 +743,15 @@ h2.page-title {
   border: none;
   background: none;
   transition: background-color 0.2s ease;
+  padding: 12px 16px;
+  font-size: 1rem;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  margin: 2px 0;
+  min-height: 40px;
 }
 
 .action-dropdown button:hover {
@@ -734,6 +766,7 @@ h2.page-title {
 .dark-mode .action-dropdown {
   background: var(--card-bg);
   border-color: var(--card-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Smart dropdown positioning - handled by JavaScript */
@@ -878,3 +911,46 @@ th {
   color: var(--text-color);
 }
 
+/* Pagination Styles */
+.pagination-btn {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--pagination-text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-btn:hover {
+  color: var(--pagination-text-hover);
+  background-color: var(--pagination-bg-hover);
+}
+
+.pagination-btn.active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.pagination-ellipsis {
+  padding: 0 8px;
+  color: var(--pagination-ellipsis);
+  font-size: 0.875rem;
+}
+
+.pagination-info {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--pagination-info);
+  margin-top: 8px;
+}
+
+@media screen and (max-width: 768px) {
+  .page-title {
+    font-size: 1.8rem;
+  }
+}

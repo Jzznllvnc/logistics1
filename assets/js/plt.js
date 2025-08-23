@@ -2,11 +2,16 @@
 
 function openCreateProjectModal() {
     document.getElementById('projectForm').reset();
-    document.getElementById('projectModalTitle').innerText = 'Create New Project';
+    document.getElementById('projectModalIcon').setAttribute('data-lucide', 'folder-plus');
+    document.getElementById('projectModalTitleText').innerText = 'Create New Project';
+    document.getElementById('projectModalSubtitle').innerText = 'Create a new logistics project for tracking.';
     document.getElementById('formAction').value = 'create_project';
     // Clear supplier selections
     Array.from(document.querySelectorAll('#assigned_suppliers option')).forEach(opt => opt.selected = false);
-    if (window.openModal) window.openModal(document.getElementById('projectModal'));
+    if (window.openModal) {
+        window.openModal(document.getElementById('projectModal'));
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 }
 
 // Make function globally accessible for onclick handlers
@@ -14,7 +19,9 @@ window.openCreateProjectModal = openCreateProjectModal;
 
 function openEditProjectModal(project, allSuppliers) {
     document.getElementById('projectForm').reset();
-    document.getElementById('projectModalTitle').innerText = 'Edit Project';
+    document.getElementById('projectModalIcon').setAttribute('data-lucide', 'square-pen');
+    document.getElementById('projectModalTitleText').innerText = 'Edit Project';
+    document.getElementById('projectModalSubtitle').innerText = 'Update existing project details and resource assignments.';
     document.getElementById('formAction').value = 'update_project';
     document.getElementById('projectId').value = project.id;
     document.getElementById('project_name').value = project.project_name;
@@ -34,7 +41,10 @@ function openEditProjectModal(project, allSuppliers) {
         }
     });
 
-    if (window.openModal) window.openModal(document.getElementById('projectModal'));
+    if (window.openModal) {
+        window.openModal(document.getElementById('projectModal'));
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 }
 
 async function confirmDeleteProject(projectId) {
