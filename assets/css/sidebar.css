@@ -126,11 +126,6 @@ html.loaded .sidebar {
 
 .sidebar a:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: var(--primary-color);
-}
-
-.sidebar a:hover .sidebar-icon {
-  color: var(--primary-color);
 }
 
 .sidebar a.active {
@@ -146,24 +141,6 @@ html.loaded .sidebar {
   padding-left: 30px;
   font-size: 0.95em;
   margin-bottom: 5px;
-}
-
-.sidebar-sub-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--primary-color);
-}
-
-.sidebar-sub-item:hover .sidebar-icon {
-  color: var(--primary-color);
-}
-
-.sidebar-sub-item.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--primary-color);
-}
-
-.sidebar-sub-item.active .sidebar-icon {
-  color: var(--primary-color);
 }
 
 .sidebar.collapsed,
