@@ -206,7 +206,7 @@ $purchaseOrders = getRecentPurchaseOrders();
           <span id="supplierModalTitleText" class="truncate">Add New Supplier</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('supplierModal')">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <p class="modal-subtitle" id="supplierModalSubtitle">Register a new supplier to your network.</p>
@@ -265,7 +265,7 @@ $purchaseOrders = getRecentPurchaseOrders();
           <span class="truncate">Create Purchase Order</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('createPOModal')">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <p class="modal-subtitle">Create a purchase order.</p>

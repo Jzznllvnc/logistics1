@@ -260,7 +260,7 @@ $allInventory = getInventory(); // For the modal datalist
           <span class="truncate">Edit Item Name</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <p class="modal-subtitle">Update item name.</p>
@@ -292,7 +292,7 @@ $allInventory = getInventory(); // For the modal datalist
           <span id="stockModalTitleText" class="truncate">Manage Stock Levels</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <p class="modal-subtitle" id="stockModalSubtitle">Add/Remove new items or update quantities.</p>

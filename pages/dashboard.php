@@ -50,37 +50,37 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
       <?php if ($_SESSION['role'] === 'admin'): ?>
         <!-- Admin Dashboard -->
         <h1 class="font-semibold mb-3 page-title">Administrator Dashboard</h1>
-        <p class="text-lg mb-8 page-subtitle">Your overview of system activities, operations, and freight workflows.</p>
+        <p class="text-lg text-[var(--subtitle-color)] mb-8 page-subtitle">Your overview of system activities, operations, and freight workflows.</p>
         
       <?php elseif ($_SESSION['role'] === 'smart_warehousing'): ?>
         <!-- Smart Warehousing Dashboard -->
         <h1 class="font-semibold mb-3 page-title">Smart Warehousing Dashboard</h1>
-        <p class="text-lg mb-8 page-subtitle">SWS dashboard content coming soon...</p>
+        <p class="text-lg text-[var(--subtitle-color)] mb-8 page-subtitle">SWS dashboard content coming soon...</p>
         
       <?php elseif ($_SESSION['role'] === 'procurement'): ?>
         <!-- Procurement Dashboard -->
         <h1 class="font-semibold mb-3 page-title">Procurement & Sourcing Dashboard</h1>
-        <p class="text-lg mb-8 page-subtitle">PSM dashboard content coming soon...</p>
+        <p class="text-lg text-[var(--subtitle-color)] mb-8 page-subtitle">PSM dashboard content coming soon...</p>
         
       <?php elseif ($_SESSION['role'] === 'plt'): ?>
         <!-- Project Logistics Tracker Dashboard -->
         <h1 class="font-semibold mb-3 page-title">Project Logistics Tracker Dashboard</h1>
-        <p class="text-lg mb-8 page-subtitle">PLT dashboard content coming soon...</p>
+        <p class="text-lg text-[var(--subtitle-color)] mb-8 page-subtitle">PLT dashboard content coming soon...</p>
         
       <?php elseif ($_SESSION['role'] === 'alms'): ?>
         <!-- Asset Lifecycle & Maintenance Dashboard -->
         <h1 class="font-semibold mb-3 page-title">Asset Lifecycle & Maintenance Dashboard</h1>
-        <p class="text-lg mb-8 page-subtitle">ALMS dashboard content coming soon...</p>
+        <p class="text-lg text-[var(--subtitle-color)] mb-8 page-subtitle">ALMS dashboard content coming soon...</p>
         
       <?php elseif ($_SESSION['role'] === 'dtrs'): ?>
         <!-- Document Tracking & Logistics Records Dashboard -->
         <h1 class="font-semibold mb-3 page-title">Document Tracking & Logistics Records Dashboard</h1>
-        <p class="text-lg mb-8 page-subtitle">DTRS dashboard content coming soon...</p>
+        <p class="text-lg text-[var(--subtitle-color)] mb-8 page-subtitle">DTRS dashboard content coming soon...</p>
         
       <?php else: ?>
         <!-- Default/Unknown Role -->
         <h1 class="font-semibold mb-3 page-title">Welcome to LOGISTICS 1</h1>
-        <p class="text-lg mb-8 page-subtitle">Your dashboard content will appear here based on your assigned role.</p>
+        <p class="text-lg text-[var(--subtitle-color)] mb-8 page-subtitle">Your dashboard content will appear here based on your assigned role.</p>
       <?php endif; ?>
 
     </div>

@@ -112,7 +112,7 @@ $documents = getAllDocuments();
           <span class="truncate">Upload Document</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('uploadModal')">
-          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
       <p class="modal-subtitle">Upload a document to the system.</p>

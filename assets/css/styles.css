@@ -355,10 +355,6 @@ input:checked + .slider:before {
   margin-bottom: 15px;
 }
 
-.page-subtitle {
-  color: var(--subtitle-color);
-}
-
 .description-text {
   font-size: 0.9rem;
   margin-bottom: 10px;
@@ -431,10 +427,6 @@ h2.page-title {
   font-size: 0.9rem;
 }
 
-.modal-content p {
-  font-size: 0.9rem;
-}
-
 .close-button {
   color: var(--text-color);
   position: relative;
@@ -458,7 +450,7 @@ h2.page-title {
 
 .close-button:hover,
 .close-button:focus {
-  color: var(--danger-color);
+  color: var(--text-color);
   background-color: var(--close-btn-hover-bg);
   text-decoration: none;
 }
