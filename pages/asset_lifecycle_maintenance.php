@@ -183,7 +183,7 @@ $schedules = getMaintenanceSchedules();
       </div>
 
       <div class="tab-content" id="maintenance-schedule-tab">
-        <div class="mt-8 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+        <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
           <div class="flex justify-between items-center mb-5">
             <h2 class="text-2xl font-semibold text-[var(--text-color)]">Maintenance Schedule</h2>
             <button type="button" id="scheduleTaskBtn" class="btn-primary">
