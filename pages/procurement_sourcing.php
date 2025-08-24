@@ -146,7 +146,7 @@ $purchaseOrders = getRecentPurchaseOrders();
                           <i data-lucide="edit-3" class="w-5 h-5 mr-3"></i>
                           Edit
                         </button>
-                        <button type="button" onclick="confirmDeleteSupplier(<?php echo $supplier['id']; ?>)" class="text-red-600">
+                        <button type="button" onclick="confirmDeleteSupplier(<?php echo $supplier['id']; ?>)">
                           <i data-lucide="trash-2" class="w-5 h-5 mr-3"></i>
                           Delete
                         </button>

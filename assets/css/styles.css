@@ -38,6 +38,7 @@ html.preload *::after {
   --description-color: #52555a;
   --close-btn-hover-bg: #f0f0f0;
   --placeholder-color: #939ca5;
+  --dropdown-item-hover: rgba(0, 0, 0, 0.05);
   
   /* Pagination colors */
   --pagination-text: #6b7280;
@@ -68,6 +69,7 @@ html.preload *::after {
   --description-color: #a0a0a0;
   --close-btn-hover-bg: rgba(255, 255, 255, 0.1);
   --placeholder-color: #8a9299;
+  --dropdown-item-hover: rgba(255, 255, 255, 0.1);
   
   /* Dark mode pagination colors */
   --pagination-text: #d1d5db;
@@ -262,17 +264,6 @@ body.sidebar-active .hamburger .close-icon {
     display: flex;
     align-items: center;
     transition: background-color 0.5s ease, color 0.5s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: rgba(0, 198, 255, 0.1);
-    color: var(--text-color);
-}
-
-.dropdown-menu a .dropdown-icon {
-    margin-right: 10px;
-    width: 20px;
-    text-align: center;
 }
 
 .show-dropdown {
@@ -755,18 +746,8 @@ h2.page-title {
 }
 
 /* Action dropdown menu item hover states */
-.action-dropdown button:hover {
+.action-dropdown button:hover, .dropdown-menu a:hover {
   background-color: var(--dropdown-item-hover);
-}
-
-/* Dark mode hover for dropdown items */
-:root.dark-mode .action-dropdown button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Light mode hover for dropdown items */
-:root:not(.dark-mode) .action-dropdown button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Ensure dropdowns appear above other content */

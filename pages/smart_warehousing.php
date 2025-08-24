@@ -143,7 +143,7 @@ $allInventory = getInventory(); // For the modal datalist
                 <option value="high-stock">High Stock (&gt;100)</option>
               </select>
               <div class="flex items-center py-2 pl-4 pr-4 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] cursor-pointer">
-                <i data-lucide="list-filter" class="w-5 h-5 mr-2 text-[var(--input-text)]"></i>
+                <i data-lucide="list-filter" class="w-5 h-5 mr-3 text-[var(--input-text)]"></i>
                 <span class="text-[var(--input-text)] text-[1rem] whitespace-nowrap">Filter</span>
               </div>
             </div>
@@ -189,7 +189,7 @@ $allInventory = getInventory(); // For the modal datalist
                               <i data-lucide="edit-3" class="w-5 h-5 mr-3"></i>
                               Edit
                             </button>
-                            <button type="button" onclick="confirmDeleteItem(<?php echo $item['id']; ?>)" class="text-red-600">
+                            <button type="button" onclick="confirmDeleteItem(<?php echo $item['id']; ?>)">
                               <i data-lucide="trash-2" class="w-5 h-5 mr-3"></i>
                               Delete
                             </button>

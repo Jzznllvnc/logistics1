@@ -146,11 +146,11 @@ $schedules = getMaintenanceSchedules();
                       </button>
                       <div id="asset-dropdown-<?php echo $asset['id']; ?>" class="action-dropdown hidden">
                         <button type="button" onclick='openEditAssetModal(<?php echo json_encode($asset); ?>)'>
-                          <i data-lucide="edit-3" class="w-4 h-4 mr-2"></i>
+                          <i data-lucide="edit-3" class="w-4 h-4 mr-3"></i>
                           Edit
                         </button>
-                        <button type="button" onclick="confirmDeleteAsset(<?php echo $asset['id']; ?>)" class="text-red-600">
-                          <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                        <button type="button" onclick="confirmDeleteAsset(<?php echo $asset['id']; ?>)">
+                          <i data-lucide="trash-2" class="w-4 h-4 mr-3"></i>
                           Delete
                         </button>
                       </div>

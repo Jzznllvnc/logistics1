@@ -52,8 +52,8 @@
                 </svg>
             </div>
             <div class="dropdown-menu" id="adminDropdownMenu">
-                <a href="#"><i data-lucide="scroll-text" class="dropdown-icon w-5 h-5"></i> Reports</a>
-                <a href="#" id="logoutButton" onclick="sessionStorage.setItem('logout_in_progress', 'true');"><i data-lucide="log-out" class="dropdown-icon w-5 h-5"></i> Logout</a>
+                <a href="#"><i data-lucide="scroll-text" class="w-5 h-5 mr-3"></i> Reports</a>
+                <a href="#" id="logoutButton" onclick="sessionStorage.setItem('logout_in_progress', 'true');"><i data-lucide="log-out" class="w-5 h-5 mr-3"></i> Logout</a>
             </div>
         </div>
         <span class="theme-label ml-4"></span>
