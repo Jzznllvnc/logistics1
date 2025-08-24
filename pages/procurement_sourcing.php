@@ -109,13 +109,13 @@ $purchaseOrders = getRecentPurchaseOrders();
       
       <!-- Tabs Navigator -->
       <div class="tabs-container mb-3">
-        <div class="tabs-bar bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-1 inline-flex shadow-sm">
+        <div class="tabs-bar">
           <button class="tab-button active" data-tab="suppliers">
-            <i data-lucide="workflow" class="w-5 h-5 mr-3"></i>
+            <i data-lucide="workflow" class="w-4 h-4 mr-2"></i>
             Suppliers
           </button>
           <button class="tab-button" data-tab="purchase-orders">
-            <i data-lucide="shopping-cart" class="w-5 h-5 mr-3"></i>
+            <i data-lucide="shopping-cart" class="w-4 h-4 mr-2"></i>
             Purchase Orders
           </button>
         </div>

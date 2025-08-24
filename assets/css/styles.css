@@ -905,20 +905,20 @@ th {
 }
 
 .tabs-bar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  padding: 0;
+  gap: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 8px;
 }
 
 .tab-button {
   display: flex;
   align-items: center;
-  padding: 16px 16px;
+  padding: 8px 16px;
   border: none;
   border-radius: 0;
   background: transparent;
@@ -997,10 +997,10 @@ th {
 
 @media screen and (max-width: 480px) {
   .tabs-bar {
-    gap: 16px;
+    gap: 10px;
   }
   
   .tab-button {
-    padding: 10px 10px;
+    padding: 8px 8px;
   }
 }

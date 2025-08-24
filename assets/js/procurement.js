@@ -131,14 +131,14 @@ function initProcurement() {
     initSupplierDropdowns();
     
     // Initialize tabs functionality
-    initTabs();
+    initPSMTabs();
 }
 
 // --- Tab Functionality ---
 /**
- * Switch between tabs
+ * Switch between tabs for PSM
  */
-function switchTab(tabName, withAnimation = false) {
+function switchPSMTab(tabName, withAnimation = false) {
     // Remove active class from all tab buttons
     const tabButtons = document.querySelectorAll('.tab-button');
     tabButtons.forEach(button => {
@@ -180,24 +180,24 @@ function switchTab(tabName, withAnimation = false) {
 }
 
 /**
- * Initialize tabs functionality
+ * Initialize tabs functionality for PSM
  */
-function initTabs() {
+function initPSMTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
     
     tabButtons.forEach(button => {
         button.addEventListener('click', function() {
             const tabName = this.getAttribute('data-tab');
-            switchTab(tabName, true); // Enable animation for user clicks
+            switchPSMTab(tabName, true); // Enable animation for user clicks
         });
     });
     
     // Set default active tab on load without animation
-    switchTab('suppliers', false);
+    switchPSMTab('suppliers', false);
 }
 
 // Make tab function globally accessible
-window.switchTab = switchTab;
+window.switchPSMTab = switchPSMTab;
 
 // Make the initializer globally available for PJAX
 window.initProcurement = initProcurement;

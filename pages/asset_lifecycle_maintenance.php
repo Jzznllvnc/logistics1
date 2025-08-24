@@ -112,98 +112,117 @@ $schedules = getMaintenanceSchedules();
       <?php include '../partials/header.php'; ?>
       <h1 class="font-semibold page-title">Asset Lifecycle & Maintenance</h1>
       
-      <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
-        <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+      <!-- Tabs Navigator -->
+      <div class="tabs-container mb-3">
+        <div class="tabs-bar">
+          <button class="tab-button active" data-tab="asset-registry">
+            <i data-lucide="package" class="w-4 h-4 mr-2"></i>
+            Asset Registry
+          </button>
+          <button class="tab-button" data-tab="maintenance-schedule">
+            <i data-lucide="calendar-check" class="w-4 h-4 mr-2"></i>
+            Maintenance Schedule
+          </button>
+        </div>
+      </div>
+      
+      <!-- Tab Content -->
+      <div class="tab-content active" id="asset-registry-tab">
+        <div class="grid grid-cols-1 lg:grid-cols-1 gap-8">
+          <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-5">
+              <h2 class="text-2xl font-semibold text-[var(--text-color)]">Asset Registry</h2>
+              <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
+              <button type="button" class="btn-primary" onclick="openCreateAssetModal()">
+                <i data-lucide="file-box" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Register Asset</span>
+              </button>
+              <?php endif; ?>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?><th>Action</th><?php endif; ?>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach($assets as $asset): ?>
+                  <tr>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['asset_name']); ?></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['asset_type']); ?></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['status']); ?></td>
+                    <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]">
+                      <div class="relative">
+                        <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleAssetDropdown(<?php echo $asset['id']; ?>)">
+                          <i data-lucide="more-horizontal" class="w-6 h-6"></i>
+                        </button>
+                        <div id="asset-dropdown-<?php echo $asset['id']; ?>" class="action-dropdown hidden">
+                          <button type="button" onclick='openEditAssetModal(<?php echo json_encode($asset); ?>)'>
+                            <i data-lucide="edit-3" class="w-4 h-4 mr-3"></i>
+                            Edit
+                          </button>
+                          <button type="button" onclick="confirmDeleteAsset(<?php echo $asset['id']; ?>)">
+                            <i data-lucide="trash-2" class="w-4 h-4 mr-3"></i>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                    <?php endif; ?>
+                  </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="maintenance-schedule-tab">
+        <div class="mt-8 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
           <div class="flex justify-between items-center mb-5">
-            <h2 class="text-2xl font-semibold text-[var(--text-color)]">Asset Registry</h2>
-            <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
-            <button type="button" class="btn-primary" onclick="openCreateAssetModal()">
-              <i data-lucide="file-box" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Register Asset</span>
+            <h2 class="text-2xl font-semibold text-[var(--text-color)]">Maintenance Schedule</h2>
+            <button type="button" id="scheduleTaskBtn" class="btn-primary">
+              <i data-lucide="calendar-plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Schedule Task</span>
             </button>
-            <?php endif; ?>
           </div>
           <div class="table-container">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?><th>Action</th><?php endif; ?>
+                  <th class="w-1/4">Asset</th>
+                  <th class="w-1/5">Task</th>
+                  <th class="w-1/5">Scheduled Date</th>
+                  <th class="w-1/5">Status</th>
+                  <th class="w-32">Action</th>
                 </tr>
               </thead>
               <tbody>
-                <?php foreach($assets as $asset): ?>
+                <?php foreach($schedules as $schedule): ?>
                 <tr>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['asset_name']); ?></td>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['asset_type']); ?></td>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['status']); ?></td>
-                  <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['asset_name']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['task_description']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo date('M d, Y', strtotime($schedule['scheduled_date'])); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['status']); ?></td>
                   <td class="py-3 px-4 border-b border-[var(--card-border)]">
-                    <div class="relative">
-                      <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleAssetDropdown(<?php echo $asset['id']; ?>)">
-                        <i data-lucide="more-horizontal" class="w-6 h-6"></i>
-                      </button>
-                      <div id="asset-dropdown-<?php echo $asset['id']; ?>" class="action-dropdown hidden">
-                        <button type="button" onclick='openEditAssetModal(<?php echo json_encode($asset); ?>)'>
-                          <i data-lucide="edit-3" class="w-4 h-4 mr-3"></i>
-                          Edit
-                        </button>
-                        <button type="button" onclick="confirmDeleteAsset(<?php echo $asset['id']; ?>)">
-                          <i data-lucide="trash-2" class="w-4 h-4 mr-3"></i>
-                          Delete
-                        </button>
-                      </div>
-                    </div>
+                    <?php if($schedule['status'] === 'Scheduled'): ?>
+                    <form action="asset_lifecycle_maintenance.php" method="POST" class="m-0">
+                      <input type="hidden" name="action" value="update_maintenance_status">
+                      <input type="hidden" name="schedule_id" value="<?php echo $schedule['id']; ?>">
+                      <input type="hidden" name="new_status" value="Completed">
+                      <button type="submit" class="bg-emerald-500 text-white py-1 px-2.5 text-xs rounded-md hover:bg-emerald-600 transition-colors">Mark as Complete</button>
+                    </form>
+                    <?php endif; ?>
                   </td>
-                  <?php endif; ?>
                 </tr>
                 <?php endforeach; ?>
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      <div class="mt-8 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
-        <div class="flex justify-between items-center mb-5">
-          <h2 class="text-2xl font-semibold text-[var(--text-color)]">Maintenance Schedule</h2>
-          <button type="button" id="scheduleTaskBtn" class="btn-primary">
-            <i data-lucide="calendar-plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Schedule Task</span>
-          </button>
-        </div>
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th class="w-1/4">Asset</th>
-                <th class="w-1/5">Task</th>
-                <th class="w-1/5">Scheduled Date</th>
-                <th class="w-1/5">Status</th>
-                <th class="w-32">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach($schedules as $schedule): ?>
-              <tr>
-                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['asset_name']); ?></td>
-                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['task_description']); ?></td>
-                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo date('M d, Y', strtotime($schedule['scheduled_date'])); ?></td>
-                <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['status']); ?></td>
-                <td class="py-3 px-4 border-b border-[var(--card-border)]">
-                  <?php if($schedule['status'] === 'Scheduled'): ?>
-                  <form action="asset_lifecycle_maintenance.php" method="POST" class="m-0">
-                    <input type="hidden" name="action" value="update_maintenance_status">
-                    <input type="hidden" name="schedule_id" value="<?php echo $schedule['id']; ?>">
-                    <input type="hidden" name="new_status" value="Completed">
-                    <button type="submit" class="bg-emerald-500 text-white py-1 px-2.5 text-xs rounded-md hover:bg-emerald-600 transition-colors">Mark as Complete</button>
-                  </form>
-                  <?php endif; ?>
-                </td>
-              </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>

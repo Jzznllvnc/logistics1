@@ -129,7 +129,75 @@ function initALMS() {
     
     // Initialize dropdown functionality
     initAssetDropdowns();
+    
+    // Initialize tabs functionality
+    initALMSTabs();
 }
+
+// --- Tab Functionality ---
+/**
+ * Switch between tabs for ALMS
+ */
+function switchALMSTab(tabName, withAnimation = false) {
+    // Remove active class from all tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Remove active class from all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.remove('active', 'switching');
+    });
+    
+    // Add active class to clicked tab button
+    const activeTabButton = document.querySelector(`[data-tab="${tabName}"]`);
+    if (activeTabButton) {
+        activeTabButton.classList.add('active');
+    }
+    
+    // Show corresponding tab content
+    const activeTabContent = document.getElementById(`${tabName}-tab`);
+    if (activeTabContent) {
+        activeTabContent.classList.add('active');
+        
+        // Only add switching animation if explicitly requested (user click)
+        if (withAnimation) {
+            activeTabContent.classList.add('switching');
+            
+            // Remove switching class after animation completes
+            setTimeout(() => {
+                activeTabContent.classList.remove('switching');
+            }, 300);
+        }
+    }
+    
+    // Refresh Lucide icons after tab switch
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+/**
+ * Initialize tabs functionality for ALMS
+ */
+function initALMSTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            switchALMSTab(tabName, true); // Enable animation for user clicks
+        });
+    });
+    
+    // Set default active tab on load without animation
+    switchALMSTab('asset-registry', false);
+}
+
+// Make tab function globally accessible
+window.switchALMSTab = switchALMSTab;
 
 // Make the initializer globally available for PJAX
 window.initALMS = initALMS;
