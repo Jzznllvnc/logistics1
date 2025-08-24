@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: ../pages/dashboard.php");
         exit();
     } else {
-        $error_message = "❌ Invalid username or password.";
+        $error_message = "Invalid username or password.";
     }
 }
 ?>
@@ -58,12 +58,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <h2>Login</h2>
           <form action="login.php" method="POST">
             <?php if (isset($_GET['session_expired'])): ?>
-                <p style="color: #f59e0b; margin-bottom: 10px;">
+                <p style="color: #f59e0b; margin-bottom: 20px;">
                     Your session has expired due to inactivity. Please log in again.
                 </p>
             <?php endif; ?>
             <?php if (!empty($error_message)): ?>
-                <p style="color: red; margin-bottom: 10px;">
+                <p style="color: #f01111ff; margin-bottom: 20px;">
                   <?php echo htmlspecialchars($error_message); ?>
                 </p>
             <?php endif; ?>
