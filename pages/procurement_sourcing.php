@@ -107,90 +107,111 @@ $purchaseOrders = getRecentPurchaseOrders();
       <?php include '../partials/header.php'; ?>
       <h1 class="font-semibold page-title">Procurement & Sourcing</h1>
       
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
-          <div class="flex justify-between items-center mb-5">
-            <h2 class="text-2xl font-semibold text-[var(--text-color)]">Supplier Management</h2>
-            <?php if ($_SESSION['role'] === 'admin'): ?>
-            <button type="button" class="btn-primary" onclick="openCreateSupplierModal()">
-              <i data-lucide="user-plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Add Supplier</span>
-            </button>
-            <?php endif; ?>
-          </div>
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Supplier Name</th>
-                  <th>Contact Person</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <?php if ($_SESSION['role'] === 'admin'): ?><th>Action</th><?php endif; ?>
-                </tr>
-              </thead>
-              <tbody>
-                <?php foreach($suppliers as $supplier): ?>
-                <tr>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['supplier_name']); ?></td>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['contact_person']); ?></td>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['email']); ?></td>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['phone']); ?></td>
-                  <?php if ($_SESSION['role'] === 'admin'): ?>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]">
-                    <div class="relative">
-                      <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleSupplierDropdown(<?php echo $supplier['id']; ?>)">
-                        <i data-lucide="more-horizontal" class="w-6 h-6"></i>
-                      </button>
-                      <div id="supplier-dropdown-<?php echo $supplier['id']; ?>" class="action-dropdown hidden">
-                        <button type="button" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)'>
-                          <i data-lucide="edit-3" class="w-5 h-5 mr-3"></i>
-                          Edit
+      <!-- Tabs Navigator -->
+      <div class="tabs-container mb-3">
+        <div class="tabs-bar bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg p-1 inline-flex shadow-sm">
+          <button class="tab-button active" data-tab="suppliers">
+            <i data-lucide="workflow" class="w-5 h-5 mr-3"></i>
+            Suppliers
+          </button>
+          <button class="tab-button" data-tab="purchase-orders">
+            <i data-lucide="shopping-cart" class="w-5 h-5 mr-3"></i>
+            Purchase Orders
+          </button>
+        </div>
+      </div>
+      
+      <!-- Tab Content -->
+      <div class="tab-content active" id="suppliers-tab">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-5">
+              <h2 class="text-2xl font-semibold text-[var(--text-color)]">Supplier Management</h2>
+              <?php if ($_SESSION['role'] === 'admin'): ?>
+              <button type="button" class="btn-primary" onclick="openCreateSupplierModal()">
+                <i data-lucide="user-plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Add Supplier</span>
+              </button>
+              <?php endif; ?>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Supplier Name</th>
+                    <th>Contact Person</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <?php if ($_SESSION['role'] === 'admin'): ?><th>Action</th><?php endif; ?>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach($suppliers as $supplier): ?>
+                  <tr>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['supplier_name']); ?></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['contact_person']); ?></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['email']); ?></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['phone']); ?></td>
+                    <?php if ($_SESSION['role'] === 'admin'): ?>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]">
+                      <div class="relative">
+                        <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleSupplierDropdown(<?php echo $supplier['id']; ?>)">
+                          <i data-lucide="more-horizontal" class="w-6 h-6"></i>
                         </button>
-                        <button type="button" onclick="confirmDeleteSupplier(<?php echo $supplier['id']; ?>)">
-                          <i data-lucide="trash-2" class="w-5 h-5 mr-3"></i>
-                          Delete
-                        </button>
+                        <div id="supplier-dropdown-<?php echo $supplier['id']; ?>" class="action-dropdown hidden">
+                          <button type="button" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)'>
+                            <i data-lucide="edit-3" class="w-5 h-5 mr-3"></i>
+                            Edit
+                          </button>
+                          <button type="button" onclick="confirmDeleteSupplier(<?php echo $supplier['id']; ?>)">
+                            <i data-lucide="trash-2" class="w-5 h-5 mr-3"></i>
+                            Delete
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <?php endif; ?>
-                </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
+                    </td>
+                    <?php endif; ?>
+                  </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-        
-        <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
-          <div class="flex justify-between items-center mb-5">
-            <h2 class="text-2xl font-semibold text-[var(--text-color)]">Recent Purchase Orders</h2>
-            <button type="button" id="createPOBtn" class="btn-primary">
-              <i data-lucide="shopping-cart" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Create PO</span>
-            </button>
-          </div>
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Supplier</th>
-                  <th>Item</th>
-                  <th>Qty</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php foreach($purchaseOrders as $po): ?>
-                <tr>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['supplier_name']); ?></td>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['item_name']); ?></td>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['quantity']); ?></td>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><span class="bg-amber-400 text-gray-800 py-1 px-2 rounded-xl text-xs font-medium"><?php echo htmlspecialchars($po['status']); ?></span></td>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo date('M d, Y', strtotime($po['order_date'])); ?></td>
-                </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
+      </div>
+      
+      <div class="tab-content" id="purchase-orders-tab">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-5">
+              <h2 class="text-2xl font-semibold text-[var(--text-color)]">Recent Purchase Orders</h2>
+              <button type="button" id="createPOBtn" class="btn-primary">
+                <i data-lucide="shopping-cart" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Create PO</span>
+              </button>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Supplier</th>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach($purchaseOrders as $po): ?>
+                  <tr>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['supplier_name']); ?></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['item_name']); ?></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['quantity']); ?></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><span class="bg-amber-400 text-gray-800 py-1 px-2 rounded-xl text-xs font-medium"><?php echo htmlspecialchars($po['status']); ?></span></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo date('M d, Y', strtotime($po['order_date'])); ?></td>
+                  </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

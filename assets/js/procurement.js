@@ -129,7 +129,75 @@ function initProcurement() {
     
     // Initialize dropdown functionality
     initSupplierDropdowns();
+    
+    // Initialize tabs functionality
+    initTabs();
 }
+
+// --- Tab Functionality ---
+/**
+ * Switch between tabs
+ */
+function switchTab(tabName, withAnimation = false) {
+    // Remove active class from all tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Remove active class from all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.remove('active', 'switching');
+    });
+    
+    // Add active class to clicked tab button
+    const activeTabButton = document.querySelector(`[data-tab="${tabName}"]`);
+    if (activeTabButton) {
+        activeTabButton.classList.add('active');
+    }
+    
+    // Show corresponding tab content
+    const activeTabContent = document.getElementById(`${tabName}-tab`);
+    if (activeTabContent) {
+        activeTabContent.classList.add('active');
+        
+        // Only add switching animation if explicitly requested (user click)
+        if (withAnimation) {
+            activeTabContent.classList.add('switching');
+            
+            // Remove switching class after animation completes
+            setTimeout(() => {
+                activeTabContent.classList.remove('switching');
+            }, 300);
+        }
+    }
+    
+    // Refresh Lucide icons after tab switch
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+/**
+ * Initialize tabs functionality
+ */
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            switchTab(tabName, true); // Enable animation for user clicks
+        });
+    });
+    
+    // Set default active tab on load without animation
+    switchTab('suppliers', false);
+}
+
+// Make tab function globally accessible
+window.switchTab = switchTab;
 
 // Make the initializer globally available for PJAX
 window.initProcurement = initProcurement;

@@ -185,7 +185,7 @@ input:-webkit-autofill:active {
 }
 
 .hamburger:hover {
-  background: rgba(0, 198, 255, 0.1);
+  background: var(--dropdown-item-hover);
 }
 
 .hamburger .hamburger-icon,
@@ -723,9 +723,6 @@ h2.page-title {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Smart dropdown positioning - handled by JavaScript */
-/* .dropdown-below and .dropdown-above classes removed - positioning handled by JS */
-
 /* Action dropdown button hover states */
 .action-dropdown-btn {
   transition: background-color 0.2s ease;
@@ -896,5 +893,119 @@ th {
 @media screen and (max-width: 768px) {
   .page-title {
     font-size: 1.8rem;
+  }
+}
+
+/* Tabs Styles */
+.tabs-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  padding: 16px 16px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  opacity: 0.6;
+  position: relative;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-button:hover {
+  background: transparent;
+  color: var(--text-color);
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+}
+
+.tab-button.active {
+  background: transparent;
+  color: var(--text-color);
+  opacity: 1;
+  box-shadow: none;
+  border-bottom: 2px solid #4d94eb;
+  font-weight: 600;
+}
+
+.tab-button i {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.tab-content.switching {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive tabs */
+@media screen and (max-width: 768px) {
+  .tabs-bar {
+    gap: 16px;
+  }
+  
+  .tab-button {
+    padding: 16px 16px;
+    font-size: 0.8rem;
+  }
+  
+  .tab-button span {
+    display: none;
+  }
+  
+  .tab-button i {
+    margin-right: 0;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .tabs-bar {
+    gap: 16px;
+  }
+  
+  .tab-button {
+    padding: 8px 0;
   }
 }
