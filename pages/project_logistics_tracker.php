@@ -135,7 +135,7 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
           <span id="projectModalTitleText" class="truncate">Create New Project</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('projectModal')">
-          <i data-lucide="x" class="w-5 h-5"></i>
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
       <p class="modal-subtitle" id="projectModalSubtitle">Create a new logistics project for tracking.</p>

@@ -112,7 +112,7 @@ $documents = getAllDocuments();
           <span class="truncate">Upload Document</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('uploadModal')">
-          <i data-lucide="x" class="w-5 h-5"></i>
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
       <p class="modal-subtitle">Upload a document to the system.</p>
@@ -122,7 +122,7 @@ $documents = getAllDocuments();
         <div class="mb-5">
           <label for="documentFile" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Document File</label>
           <input type="file" name="documentFile" id="documentFile" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt">
-          <p class="text-sm text-gray-500 mt-1">Supported formats: PDF, DOC, DOCX, JPG, PNG, TXT</p>
+          <p class="text-sm text-[var(--placeholder-color)] mt-1">Supported formats: PDF, DOC, DOCX, JPG, PNG, TXT</p>
         </div>
         
         <div class="mb-5">

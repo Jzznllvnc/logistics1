@@ -218,7 +218,7 @@ $schedules = getMaintenanceSchedules();
           <span id="assetModalTitleText" class="truncate">Register New Asset</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('assetModal')">
-          <i data-lucide="x" class="w-5 h-5"></i>
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
       <p class="modal-subtitle" id="assetModalSubtitle">Add a new logistics asset to the registry.</p>
@@ -276,7 +276,7 @@ $schedules = getMaintenanceSchedules();
           <span class="truncate">Schedule Maintenance Task</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('scheduleMaintenanceModal')">
-          <i data-lucide="x" class="w-5 h-5"></i>
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
       <p class="modal-subtitle" id="maintenanceModalSubtitle">Schedule a maintenance task for a logistics asset.</p>

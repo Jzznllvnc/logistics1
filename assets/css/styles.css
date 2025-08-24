@@ -657,35 +657,6 @@ h2.page-title {
   box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
 }
 
-/* Secondary button with red hover (for Stock Out) */
-.btn-secondary-danger {
-  background: #e0e0e0;
-  color: #495057;
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: 1px solid #ced4da;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.btn-secondary-danger:hover {
-  background: #dc3545;
-  color: white;
-  border-color: #dc3545;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
-}
-
-.btn-secondary-danger:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
-}
-
 /* Primary button with red gradient (for destructive actions like Stock Out) */
 .btn-primary-danger {
   background: linear-gradient(to right, #dc3545, #c82333);

@@ -151,8 +151,9 @@ $allInventory = getInventory(); // For the modal datalist
             <button id="stockInBtn" type="button" class="btn-primary text-sm sm:text-base whitespace-nowrap">
               <i data-lucide="package-plus" class="w-6 h-6 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Stock In</span>
             </button>
-            <button id="stockOutBtn" type="button" class="btn-secondary-danger text-sm sm:text-base whitespace-nowrap">
-              <i data-lucide="package-minus" class="w-6 h-6 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Stock Out</span>
+            <button id="stockOutBtn" type="button" class="inline-flex items-center gap-1 px-5 py-2.5 font-semibold text-[#495057] bg-[#e0e0e0] border border-[#ced4da] rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out hover:bg-[#c8c8c8] hover:border-[#c8c8c8] hover:translate-y-[-1px] hover:shadow-[0_4px_8px_rgba(0,0,0,0.15)] active:translate-y-0 active:shadow-[0_2px_4px_rgba(0,0,0,0.1)] cursor-pointer text-sm sm:text-base whitespace-nowrap">
+              <i data-lucide="package-minus" class="w-6 h-6 lg:mr-2 sm:mr-0"></i>
+              <span class="hidden sm:inline">Stock Out</span>
             </button>
           </div>
         </div>
@@ -259,7 +260,7 @@ $allInventory = getInventory(); // For the modal datalist
           <span class="truncate">Edit Item Name</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3">
-          <i data-lucide="x" class="w-5 h-5"></i>
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
       <p class="modal-subtitle">Update item name.</p>
@@ -270,7 +271,8 @@ $allInventory = getInventory(); // For the modal datalist
         <input type="hidden" name="item_id" id="edit_item_id">
         <div class="form-group mb-2">
           <label for="item_name_edit" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
-          <input type="text" name="item_name_edit" id="item_name_edit" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
+          <input type="text" name="item_name_edit" id="item_name_edit" placeholder="Enter new item name" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
+          
         </div>
         <div class="form-actions flex justify-end gap-4 mt-6">
           <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('editItemModal'))">Cancel</button>
@@ -290,7 +292,7 @@ $allInventory = getInventory(); // For the modal datalist
           <span id="stockModalTitleText" class="truncate">Manage Stock Levels</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3">
-          <i data-lucide="x" class="w-5 h-5"></i>
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
       <p class="modal-subtitle" id="stockModalSubtitle">Add/Remove new items or update quantities.</p>

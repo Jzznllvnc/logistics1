@@ -206,7 +206,7 @@ $purchaseOrders = getRecentPurchaseOrders();
           <span id="supplierModalTitleText" class="truncate">Add New Supplier</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('supplierModal')">
-          <i data-lucide="x" class="w-5 h-5"></i>
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
       <p class="modal-subtitle" id="supplierModalSubtitle">Register a new supplier to your network.</p>
@@ -219,7 +219,7 @@ $purchaseOrders = getRecentPurchaseOrders();
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div class="mb-5">
             <label for="supplier_name" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Supplier Name</label>
-            <input type="text" name="supplier_name" id="supplier_name" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter supplier name">
+            <input type="text" name="supplier_name" id="supplier_name" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter legal company name">
           </div>
           
           <div class="mb-5">
@@ -229,7 +229,7 @@ $purchaseOrders = getRecentPurchaseOrders();
           
           <div class="mb-5">
             <label for="email" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Email</label>
-            <input type="email" name="email" id="email" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter email address">
+            <input type="email" name="email" id="email" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="contact@example">
           </div>
           
           <div class="mb-5">
@@ -240,7 +240,7 @@ $purchaseOrders = getRecentPurchaseOrders();
         
         <div class="mb-6">
           <label for="address" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Address</label>
-          <textarea name="address" id="address" rows="3" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter supplier address"></textarea>
+          <textarea name="address" id="address" rows="3" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Street Address, City, Postal Code"></textarea>
         </div>
         
         <div class="flex justify-end gap-3">
@@ -265,7 +265,7 @@ $purchaseOrders = getRecentPurchaseOrders();
           <span class="truncate">Create Purchase Order</span>
         </h2>
         <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal('createPOModal')">
-          <i data-lucide="x" class="w-5 h-5"></i>
+          <i data-lucide="x" class="w-5 h-5 text-[var(--text-color)]"></i>
         </button>
       </div>
       <p class="modal-subtitle">Create a purchase order.</p>
@@ -296,7 +296,7 @@ $purchaseOrders = getRecentPurchaseOrders();
         
         <div class="mb-6">
           <label for="quantity_po" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Quantity</label>
-          <input type="number" name="quantity_po" id="quantity_po" min="1" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter quantity">
+          <input type="number" name="quantity_po" id="quantity_po" min="1" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="Enter quantity to order">
         </div>
         
         <div class="flex justify-end gap-3">
