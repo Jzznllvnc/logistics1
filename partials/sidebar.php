@@ -4,7 +4,7 @@
     <img src="../assets/images/slate1.png" alt="SLATE Logo">
   </div>
   <div class="system-name">LOGISTICS 1</div>
-  <br><hr class="border-t border-gray-200"><br>
+  <br><hr class="border-t text-[0.2px] border-gray-400"><br>
 
   <!-- Dashboard: visible to all logged-in users -->
   <a href="../pages/dashboard.php" class="sidebar-sub-item">
