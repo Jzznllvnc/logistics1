@@ -111,7 +111,7 @@ $purchaseOrders = getRecentPurchaseOrders();
       <div class="tabs-container mb-3">
         <div class="tabs-bar">
           <button class="tab-button active" data-tab="suppliers">
-            <i data-lucide="workflow" class="w-4 h-4 mr-2"></i>
+            <i data-lucide="waypoints" class="w-4 h-4 mr-2"></i>
             Suppliers
           </button>
           <button class="tab-button" data-tab="purchase-orders">
@@ -129,7 +129,7 @@ $purchaseOrders = getRecentPurchaseOrders();
               <h2 class="text-2xl font-semibold text-[var(--text-color)]">Supplier Management</h2>
               <?php if ($_SESSION['role'] === 'admin'): ?>
               <button type="button" class="btn-primary" onclick="openCreateSupplierModal()">
-                <i data-lucide="user-plus" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Add Supplier</span>
+                <i data-lucide="workflow" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Add Supplier</span>
               </button>
               <?php endif; ?>
             </div>

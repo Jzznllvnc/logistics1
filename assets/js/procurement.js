@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // --- Supplier Modal Functions ---
 function openCreateSupplierModal() {
     document.getElementById('supplierForm').reset();
-    document.getElementById('supplierModalIcon').setAttribute('data-lucide', 'user-plus');
+    document.getElementById('supplierModalIcon').setAttribute('data-lucide', 'workflow');
     document.getElementById('supplierModalTitleText').innerText = 'Add New Supplier';
     document.getElementById('supplierModalSubtitle').innerText = 'Register a new supplier to your network.';
     document.getElementById('formAction').value = 'create_supplier';
