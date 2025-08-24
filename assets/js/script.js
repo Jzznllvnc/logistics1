@@ -15,7 +15,7 @@ window.addEventListener('load', () => {
 function initGlobalUI() {
     const themeToggle = document.getElementById('themeToggle');
     const themeLabel = document.querySelector('.theme-label');
-    const customAlert = document.getElementById('customAlert');
+    const customAlertElement = document.getElementById('customAlert');
     const customAlertMessage = document.getElementById('customAlertMessage');
     const adminProfileToggle = document.getElementById('adminProfileToggle');
     const adminDropdownMenu = document.getElementById('adminDropdownMenu');
@@ -63,16 +63,16 @@ function initGlobalUI() {
                     window.customAlert.info(message);
             }
         } else {
-            const customAlert = document.getElementById('customAlert');
-            const customAlertMessage = document.getElementById('customAlertMessage');
-            if (customAlert && customAlertMessage) {
-                customAlertMessage.textContent = message;
-                customAlert.className = `admin-alert show ${type}`;
-                customAlert.style.display = 'block';
+            const customAlertElementFallback = document.getElementById('customAlert');
+            const customAlertMessageFallback = document.getElementById('customAlertMessage');
+            if (customAlertElementFallback && customAlertMessageFallback) {
+                customAlertMessageFallback.textContent = message;
+                customAlertElementFallback.className = `admin-alert show ${type}`;
+                customAlertElementFallback.style.display = 'block';
 
                 setTimeout(() => {
-                    customAlert.classList.remove('show');
-                    customAlert.style.display = 'none';
+                    customAlertElementFallback.classList.remove('show');
+                    customAlertElementFallback.style.display = 'none';
                 }, 3000);
             }
         }
@@ -88,7 +88,7 @@ function initGlobalUI() {
     });
 
     window.openModal = function(modalElement) {
-        if (modalElement) {
+        if (modalElement && typeof modalElement === 'object' && modalElement.classList) {
             modalElement.style.display = 'flex';
             modalElement.classList.add('show-modal');
             modalElement.setAttribute('aria-hidden', 'false');
@@ -96,7 +96,7 @@ function initGlobalUI() {
     }
 
     window.closeModal = function(modalElement) {
-        if (modalElement) {
+        if (modalElement && typeof modalElement === 'object' && modalElement.querySelector && modalElement.classList) {
             const focusedElement = modalElement.querySelector(':focus');
             if (focusedElement) {
                 focusedElement.blur();

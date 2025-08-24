@@ -2,7 +2,8 @@
  * Custom Toast Notification Component
  * Clean toast implementation with theme support
  */
-class CustomAlert {
+if (typeof window.CustomAlert === 'undefined') {
+    window.CustomAlert = class CustomAlert {
     constructor() {
         this.container = null;
         this.init();
@@ -252,12 +253,15 @@ class CustomAlert {
     error(message, duration = 4000, title = null) {
         return this.show(message, 'error', duration, title);
     }
+    };
 }
 
-// Global instance
-window.customAlert = new CustomAlert();
+// Global instance - only create if it doesn't exist
+if (typeof window.customAlert === 'undefined') {
+    window.customAlert = new window.CustomAlert();
+}
 
 // Export for module use if needed
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = CustomAlert;
+    module.exports = window.CustomAlert;
 }

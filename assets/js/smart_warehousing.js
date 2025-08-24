@@ -1,8 +1,8 @@
 // Logistic1/assets/js/smart_warehousing.js
 
 // Global variables for modal elements
-let stockManagementModal, modalTitle, stockModalSubtitle, stockAction, confirmStockBtn;
-let currentPaginationPage = 1; // Track current page
+var stockManagementModal, modalTitle, stockModalSubtitle, stockAction, confirmStockBtn;
+var currentPaginationPage = 1; // Track current page
 
 /**
  * Opens the stock management modal and configures it for the specified action
@@ -574,16 +574,16 @@ function applyFiltersAndSearch() {
     
     const searchTerm = searchInput.value.toLowerCase();
     const filterValue = filterSelect.value;
-            const rows = tableBody.getElementsByTagName('tr');
+    const rows = tableBody.getElementsByTagName('tr');
 
-            for (let i = 0; i < rows.length; i++) {
+    for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const itemNameCell = row.getElementsByTagName('td')[0];
         const quantityCell = row.getElementsByTagName('td')[1];
         
         if (!itemNameCell || !quantityCell) continue;
         
-                    const itemName = itemNameCell.textContent || itemNameCell.innerText;
+        const itemName = itemNameCell.textContent || itemNameCell.innerText;
         const quantityText = quantityCell.textContent || quantityCell.innerText;
         const quantity = parseInt(quantityText.replace(/[^0-9]/g, '')) || 0;
         
@@ -668,7 +668,7 @@ function updateFilterResultsCount() {
     
     if (!hasActiveFilters || totalCount === 0) {
         resultsInfo.style.display = 'none';
-                    } else {
+    } else {
         resultsInfo.style.display = 'block';
     }
 }
