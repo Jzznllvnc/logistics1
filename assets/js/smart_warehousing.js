@@ -5,6 +5,291 @@ var stockManagementModal, modalTitle, stockModalSubtitle, stockAction, confirmSt
 var currentPaginationPage = 1; // Track current page
 
 /**
+ * AJAX Pagination functionality to prevent page flashing
+ */
+async function loadPage(page, updateHistory = true) {
+    try {
+        // Show loading state
+        const tableBody = document.getElementById('inventoryTableBody');
+        const paginationContainer = document.getElementById('paginationContainer');
+        const paginationInfo = document.querySelector('.pagination-info');
+        const tableContainer = document.querySelector('.table-container');
+        
+        if (tableBody) {
+            tableBody.style.opacity = '0.6';
+            tableBody.style.pointerEvents = 'none';
+        }
+        
+        if (tableContainer) {
+            tableContainer.classList.add('table-loading');
+        }
+        
+        if (paginationContainer) {
+            paginationContainer.classList.add('pagination-loading');
+        }
+
+        // Make AJAX request
+        const response = await fetch(`smart_warehousing.php?ajax=pagination&page=${page}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update table content
+            updateTableContent(data.inventory, data.isAdmin, data.forecasts);
+            
+            // Update pagination
+            updatePaginationControls(data.currentPage, data.totalPages);
+            
+            // Update pagination info
+            updatePaginationInfo(data.currentPage, data.itemsPerPage, data.totalItems);
+            
+            // Update current page tracking
+            currentPaginationPage = data.currentPage;
+            
+            // Update URL without page reload
+            if (updateHistory) {
+                const newUrl = `smart_warehousing.php?page=${page}`;
+                window.history.pushState({ page: page }, '', newUrl);
+            }
+        } else {
+            throw new Error('Failed to load page data');
+        }
+        
+    } catch (error) {
+        console.error('Pagination error:', error);
+        // Fallback to full page reload on error
+        window.location.href = `smart_warehousing.php?page=${page}`;
+    } finally {
+        // Restore table state
+        const tableBody = document.getElementById('inventoryTableBody');
+        const paginationContainer = document.getElementById('paginationContainer');
+        const tableContainer = document.querySelector('.table-container');
+        
+        if (tableBody) {
+            tableBody.style.opacity = '1';
+            tableBody.style.pointerEvents = 'auto';
+        }
+        
+        if (tableContainer) {
+            tableContainer.classList.remove('table-loading');
+        }
+        
+        if (paginationContainer) {
+            paginationContainer.classList.remove('pagination-loading');
+        }
+    }
+}
+
+/**
+ * Update table content with new inventory data
+ */
+function updateTableContent(inventory, isAdmin, forecasts = {}) {
+    const tableBody = document.getElementById('inventoryTableBody');
+    if (!tableBody) return;
+    
+    if (inventory.length === 0) {
+        const colspan = isAdmin ? '6' : '5';
+        tableBody.innerHTML = `<tr><td colspan="${colspan}" class="table-empty">No items in inventory.</td></tr>`;
+    } else {
+        tableBody.innerHTML = inventory.map(item => {
+            const stockClass = item.quantity < 10 ? 'table-status-low' : 'table-status-normal';
+            const lowStockText = item.quantity < 10 ? ' (Low Stock)' : '';
+            const lastUpdated = new Date(item.last_updated).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric', 
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+            
+            // Get forecast data for this item
+            const itemForecast = forecasts[item.id] || {};
+            const trendAnalysis = itemForecast.analysis || '<span class="text-gray-400">N/A</span>';
+            const recommendedAction = itemForecast.action || '<span class="text-gray-400">N/A</span>';
+            
+            let actionsColumn = '';
+            if (isAdmin) {
+                actionsColumn = `
+                    <td>
+                        <div class="relative">
+                            <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleActionDropdown(${item.id})">
+                                <i data-lucide="more-horizontal" class="w-6 h-6"></i>
+                            </button>
+                            <div id="dropdown-${item.id}" class="action-dropdown hidden">
+                                <button type="button" onclick='openEditModal(${JSON.stringify(item)})'>
+                                    <i data-lucide="edit-3" class="w-5 h-5 mr-3"></i>
+                                    Edit
+                                </button>
+                                <button type="button" onclick="confirmDeleteItem(${item.id})">
+                                    <i data-lucide="trash-2" class="w-5 h-5 mr-3"></i>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                `;
+            }
+            
+            return `
+                <tr>
+                    <td>${escapeHtml(item.item_name)}</td>
+                    <td class="${stockClass}">
+                        ${item.quantity}${lowStockText}
+                    </td>
+                    <td>
+                        ${trendAnalysis}
+                    </td>
+                    <td>
+                        ${recommendedAction}
+                    </td>
+                    <td>${lastUpdated}</td>
+                    ${actionsColumn}
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    // Refresh Lucide icons for new content
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+/**
+ * Update pagination controls
+ */
+function updatePaginationControls(currentPage, totalPages) {
+    const paginationContainer = document.getElementById('paginationContainer');
+    if (!paginationContainer || totalPages <= 1) {
+        if (paginationContainer) paginationContainer.style.display = 'none';
+        return;
+    }
+    
+    paginationContainer.style.display = 'flex';
+    
+    let paginationHTML = '';
+    
+    // Previous button
+    if (currentPage > 1) {
+        paginationHTML += `
+            <button onclick="loadPage(${currentPage - 1})" class="pagination-btn">
+                <i data-lucide="chevron-left" class="w-4 h-4 mr-1"></i>
+                Previous
+            </button>
+        `;
+    }
+    
+    // Page numbers
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(totalPages, currentPage + 2);
+    
+    if (startPage > 1) {
+        paginationHTML += `<button onclick="loadPage(1)" class="pagination-btn ${currentPage == 1 ? 'active' : ''}">1</button>`;
+        if (startPage > 2) {
+            paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+        }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `<button onclick="loadPage(${i})" class="pagination-btn ${currentPage == i ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    }
+    
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+        }
+        paginationHTML += `<button onclick="loadPage(${totalPages})" class="pagination-btn ${currentPage == totalPages ? 'active' : ''}">${totalPages}</button>`;
+    }
+    
+    // Next button
+    if (currentPage < totalPages) {
+        paginationHTML += `
+            <button onclick="loadPage(${currentPage + 1})" class="pagination-btn">
+                Next
+                <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+            </button>
+        `;
+    }
+    
+    paginationContainer.innerHTML = paginationHTML;
+    
+    // Refresh Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+/**
+ * Update pagination info
+ */
+function updatePaginationInfo(currentPage, itemsPerPage, totalItems) {
+    const paginationInfo = document.querySelector('.pagination-info');
+    if (!paginationInfo) return;
+    
+    const start = ((currentPage - 1) * itemsPerPage) + 1;
+    const end = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    paginationInfo.textContent = `Showing ${start} to ${end} of ${totalItems} items`;
+}
+
+/**
+ * Utility function to escape HTML
+ */
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+/**
+ * Initialize AJAX pagination
+ */
+function initAjaxPagination() {
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', function(event) {
+        if (event.state && event.state.page) {
+            loadPage(event.state.page, false);
+        }
+    });
+    
+    // Replace existing pagination button click handlers
+    document.addEventListener('click', function(event) {
+        const paginationBtn = event.target.closest('.pagination-btn');
+        if (paginationBtn && paginationBtn.getAttribute('onclick')) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Extract page number from onclick attribute or data-page
+            const onclickAttr = paginationBtn.getAttribute('onclick');
+            const dataPage = paginationBtn.getAttribute('data-page');
+            
+            let page = currentPaginationPage;
+            
+            if (dataPage) {
+                page = parseInt(dataPage);
+            } else if (onclickAttr) {
+                const match = onclickAttr.match(/loadPage\((\d+)\)/);
+                if (match) {
+                    page = parseInt(match[1]);
+                }
+            }
+            
+            if (page && page !== currentPaginationPage) {
+                loadPage(page);
+            }
+        }
+    });
+}
+
+/**
  * Opens the stock management modal and configures it for the specified action
  * @param {string} action - Either 'stock-in' or 'stock-out'
  */
@@ -220,6 +505,7 @@ function initSmartWarehousing() {
     
     initStockManagement();
     initInventorySearch();
+    initAjaxPagination(); // Initialize AJAX pagination
 }
 
 // Make the initializer globally available for PJAX

@@ -21,11 +21,15 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'pagination') {
     $totalPages = ceil($totalItems / $itemsPerPage);
     $inventory = getPaginatedInventory($offset, $itemsPerPage);
     
+    // Get automatic forecasts for the items on the current page
+    $forecasts = getAutomaticForecasts($inventory);
+    
     // Return JSON response
     header('Content-Type: application/json');
     echo json_encode([
         'success' => true,
         'inventory' => $inventory,
+        'forecasts' => $forecasts,
         'currentPage' => $currentPage,
         'totalPages' => $totalPages,
         'totalItems' => $totalItems,
@@ -136,7 +140,12 @@ $forecasts = getAutomaticForecasts($inventory);
         <?php if ($message): ?>
         document.addEventListener('DOMContentLoaded', () => {
             if (window.showCustomAlert) {
-                showCustomAlert("<?php echo htmlspecialchars($message); ?>", "<?php echo htmlspecialchars($message_type); ?>");
+                showCustomAlert(<?php echo json_encode($message); ?>, <?php echo json_encode($message_type); ?>);
+            } else {
+                // Fallback - strip HTML for plain alert
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = <?php echo json_encode($message); ?>;
+                alert(tempDiv.textContent || tempDiv.innerText || '');
             }
         });
         <?php endif; ?>
@@ -234,7 +243,7 @@ $forecasts = getAutomaticForecasts($inventory);
         <?php if ($totalPages > 1): ?>
         <div class="flex justify-center items-center mt-6 gap-2" id="paginationContainer">
           <?php if ($currentPage > 1): ?>
-            <button onclick="window.location.href='?page=<?php echo $currentPage - 1; ?>'" class="pagination-btn">
+            <button onclick="loadPage(<?php echo $currentPage - 1; ?>)" class="pagination-btn">
               <i data-lucide="chevron-left" class="w-4 h-4 mr-1"></i>
               Previous
             </button>
@@ -245,25 +254,25 @@ $forecasts = getAutomaticForecasts($inventory);
           $endPage = min($totalPages, $currentPage + 2);
           
           if ($startPage > 1): ?>
-            <button onclick="window.location.href='?page=1'" class="pagination-btn <?php echo ($currentPage == 1) ? 'active' : ''; ?>">1</button>
+            <button onclick="loadPage(1)" class="pagination-btn <?php echo ($currentPage == 1) ? 'active' : ''; ?>">1</button>
             <?php if ($startPage > 2): ?>
               <span class="pagination-ellipsis">...</span>
             <?php endif; ?>
           <?php endif; ?>
           
           <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
-            <button onclick="window.location.href='?page=<?php echo $i; ?>'" class="pagination-btn <?php echo ($currentPage == $i) ? 'active' : ''; ?>" data-page="<?php echo $i; ?>"><?php echo $i; ?></button>
+            <button onclick="loadPage(<?php echo $i; ?>)" class="pagination-btn <?php echo ($currentPage == $i) ? 'active' : ''; ?>" data-page="<?php echo $i; ?>"><?php echo $i; ?></button>
           <?php endfor; ?>
           
           <?php if ($endPage < $totalPages): ?>
             <?php if ($endPage < $totalPages - 1): ?>
               <span class="pagination-ellipsis">...</span>
             <?php endif; ?>
-            <button onclick="window.location.href='?page=<?php echo $totalPages; ?>'" class="pagination-btn <?php echo ($currentPage == $totalPages) ? 'active' : ''; ?>"><?php echo $totalPages; ?></button>
+            <button onclick="loadPage(<?php echo $totalPages; ?>)" class="pagination-btn <?php echo ($currentPage == $totalPages) ? 'active' : ''; ?>"><?php echo $totalPages; ?></button>
           <?php endif; ?>
           
           <?php if ($currentPage < $totalPages): ?>
-            <button onclick="window.location.href='?page=<?php echo $currentPage + 1; ?>'" class="pagination-btn">
+            <button onclick="loadPage(<?php echo $currentPage + 1; ?>)" class="pagination-btn">
               Next
               <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
             </button>

@@ -261,6 +261,18 @@ if (typeof window.customAlert === 'undefined') {
     window.customAlert = new window.CustomAlert();
 }
 
+// Global wrapper function for compatibility with existing page calls
+if (typeof window.showCustomAlert === 'undefined') {
+    window.showCustomAlert = function(message, severity = 'info', duration = 4000, title = null) {
+        if (window.customAlert) {
+            return window.customAlert.show(message, severity, duration, title);
+        } else {
+            // Fallback to browser alert if custom alerts fail
+            alert(message);
+        }
+    };
+}
+
 // Export for module use if needed
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = window.CustomAlert;
