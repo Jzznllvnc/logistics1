@@ -34,7 +34,7 @@ CREATE TABLE `assets` (
   `purchase_date` date DEFAULT NULL,
   `status` varchar(50) DEFAULT 'Operational',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `assets`
@@ -60,7 +60,7 @@ CREATE TABLE `documents` (
   `reference_number` varchar(100) DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
   `upload_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `documents`
@@ -80,7 +80,7 @@ CREATE TABLE `inventory` (
   `item_name` varchar(255) NOT NULL,
   `quantity` int NOT NULL DEFAULT '0',
   `last_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `inventory`
@@ -117,7 +117,7 @@ CREATE TABLE `maintenance_schedules` (
   `scheduled_date` date DEFAULT NULL,
   `status` varchar(50) DEFAULT 'Scheduled',
   `completed_date` date DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `maintenance_schedules`
@@ -141,7 +141,7 @@ CREATE TABLE `projects` (
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `projects`
@@ -160,7 +160,7 @@ INSERT INTO `projects` (`id`, `project_name`, `description`, `status`, `start_da
 CREATE TABLE `project_resources` (
   `project_id` int NOT NULL,
   `supplier_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `project_resources`
@@ -182,7 +182,7 @@ CREATE TABLE `purchase_orders` (
   `quantity` int NOT NULL,
   `status` varchar(50) DEFAULT 'Pending',
   `order_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `purchase_orders`
@@ -205,7 +205,7 @@ CREATE TABLE `suppliers` (
   `phone` varchar(50) DEFAULT NULL,
   `address` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `suppliers`
@@ -229,7 +229,7 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `role` varchar(50) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 --
 -- Dumping data for table `users`

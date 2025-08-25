@@ -38,7 +38,7 @@ $itemsPerPage = 10;
 $currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($currentPage - 1) * $itemsPerPage;
 
-// ... (All the PHP logic for handling POST requests remains the same) ...
+// Handle POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     if ($action === 'stock-in' || $action === 'stock-out') {
@@ -90,6 +90,9 @@ $totalItems = getTotalInventoryCount();
 $totalPages = ceil($totalItems / $itemsPerPage);
 $inventory = getPaginatedInventory($offset, $itemsPerPage);
 $allInventory = getInventory(); // For the modal datalist
+
+// Get automatic forecasts for the items on the current page
+$forecasts = getAutomaticForecasts($inventory);
 ?>
 
 <!DOCTYPE html>
@@ -126,7 +129,6 @@ $allInventory = getInventory(); // For the modal datalist
         <h1 class="font-semibold page-title">Smart Warehousing System</h1>
       </div>
       
-      <!-- Current Inventory Section - Now Full Width -->
       <div class="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
         <div class="flex justify-between items-center mb-5 flex-col lg:flex-row gap-4 lg:gap-0 lg:justify-between justify-center">
           <h2 class="text-2xl font-semibold text-[var(--text-color)]">Current Inventory</h2>
@@ -140,7 +142,7 @@ $allInventory = getInventory(); // For the modal datalist
                 <option value="all">All Items</option>
                 <option value="low-stock">Low Stock (&lt;10)</option>
                 <option value="normal-stock">Normal Stock (10-100)</option>
-                <option value="high-stock">High Stock (&gt;100)</option>
+                <option value="high-stock">High Stock (>100)</option>
               </select>
               <div class="flex items-center py-2 pl-4 pr-4 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] cursor-pointer">
                 <i data-lucide="list-filter" class="w-5 h-5 mr-3 text-[var(--input-text)]"></i>
@@ -162,20 +164,28 @@ $allInventory = getInventory(); // For the modal datalist
             <thead>
               <tr>
                 <th>Item Name</th>
-                <th>Quantity</th>
+                <th>Current Quantity</th>
+                <th>Stock Trend Analysis</th>
+                <th>Recommended Action</th>
                 <th>Last Updated</th>
                 <?php if ($_SESSION['role'] === 'admin'): ?><th>Action</th><?php endif; ?>
               </tr>
             </thead>
             <tbody id="inventoryTableBody">
               <?php if (empty($inventory)): ?>
-                <tr><td colspan="<?php echo ($_SESSION['role'] === 'admin') ? '4' : '3'; ?>" class="table-empty">No items in inventory.</td></tr>
+                <tr><td colspan="<?php echo ($_SESSION['role'] === 'admin') ? '6' : '5'; ?>" class="table-empty">No items in inventory.</td></tr>
               <?php else: foreach ($inventory as $item): ?>
                   <tr>
                     <td><?php echo htmlspecialchars($item['item_name']); ?></td>
                     <td class="<?php echo ($item['quantity'] < 10) ? 'table-status-low' : 'table-status-normal'; ?>">
                       <?php echo htmlspecialchars($item['quantity']); ?>
                       <?php if ($item['quantity'] < 10): ?> (Low Stock)<?php endif; ?>
+                    </td>
+                    <td>
+                      <?php echo $forecasts[$item['id']]['analysis'] ?? '<span class="text-gray-400">N/A</span>'; ?>
+                    </td>
+                    <td>
+                      <?php echo $forecasts[$item['id']]['action'] ?? '<span class="text-gray-400">N/A</span>'; ?>
                     </td>
                     <td><?php echo date('M d, Y g:i A', strtotime($item['last_updated'])); ?></td>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
@@ -203,11 +213,10 @@ $allInventory = getInventory(); // For the modal datalist
           </table>
         </div>
         
-        <!-- Pagination -->
         <?php if ($totalPages > 1): ?>
         <div class="flex justify-center items-center mt-6 gap-2" id="paginationContainer">
           <?php if ($currentPage > 1): ?>
-            <button onclick="loadPage(<?php echo $currentPage - 1; ?>)" class="pagination-btn">
+            <button onclick="window.location.href='?page=<?php echo $currentPage - 1; ?>'" class="pagination-btn">
               <i data-lucide="chevron-left" class="w-4 h-4 mr-1"></i>
               Previous
             </button>
@@ -218,25 +227,25 @@ $allInventory = getInventory(); // For the modal datalist
           $endPage = min($totalPages, $currentPage + 2);
           
           if ($startPage > 1): ?>
-            <button onclick="loadPage(1)" class="pagination-btn <?php echo ($currentPage == 1) ? 'active' : ''; ?>">1</button>
+            <button onclick="window.location.href='?page=1'" class="pagination-btn <?php echo ($currentPage == 1) ? 'active' : ''; ?>">1</button>
             <?php if ($startPage > 2): ?>
               <span class="pagination-ellipsis">...</span>
             <?php endif; ?>
           <?php endif; ?>
           
           <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
-            <button onclick="loadPage(<?php echo $i; ?>)" class="pagination-btn <?php echo ($currentPage == $i) ? 'active' : ''; ?>" data-page="<?php echo $i; ?>"><?php echo $i; ?></button>
+            <button onclick="window.location.href='?page=<?php echo $i; ?>'" class="pagination-btn <?php echo ($currentPage == $i) ? 'active' : ''; ?>" data-page="<?php echo $i; ?>"><?php echo $i; ?></button>
           <?php endfor; ?>
           
           <?php if ($endPage < $totalPages): ?>
             <?php if ($endPage < $totalPages - 1): ?>
               <span class="pagination-ellipsis">...</span>
             <?php endif; ?>
-            <button onclick="loadPage(<?php echo $totalPages; ?>)" class="pagination-btn <?php echo ($currentPage == $totalPages) ? 'active' : ''; ?>"><?php echo $totalPages; ?></button>
+            <button onclick="window.location.href='?page=<?php echo $totalPages; ?>'" class="pagination-btn <?php echo ($currentPage == $totalPages) ? 'active' : ''; ?>"><?php echo $totalPages; ?></button>
           <?php endif; ?>
           
           <?php if ($currentPage < $totalPages): ?>
-            <button onclick="loadPage(<?php echo $currentPage + 1; ?>)" class="pagination-btn">
+            <button onclick="window.location.href='?page=<?php echo $currentPage + 1; ?>'" class="pagination-btn">
               Next
               <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
             </button>
@@ -259,7 +268,7 @@ $allInventory = getInventory(); // For the modal datalist
           <i data-lucide="square-pen" class="w-6 h-6 mr-3 flex-shrink-0"></i>
           <span class="truncate">Edit Item Name</span>
         </h2>
-        <button type="button" class="close-button flex-shrink-0 ml-3">
+        <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal(this.closest('.modal'))">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -272,10 +281,9 @@ $allInventory = getInventory(); // For the modal datalist
         <div class="form-group mb-2">
           <label for="item_name_edit" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
           <input type="text" name="item_name_edit" id="item_name_edit" placeholder="Enter new item name" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
-          
         </div>
         <div class="form-actions flex justify-end gap-4 mt-6">
-          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('editItemModal'))">Cancel</button>
+          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(this.closest('.modal'))">Cancel</button>
           <button type="submit" class="btn-primary">Save Changes</button>
         </div>
       </form>
@@ -283,7 +291,6 @@ $allInventory = getInventory(); // For the modal datalist
   </div>
   <?php endif; ?>
 
-  <!-- Stock Management Modal -->
   <div id="stockManagementModal" class="modal hidden">
     <div class="modal-content p-8 max-w-lg">
       <div class="flex justify-between items-center mb-2">
@@ -291,7 +298,7 @@ $allInventory = getInventory(); // For the modal datalist
           <i data-lucide="package" class="w-7 h-7 mr-3 flex-shrink-0" id="stockModalIcon"></i>
           <span id="stockModalTitleText" class="truncate">Manage Stock Levels</span>
         </h2>
-        <button type="button" class="close-button flex-shrink-0 ml-3">
+        <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal(this.closest('.modal'))">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -319,7 +326,7 @@ $allInventory = getInventory(); // For the modal datalist
         </div>
         
         <div class="flex justify-end gap-3 pt-4">
-          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(document.getElementById('stockManagementModal'))">
+          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(this.closest('.modal'))">
             Cancel
           </button>
           <button type="submit" id="confirmStockBtn" class="btn-primary">
