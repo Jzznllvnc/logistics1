@@ -114,7 +114,7 @@ CREATE TABLE `inventory_forecast_cache` (
   `analysis` text,
   `action` varchar(255) DEFAULT NULL,
   `cached_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3; 
 
 -- --------------------------------------------------------
 
@@ -127,7 +127,7 @@ CREATE TABLE `inventory_history` (
   `item_id` int NOT NULL,
   `quantity` int NOT NULL,
   `timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
 -- Dumping data for table `inventory_history`

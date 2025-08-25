@@ -29,26 +29,34 @@ function openStockModal(action) {
     if (itemNameInput) itemNameInput.value = '';
     if (quantityInput) quantityInput.value = '';
 
-    // Set action
-    stockAction.value = action;
-
     // Get icon and title text elements
     const stockModalIcon = document.getElementById('stockModalIcon');
     const stockModalTitleText = document.getElementById('stockModalTitleText');
+    const supplierDiv = document.getElementById('supplier_selection_div');
+    const supplierSelect = document.getElementById('modal_supplier_id');
 
     // Update modal content based on action
     if (action === 'stock-in') {
         if (stockModalIcon) stockModalIcon.setAttribute('data-lucide', 'package-plus');
-        if (stockModalTitleText) stockModalTitleText.textContent = 'Stock In Items';
-        stockModalSubtitle.textContent = 'Add new items or increase existing inventory quantities.';
-        confirmStockBtn.textContent = 'Stock In';
+        if (stockModalTitleText) stockModalTitleText.textContent = 'Request Stock In';
+        stockModalSubtitle.textContent = 'Create a purchase order to request new stock from a supplier.';
+        confirmStockBtn.textContent = 'Submit Request';
         confirmStockBtn.className = 'btn-primary';
+        stockAction.value = 'create_po'; // Set action to create purchase order
+
+        if (supplierDiv) supplierDiv.classList.remove('hidden');
+        if (supplierSelect) supplierSelect.required = true;
+
     } else if (action === 'stock-out') {
         if (stockModalIcon) stockModalIcon.setAttribute('data-lucide', 'package-minus');
         if (stockModalTitleText) stockModalTitleText.textContent = 'Stock Out Items';
         stockModalSubtitle.textContent = 'Remove items or decrease existing inventory quantities.';
         confirmStockBtn.textContent = 'Stock Out';
         confirmStockBtn.className = 'btn-primary-danger';
+        stockAction.value = 'stock-out'; // Set action for stock out
+
+        if (supplierDiv) supplierDiv.classList.add('hidden');
+        if (supplierSelect) supplierSelect.required = false;
     }
 
     // Open the modal using the global function

@@ -1,6 +1,8 @@
 <?php
 require_once '../includes/functions/auth.php';
 require_once '../includes/functions/inventory.php';
+require_once '../includes/functions/supplier.php'; // Added for supplier list
+require_once '../includes/functions/purchase_order.php'; // Added for creating POs
 requireLogin();
 
 // Role check
@@ -41,22 +43,31 @@ $offset = ($currentPage - 1) * $itemsPerPage;
 // Handle POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    if ($action === 'stock-in' || $action === 'stock-out') {
+
+    if ($action === 'create_po') {
+        $supplier_id = $_POST['supplier_id'] ?? 0;
         $itemName = trim($_POST['item_name'] ?? '');
         $quantity = $_POST['quantity'] ?? 0;
-        if ($action === 'stock-in') {
-            if (stockIn($itemName, $quantity)) {
-                $_SESSION['flash_message'] = "Successfully stocked in $quantity of $itemName.";
-                $_SESSION['flash_message_type'] = 'success';
-            } else { $_SESSION['flash_message'] = "Failed to stock in. Check input."; $_SESSION['flash_message_type'] = 'error'; }
-        } else {
-            $result = stockOut($itemName, $quantity);
-            if ($result === "Success") {
-                $_SESSION['flash_message'] = "Successfully stocked out $quantity of $itemName.";
-                $_SESSION['flash_message_type'] = 'success';
-            } else { $_SESSION['flash_message'] = $result; $_SESSION['flash_message_type'] = 'error'; }
+        if (createPurchaseOrder($supplier_id, $itemName, $quantity)) {
+            $_SESSION['flash_message'] = "Purchase request for $quantity of $itemName sent successfully.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else { 
+            $_SESSION['flash_message'] = "Failed to send purchase request. Check input."; 
+            $_SESSION['flash_message_type'] = 'error'; 
+        }
+    } elseif ($action === 'stock-out') {
+        $itemName = trim($_POST['item_name'] ?? '');
+        $quantity = $_POST['quantity'] ?? 0;
+        $result = stockOut($itemName, $quantity);
+        if ($result === "Success") {
+            $_SESSION['flash_message'] = "Successfully stocked out $quantity of $itemName.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else { 
+            $_SESSION['flash_message'] = $result; 
+            $_SESSION['flash_message_type'] = 'error'; 
         }
     }
+
     if ($_SESSION['role'] === 'admin') {
         $itemId = $_POST['item_id'] ?? 0;
         if ($action === 'update_item') {
@@ -64,12 +75,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (updateInventoryItem($itemId, $newItemName)) {
                 $_SESSION['flash_message'] = "Item successfully renamed.";
                 $_SESSION['flash_message_type'] = 'success';
-            } else { $_SESSION['flash_message'] = "Failed to rename item."; $_SESSION['flash_message_type'] = 'error'; }
+            } else { 
+                $_SESSION['flash_message'] = "Failed to rename item."; 
+                $_SESSION['flash_message_type'] = 'error'; 
+            }
         } elseif ($action === 'delete_item') {
             if (deleteInventoryItem($itemId)) {
                 $_SESSION['flash_message'] = "Item successfully deleted.";
                 $_SESSION['flash_message_type'] = 'success';
-            } else { $_SESSION['flash_message'] = "Failed to delete item."; $_SESSION['flash_message_type'] = 'error'; }
+            } else { 
+                $_SESSION['flash_message'] = "Failed to delete item."; 
+                $_SESSION['flash_message_type'] = 'error'; 
+            }
         }
     }
     header("Location: smart_warehousing.php?page=" . $currentPage);
@@ -90,6 +107,7 @@ $totalItems = getTotalInventoryCount();
 $totalPages = ceil($totalItems / $itemsPerPage);
 $inventory = getPaginatedInventory($offset, $itemsPerPage);
 $allInventory = getInventory(); // For the modal datalist
+$allSuppliers = getAllSuppliers(); // For the supplier dropdown
 
 // Get automatic forecasts for the items on the current page
 $forecasts = getAutomaticForecasts($inventory);
@@ -293,49 +311,59 @@ $forecasts = getAutomaticForecasts($inventory);
 
   <div id="stockManagementModal" class="modal hidden">
     <div class="modal-content p-8 max-w-lg">
-      <div class="flex justify-between items-center mb-2">
-        <h2 class="modal-title flex items-center min-w-0 flex-1" id="modalTitle">
-          <i data-lucide="package" class="w-7 h-7 mr-3 flex-shrink-0" id="stockModalIcon"></i>
-          <span id="stockModalTitleText" class="truncate">Manage Stock Levels</span>
-        </h2>
-        <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal(this.closest('.modal'))">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <p class="modal-subtitle" id="stockModalSubtitle">Add/Remove new items or update quantities.</p>
-      <div class="border-b border-[var(--card-border)] mb-5"></div>
+        <div class="flex justify-between items-center mb-2">
+            <h2 class="modal-title flex items-center min-w-0 flex-1" id="modalTitle">
+                <i data-lucide="package" class="w-7 h-7 mr-3 flex-shrink-0" id="stockModalIcon"></i>
+                <span id="stockModalTitleText" class="truncate">Manage Stock Levels</span>
+            </h2>
+            <button type="button" class="close-button flex-shrink-0 ml-3" onclick="closeModal(this.closest('.modal'))">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <p class="modal-subtitle" id="stockModalSubtitle">Add/Remove new items or update quantities.</p>
+        <div class="border-b border-[var(--card-border)] mb-5"></div>
       
-      <form action="smart_warehousing.php" method="POST" id="stockManagementForm">
-        <input type="hidden" name="action" id="stockAction" value="">
-        
-        <div class="mb-5">
-          <label for="modal_item_name" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
-          <input type="text" id="modal_item_name" name="item_name" list="inventory_items" placeholder="Type to see stock levels..." required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
-          <datalist id="inventory_items">
-            <?php foreach ($allInventory as $item): ?>
-                <option value="<?php echo htmlspecialchars($item['item_name']); ?>">
-                    <?php echo htmlspecialchars($item['item_name']) . ' (' . htmlspecialchars($item['quantity']) . ' in stock)'; ?>
-                </option>
-            <?php endforeach; ?>
-          </datalist>
-        </div>
-        
-        <div class="mb-6">
-          <label for="modal_quantity" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Quantity</label>
-          <input type="number" id="modal_quantity" name="quantity" min="1" placeholder="e.g., 50" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
-        </div>
-        
-        <div class="flex justify-end gap-3 pt-4">
-          <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(this.closest('.modal'))">
-            Cancel
-          </button>
-          <button type="submit" id="confirmStockBtn" class="btn-primary">
-            Confirm
-          </button>
-        </div>
-      </form>
+        <form action="smart_warehousing.php" method="POST" id="stockManagementForm">
+            <input type="hidden" name="action" id="stockAction" value="">
+            
+            <div id="supplier_selection_div" class="hidden mb-5">
+                <label for="modal_supplier_id" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Supplier</label>
+                <select id="modal_supplier_id" name="supplier_id" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
+                    <option value="">-- Select Supplier --</option>
+                    <?php foreach ($allSuppliers as $supplier): ?>
+                        <option value="<?php echo $supplier['id']; ?>"><?php echo htmlspecialchars($supplier['supplier_name']); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="mb-5">
+                <label for="modal_item_name" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
+                <input type="text" id="modal_item_name" name="item_name" list="inventory_items" placeholder="Type to see stock levels..." required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
+                <datalist id="inventory_items">
+                    <?php foreach ($allInventory as $item): ?>
+                        <option value="<?php echo htmlspecialchars($item['item_name']); ?>">
+                            <?php echo htmlspecialchars($item['item_name']) . ' (' . htmlspecialchars($item['quantity']) . ' in stock)'; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </datalist>
+            </div>
+            
+            <div class="mb-6">
+                <label for="modal_quantity" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Quantity</label>
+                <input type="number" id="modal_quantity" name="quantity" min="1" placeholder="e.g., 50" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
+            </div>
+            
+            <div class="flex justify-end gap-3 pt-4">
+                <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="closeModal(this.closest('.modal'))">
+                    Cancel
+                </button>
+                <button type="submit" id="confirmStockBtn" class="btn-primary">
+                    Confirm
+                </button>
+            </div>
+        </form>
     </div>
-  </div>
+</div>
 
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
