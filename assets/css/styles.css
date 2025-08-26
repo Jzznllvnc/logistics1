@@ -418,6 +418,15 @@ h2.page-title {
   font-size: 0.9rem;
 }
 
+/* Input focus styling - override browser defaults */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 1.5px var(--accent-color) !important;
+  border-color: transparent !important;
+}
+
 .close-button {
   color: var(--text-color);
   position: relative;
@@ -776,7 +785,7 @@ h2.page-title {
 
 .data-table th {
   padding: 12px 16px;
-  font-size: 0.9rem;
+  font-size: 0.9rem !important;
   text-align: left;
   color: var(--text-color);
 }
