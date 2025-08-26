@@ -102,16 +102,31 @@ $allSuppliers = getAllSuppliers(); // For the modal dropdown
           <p class="description-text flex-grow"><?php echo htmlspecialchars($project['description']); ?></p>
           <div class="flex justify-between items-center text-sm mb-2.5">
             <div><strong>Timeline:</strong> <?php echo date('M d', strtotime($project['start_date'])); ?> - <?php echo date('M d, Y', strtotime($project['end_date'])); ?></div>
-            <span class="py-1 px-2.5 rounded-2xl font-medium text-white <?php 
+            <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full font-medium text-sm <?php 
               $status_class = '';
+              $status_icon = '';
               switch(strtolower(str_replace(' ', '-', $project['status']))) {
-                case 'in-progress': $status_class = 'bg-blue-500'; break;
-                case 'completed': $status_class = 'bg-emerald-500'; break;
-                case 'not-started': $status_class = 'bg-gray-500'; break;
-                default: $status_class = 'bg-gray-500';
+                case 'in-progress': 
+                  $status_class = 'bg-blue-50 text-blue-700 border border-blue-200'; 
+                  $status_icon = 'clock';
+                  break;
+                case 'completed': 
+                  $status_class = 'bg-emerald-50 text-emerald-700 border border-emerald-200'; 
+                  $status_icon = 'check-circle';
+                  break;
+                case 'not-started': 
+                  $status_class = 'bg-gray-50 text-gray-700 border border-gray-200'; 
+                  $status_icon = 'circle';
+                  break;
+                default: 
+                  $status_class = 'bg-gray-50 text-gray-700 border border-gray-200';
+                  $status_icon = 'circle';
               }
               echo $status_class;
-            ?>"><?php echo htmlspecialchars($project['status']); ?></span>
+            ?>">
+              <i data-lucide="<?php echo $status_icon; ?>" class="w-3.5 h-3.5"></i>
+              <?php echo htmlspecialchars($project['status']); ?>
+            </span>
           </div>
           <div class="text-sm mb-2.5"><strong>Resources:</strong> <?php echo htmlspecialchars($project['assigned_suppliers'] ?? 'None'); ?></div>
           <?php if ($_SESSION['role'] === 'admin'): ?>

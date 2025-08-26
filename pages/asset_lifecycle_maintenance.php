@@ -153,7 +153,33 @@ $schedules = getMaintenanceSchedules();
                   <tr>
                     <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['asset_name']); ?></td>
                     <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['asset_type']); ?></td>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($asset['status']); ?></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]">
+                      <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full font-medium text-sm <?php 
+                        $status_class = '';
+                        $status_icon = '';
+                        switch(strtolower(str_replace(' ', '-', $asset['status']))) {
+                          case 'operational': 
+                            $status_class = 'bg-emerald-50 text-emerald-700 border border-emerald-200'; 
+                            $status_icon = 'check-circle';
+                            break;
+                          case 'under-maintenance': 
+                            $status_class = 'bg-amber-50 text-amber-700 border border-amber-200'; 
+                            $status_icon = 'wrench';
+                            break;
+                          case 'decommissioned': 
+                            $status_class = 'bg-red-50 text-red-700 border border-red-200'; 
+                            $status_icon = 'x-circle';
+                            break;
+                          default: 
+                            $status_class = 'bg-gray-50 text-gray-700 border border-gray-200';
+                            $status_icon = 'help-circle';
+                        }
+                        echo $status_class;
+                      ?>">
+                        <i data-lucide="<?php echo $status_icon; ?>" class="w-3.5 h-3.5"></i>
+                        <?php echo htmlspecialchars($asset['status']); ?>
+                      </span>
+                    </td>
                     <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?>
                     <td class="py-3 px-4 border-b border-[var(--card-border)]">
                       <div class="relative">
@@ -207,7 +233,37 @@ $schedules = getMaintenanceSchedules();
                   <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['asset_name']); ?></td>
                   <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['task_description']); ?></td>
                   <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo date('M d, Y', strtotime($schedule['scheduled_date'])); ?></td>
-                  <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($schedule['status']); ?></td>
+                  <td class="py-3 px-4 border-b border-[var(--card-border)]">
+                    <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full font-medium text-sm <?php 
+                      $status_class = '';
+                      $status_icon = '';
+                      switch(strtolower(str_replace(' ', '-', $schedule['status']))) {
+                        case 'scheduled': 
+                          $status_class = 'bg-blue-50 text-blue-700 border border-blue-200'; 
+                          $status_icon = 'calendar';
+                          break;
+                        case 'completed': 
+                          $status_class = 'bg-emerald-50 text-emerald-700 border border-emerald-200'; 
+                          $status_icon = 'check-circle';
+                          break;
+                        case 'in-progress': 
+                          $status_class = 'bg-yellow-50 text-yellow-700 border border-yellow-200'; 
+                          $status_icon = 'clock';
+                          break;
+                        case 'cancelled': 
+                          $status_class = 'bg-red-50 text-red-700 border border-red-200'; 
+                          $status_icon = 'x-circle';
+                          break;
+                        default: 
+                          $status_class = 'bg-gray-50 text-gray-700 border border-gray-200';
+                          $status_icon = 'help-circle';
+                      }
+                      echo $status_class;
+                    ?>">
+                      <i data-lucide="<?php echo $status_icon; ?>" class="w-3.5 h-3.5"></i>
+                      <?php echo htmlspecialchars($schedule['status']); ?>
+                    </span>
+                  </td>
                   <td class="py-3 px-4 border-b border-[var(--card-border)]">
                     <?php if($schedule['status'] === 'Scheduled'): ?>
                     <form action="asset_lifecycle_maintenance.php" method="POST" class="m-0">
