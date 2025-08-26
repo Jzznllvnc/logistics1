@@ -71,12 +71,12 @@ function openDocumentDetails(docData) {
                     <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-semibold text-[var(--text-color)] mb-1">File Name</label>
-                            <p class="text-[var(--placeholder-color)] break-all">${docData.file_name}</p>
+                            <p class="text-[var(--description-color)] break-all">${docData.file_name}</p>
                         </div>
                         
                         <div>
                             <label class="block text-sm font-semibold text-[var(--text-color)] mb-1">Document Type</label>
-                            <p class="text-[var(--placeholder-color)]">${docData.document_type}</p>
+                            <p class="text-[var(--description-color)]">${docData.document_type}</p>
                         </div>
                         
                         <div>
@@ -90,17 +90,17 @@ function openDocumentDetails(docData) {
                     <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-semibold text-[var(--text-color)] mb-1">Reference Number</label>
-                            <p class="text-[var(--placeholder-color)]">${docData.reference_number || 'N/A'}</p>
+                            <p class="text-[var(--description-color)]">${docData.reference_number || 'N/A'}</p>
                         </div>
                         
                         <div>
                             <label class="block text-sm font-semibold text-[var(--text-color)] mb-1">Upload Date</label>
-                            <p class="text-[var(--placeholder-color)]">${uploadDate}</p>
+                            <p class="text-[var(--description-color)]">${uploadDate}</p>
                         </div>
                         
                         <div>
                             <label class="block text-sm font-semibold text-[var(--text-color)] mb-1">Expiry Date</label>
-                            <p class="text-[var(--placeholder-color)]">${expiryDate}</p>
+                            <p class="text-[var(--description-color)]">${expiryDate}</p>
                         </div>
                     </div>
                 </div>
