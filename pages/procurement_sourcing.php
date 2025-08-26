@@ -205,7 +205,45 @@ $purchaseOrders = getRecentPurchaseOrders();
                     <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['supplier_name']); ?></td>
                     <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['item_name']); ?></td>
                     <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['quantity']); ?></td>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><span class="bg-amber-400 text-gray-800 py-1 px-2 rounded-xl text-xs font-medium"><?php echo htmlspecialchars($po['status']); ?></span></td>
+                    <td class="py-3 px-4 border-b border-[var(--card-border)]">
+                      <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full font-medium text-sm <?php 
+                        $status_class = '';
+                        $status_icon = '';
+                        switch(strtolower(str_replace(' ', '-', $po['status']))) {
+                          case 'pending': 
+                            $status_class = 'bg-amber-50 text-amber-700 border border-amber-200'; 
+                            $status_icon = 'clock';
+                            break;
+                          case 'approved': 
+                            $status_class = 'bg-blue-50 text-blue-700 border border-blue-200'; 
+                            $status_icon = 'check-circle';
+                            break;
+                          case 'shipped': 
+                            $status_class = 'bg-purple-50 text-purple-700 border border-purple-200'; 
+                            $status_icon = 'truck';
+                            break;
+                          case 'delivered': 
+                            $status_class = 'bg-emerald-50 text-emerald-700 border border-emerald-200'; 
+                            $status_icon = 'package-check';
+                            break;
+                          case 'cancelled': 
+                            $status_class = 'bg-red-50 text-red-700 border border-red-200'; 
+                            $status_icon = 'x-circle';
+                            break;
+                          case 'processing': 
+                            $status_class = 'bg-blue-50 text-blue-700 border border-blue-200'; 
+                            $status_icon = 'settings';
+                            break;
+                          default: 
+                            $status_class = 'bg-gray-50 text-gray-700 border border-gray-200';
+                            $status_icon = 'help-circle';
+                        }
+                        echo $status_class;
+                      ?>">
+                        <i data-lucide="<?php echo $status_icon; ?>" class="w-3.5 h-3.5"></i>
+                        <?php echo htmlspecialchars($po['status']); ?>
+                      </span>
+                    </td>
                     <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo date('M d, Y', strtotime($po['order_date'])); ?></td>
                   </tr>
                   <?php endforeach; ?>
