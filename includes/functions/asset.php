@@ -251,7 +251,7 @@ function fetchForecastsFromGeminiForAssets(array $assets): array {
         foreach ($assetData['history'] as $record) {
             $date = date('Y-m-d', strtotime($record['timestamp']));
             $notes = $record['notes'] ? " ({$record['notes']})" : '';
-            $batchPrompt .= "- Date: {$date}, Status: {$record['status']}${notes}\n";
+            $batchPrompt .= "- Date: {$date}, Status: {$record['status']}{$notes}\n";
         }
         if (!empty($assetData['usage'])) {
             $batchPrompt .= "Usage Logs:\n";
