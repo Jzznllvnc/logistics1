@@ -225,6 +225,8 @@ function openCreateAssetModal() {
     document.getElementById('assetModalTitleText').innerText = 'Register New Asset';
     document.getElementById('assetModalSubtitle').innerText = 'Add a new logistics asset to the registry.';
     document.getElementById('formAction').value = 'create_asset';
+    clearImagePreview();
+    hideCurrentImage();
     if (window.openModal) {
         window.openModal(document.getElementById('assetModal'));
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -245,6 +247,15 @@ function openEditAssetModal(asset) {
     document.getElementById('asset_type').value = asset.asset_type;
     document.getElementById('purchase_date').value = asset.purchase_date;
     document.getElementById('status').value = asset.status;
+    
+    // Handle existing image
+    clearImagePreview();
+    if (asset.image_path && asset.image_path.trim() !== '') {
+        showCurrentImage(asset.image_path);
+    } else {
+        hideCurrentImage();
+    }
+    
     if (window.openModal) {
         window.openModal(document.getElementById('assetModal'));
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -266,3 +277,86 @@ async function confirmDeleteAsset(assetId) {
         form.submit();
     }
 }
+
+// --- Image Handling Functions ---
+function previewAssetImage(input) {
+    const file = input.files[0];
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const previewImg = document.getElementById('imagePreview');
+    
+    if (file) {
+        // Validate file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be less than 5MB');
+            input.value = '';
+            return;
+        }
+        
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Please select a valid image file (JPG, PNG, or GIF)');
+            input.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewContainer.classList.remove('hidden');
+            hideCurrentImage();
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContainer.classList.add('hidden');
+    }
+}
+
+function clearImagePreview() {
+    const input = document.getElementById('asset_image');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const previewImg = document.getElementById('imagePreview');
+    
+    input.value = '';
+    previewImg.src = '';
+    previewContainer.classList.add('hidden');
+}
+
+function showCurrentImage(imagePath) {
+    const currentImageContainer = document.getElementById('currentImageContainer');
+    const currentImg = document.getElementById('currentImage');
+    
+    if (imagePath && imagePath.trim() !== '') {
+        currentImg.src = '../' + imagePath;
+        currentImageContainer.classList.remove('hidden');
+    } else {
+        hideCurrentImage();
+    }
+}
+
+function hideCurrentImage() {
+    const currentImageContainer = document.getElementById('currentImageContainer');
+    currentImageContainer.classList.add('hidden');
+}
+
+// --- Image Modal Functions ---
+function showImageModal(imagePath, assetName) {
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const imageModalTitle = document.getElementById('imageModalTitle');
+    
+    modalImage.src = imagePath;
+    modalImage.alt = assetName;
+    imageModalTitle.textContent = assetName + ' - Image';
+    
+    if (window.openModal) {
+        window.openModal(imageModal);
+    }
+}
+
+// Make image functions globally accessible
+window.previewAssetImage = previewAssetImage;
+window.clearImagePreview = clearImagePreview;
+window.showCurrentImage = showCurrentImage;
+window.hideCurrentImage = hideCurrentImage;
+window.showImageModal = showImageModal;

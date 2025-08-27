@@ -20,22 +20,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $type = $_POST['asset_type'] ?? '';
             $purchase_date = $_POST['purchase_date'] ?? null;
             $status = $_POST['status'] ?? '';
+            
             if ($action === 'create_asset') {
-                if (createAsset($name, $type, $purchase_date, $status)) {
-                    $_SESSION['flash_message'] = "Asset <strong>" . htmlspecialchars($name) . "</strong> created successfully.";
-                    $_SESSION['flash_message_type'] = 'success';
-                } else {
-                    $_SESSION['flash_message'] = "Failed to create asset. Please try again.";
+                // Handle image upload for new asset
+                $image_path = handleAssetImageUpload();
+                if ($image_path === false) {
+                    $_SESSION['flash_message'] = "Failed to upload image. Please check file size and format.";
                     $_SESSION['flash_message_type'] = 'error';
+                } else {
+                    if (createAsset($name, $type, $purchase_date, $status, $image_path)) {
+                        $_SESSION['flash_message'] = "Asset <strong>" . htmlspecialchars($name) . "</strong> created successfully.";
+                        $_SESSION['flash_message_type'] = 'success';
+                    } else {
+                        $_SESSION['flash_message'] = "Failed to create asset. Please try again.";
+                        $_SESSION['flash_message_type'] = 'error';
+                    }
                 }
             } else {
                 $id = $_POST['asset_id'] ?? 0;
-                if (updateAsset($id, $name, $type, $purchase_date, $status)) {
-                    $_SESSION['flash_message'] = "Asset <strong>" . htmlspecialchars($name) . "</strong> updated successfully.";
-                    $_SESSION['flash_message_type'] = 'success';
-                } else {
-                    $_SESSION['flash_message'] = "Failed to update asset. Please try again.";
+                
+                // Get existing asset info for image handling
+                $existing_assets = getAllAssets();
+                $existing_asset = null;
+                foreach ($existing_assets as $asset) {
+                    if ($asset['id'] == $id) {
+                        $existing_asset = $asset;
+                        break;
+                    }
+                }
+                
+                // Handle image upload for asset update
+                $existing_image_path = $existing_asset['image_path'] ?? null;
+                $new_image_path = handleAssetImageUpload($existing_image_path);
+                
+                if ($new_image_path === false) {
+                    $_SESSION['flash_message'] = "Failed to upload image. Please check file size and format.";
                     $_SESSION['flash_message_type'] = 'error';
+                } else {
+                    // Only pass image_path if it changed
+                    if ($new_image_path !== $existing_image_path) {
+                        $update_success = updateAsset($id, $name, $type, $purchase_date, $status, $new_image_path);
+                    } else {
+                        $update_success = updateAsset($id, $name, $type, $purchase_date, $status);
+                    }
+                    
+                    if ($update_success) {
+                        $_SESSION['flash_message'] = "Asset <strong>" . htmlspecialchars($name) . "</strong> updated successfully.";
+                        $_SESSION['flash_message_type'] = 'success';
+                    } else {
+                        $_SESSION['flash_message'] = "Failed to update asset. Please try again.";
+                        $_SESSION['flash_message_type'] = 'error';
+                    }
                 }
             }
         } elseif ($action === 'delete_asset') {
@@ -148,6 +183,7 @@ $usageLogsByAsset = getAllUsageLogsGroupedByAsset();
             <table class="data-table">
               <thead>
                 <tr>
+                  <th>Image</th>
                   <th>Name</th>
                   <th>Type</th>
                   <th>Status</th>
@@ -157,13 +193,27 @@ $usageLogsByAsset = getAllUsageLogsGroupedByAsset();
                         AI
                       </span>
                     </th>
-                  <th>Predicted Next Service</th>
+                  <th>Predicted Next Service
+                      <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.3 text-[0.8rem] font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-full align-top">
+                        <i data-lucide="bot" class="w-4 h-4"></i>
+                        AI
+                      </span>
+                  </th>
                   <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?><th>Action</th><?php endif; ?>
                 </tr>
               </thead>
               <tbody>
                 <?php foreach($assets as $asset): ?>
                 <tr>
+                  <td>
+                    <?php if (!empty($asset['image_path']) && file_exists('../' . $asset['image_path'])): ?>
+                      <img src="../<?php echo htmlspecialchars($asset['image_path']); ?>" alt="<?php echo htmlspecialchars($asset['asset_name']); ?>" class="w-12 h-12 object-cover rounded-md cursor-pointer" onclick="showImageModal('../<?php echo htmlspecialchars($asset['image_path']); ?>', '<?php echo htmlspecialchars($asset['asset_name']); ?>')">
+                    <?php else: ?>
+                      <div class="w-12 h-12 bg-gray-100 rounded-md border border-gray-200 flex items-center justify-center">
+                        <i data-lucide="image" class="w-6 h-6 text-gray-400"></i>
+                      </div>
+                    <?php endif; ?>
+                  </td>
                   <td><?php echo htmlspecialchars($asset['asset_name']); ?></td>
                   <td><?php echo htmlspecialchars($asset['asset_type']); ?></td>
                   <td>
@@ -310,6 +360,22 @@ $usageLogsByAsset = getAllUsageLogsGroupedByAsset();
   </div>
 
   <?php include 'modals/alms.php'; ?>
+  
+  <!-- Image Modal -->
+  <div id="imageModal" class="modal hidden">
+    <div class="modal-content p-6 max-w-4xl">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="modal-title flex items-center">
+          <i data-lucide="image" class="w-6 h-6 mr-3"></i>
+          <span id="imageModalTitle">Asset Image</span>
+        </h2>
+        <button type="button" class="close-button" onclick="closeModal('imageModal')"><i data-lucide="x"></i></button>
+      </div>
+      <div class="flex justify-center items-center min-h-96">
+        <img id="modalImage" src="" alt="" class="max-w-full max-h-96 object-contain rounded-lg dark:border-none border border-gray-200 shadow-lg">
+      </div>
+    </div>
+  </div>
 
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
