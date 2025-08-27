@@ -13,9 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password    = $_POST['password'] ?? '';
     $remember_me = isset($_POST['remember_me']);
 
-    if (authenticateUser($username, $password)) {
+    $authResult = authenticateUser($username, $password);
+
+    if ($authResult['success']) {
         $_SESSION['username'] = $username;
-        $_SESSION['role']     = getUserRole($username);
+        $_SESSION['role']     = $authResult['role'];
         $_SESSION['logged_in'] = true;
         $_SESSION['last_activity'] = time();
         session_regenerate_id(true);
@@ -28,94 +30,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        // All users now redirect to the main dashboard
-        header("Location: ../pages/dashboard.php");
+        // --- THE FIX IS HERE: Role-Based Redirection ---
+        if ($authResult['role'] === 'supplier') {
+            header("Location: ../pages/supplier_dashboard.php");
+        } else {
+            header("Location: ../pages/dashboard.php");
+        }
         exit();
+
     } else {
-        $error_message = "Invalid username or password.";
+        $error_message = $authResult['message'];
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - SLATE System</title>
-  <link rel="icon" href="../assets/images/slate2.png" type="image/png">
-  <link rel="stylesheet" href="../assets/css/login.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login - SLATE System</title>
+    <link rel="icon" href="../assets/images/slate2.png" type="image/png">
+    <link rel="stylesheet" href="../assets/css/login.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 </head>
 <body>
-  <div class="main-container">
-    <div class="login-container">
-      <div class="welcome-panel">
-        <img src="../assets/images/hero.png" alt="Freight Management System Logo" class="hero-image">
-      </div>
-      <div class="login-panel">
-        <div class="login-box">
-          <img src="../assets/images/slate1.png" alt="Logo" />
-          <h2>Login</h2>
-          <form action="login.php" method="POST">
-            <?php if (isset($_GET['session_expired'])): ?>
-                <p style="color: #f59e0b; margin-bottom: 20px;">
-                    Your session has expired due to inactivity. Please log in again.
-                </p>
-            <?php endif; ?>
-            <?php if (!empty($error_message)): ?>
-                <p style="color: #f01111ff; margin-bottom: 20px;">
-                  <?php echo htmlspecialchars($error_message); ?>
-                </p>
-            <?php endif; ?>
-            <input type="text" name="username" id="username" placeholder="Username" required value="<?php echo htmlspecialchars($remembered_user); ?>">
-            <div class="password-wrapper">
-              <input type="password" name="password" id="password" placeholder="Password" required autocomplete="current-password">
-              <button type="button" class="toggle-password" aria-label="Show password">
-                <i class="fa-solid fa-eye" aria-hidden="true"></i>
-              </button>
+    <div class="main-container">
+        <div class="login-container">
+            <div class="welcome-panel">
+                <img src="../assets/images/hero.png" alt="Freight Management System Logo" class="hero-image">
             </div>
-            <div class="remember-me-container">
-              <input type="checkbox" id="remember_me" name="remember_me" <?php if(!empty($remembered_user)) echo 'checked'; ?>>
-              <label for="remember_me">Remember Me</label>
+            <div class="login-panel">
+                <div class="login-box">
+                    <img src="../assets/images/slate1.png" alt="Logo" />
+                    <h2>Login</h2>
+                    <form action="login.php" method="POST">
+                        <?php if (!empty($error_message)): ?>
+                            <p style="color: #f01111ff; margin-bottom: 20px;">
+                              <?php echo htmlspecialchars($error_message); ?>
+                            </p>
+                        <?php endif; ?>
+                        <input type="text" name="username" placeholder="Username" required value="<?php echo htmlspecialchars($remembered_user); ?>">
+                        <div class="password-wrapper">
+                            <input type="password" name="password" id="password" placeholder="Password" required>
+                            <button type="button" class="toggle-password"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                        <div class="remember-me-container">
+                            <input type="checkbox" id="remember_me" name="remember_me" <?php if(!empty($remembered_user)) echo 'checked'; ?>>
+                            <label for="remember_me">Remember Me</label>
+                        </div>
+                        <button type="submit" class="login-button">Log In</button>
+                        <p class="register-link" style="margin-top: 15px; font-size: 14px;">
+                            Don't have an account? <a href="register.php" style="color: #00c6ff; text-decoration: none;">Register as a supplier</a>
+                        </p>
+                    </form>
+                </div>
             </div>
-            <button type="submit" class="login-button">Log In</button>
-          </form>
         </div>
-      </div>
     </div>
-  </div>
-
-  <footer>
-    &copy; <?php echo date("Y"); ?> SLATE Freight Management System. All rights reserved.
-  </footer>
-
-  <script>
-    (function() {
-      const passwordInput = document.getElementById('password');
-      const toggleButton = document.querySelector('.toggle-password');
-      if (!passwordInput || !toggleButton) return;
-
-      toggleButton.addEventListener('click', function () {
-        const isPassword = passwordInput.getAttribute('type') === 'password';
-        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-        const icon = this.querySelector('i');
-        if (icon) {
-          icon.classList.toggle('fa-eye');
-          icon.classList.toggle('fa-eye-slash');
-        }
-        this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
-      });
-    })();
-  </script>
-  <script>
-    // Final check to prevent back button after logout
-    (function() {
-      if (sessionStorage.getItem('logout_in_progress')) {
-        sessionStorage.removeItem('logout_in_progress');
-        // Replace the current history entry with the login page
-        window.location.replace('login.php');
-      }
-    })();
-  </script>
+    <script>
+        // Password toggle script
+        const toggleButton = document.querySelector('.toggle-password');
+        const passwordInput = document.getElementById('password');
+        toggleButton.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    </script>
 </body>
 </html>

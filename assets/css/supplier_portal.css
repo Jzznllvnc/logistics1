@@ -1,0 +1,80 @@
+/* assets/css/supplier_portal.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --sp-primary: #0052cc;
+    --sp-secondary: #f2f7ff;
+    --sp-text: #4a5568;
+    --sp-heading: #1a202c;
+    --sp-bg: #f7fafc;
+    --sp-card-bg: #ffffff;
+    --sp-border: #e2e8f0;
+    --sp-shadow: rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--sp-bg);
+    color: var(--sp-text);
+}
+
+.supplier-header {
+    background-color: var(--sp-card-bg);
+    padding: 1rem 2.5rem;
+    border-bottom: 1px solid var(--sp-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.supplier-sidebar {
+    background-color: var(--sp-card-bg);
+    border-right: 1px solid var(--sp-border);
+    padding: 1.5rem;
+    height: 100vh;
+    position: fixed;
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+}
+
+.supplier-content {
+    margin-left: 260px;
+    padding: 2.5rem;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    color: var(--sp-text);
+    transition: all 0.2s ease-in-out;
+}
+
+.sidebar-link:hover {
+    background-color: var(--sp-secondary);
+    color: var(--sp-primary);
+}
+
+.sidebar-link.active {
+    background-color: var(--sp-primary);
+    color: white;
+    font-weight: 600;
+}
+
+.stat-card {
+    background-color: var(--sp-card-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--sp-border);
+    box-shadow: 0 4px 6px -1px var(--sp-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px var(--sp-shadow);
+}

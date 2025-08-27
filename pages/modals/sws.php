@@ -47,12 +47,6 @@
           <input type="hidden" name="action" id="stockAction" value="">
           
           <div id="supplier_selection_div" class="hidden mb-5">
-              <label for="modal_supplier_id" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Supplier</label>
-              <select id="modal_supplier_id" name="supplier_id" required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
-                  <option value="">-- Select Supplier --</option>
-                  <?php foreach ($allSuppliers as $supplier): ?>
-                      <option value="<?php echo $supplier['id']; ?>"><?php echo htmlspecialchars($supplier['supplier_name']); ?></option>
-                  <?php endforeach; ?>
               </select>
           </div>
           

@@ -20,21 +20,55 @@ $_SESSION['last_activity'] = time();
 // --- Include Database Connection ---
 require_once __DIR__ . '/../config/db.php';
 
-// --- Database-driven User Functions ---
+/**
+ * Authenticates a user using plain-text passwords and returns their role and status.
+ * @param string $username The user's username.
+ * @param string $password The user's plain-text password.
+ * @return array An array containing 'success' (bool), 'role' (string|null), and 'message' (string).
+ */
 function authenticateUser($username, $password) {
     $conn = getDbConnection();
-    $stmt = $conn->prepare("SELECT password FROM users WHERE username = ?");
+    $stmt = $conn->prepare(
+        "SELECT u.password, u.role, s.status 
+         FROM users u 
+         LEFT JOIN suppliers s ON u.supplier_id = s.id 
+         WHERE u.username = ?"
+    );
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
+    
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
+        
+        // **PLAIN TEXT PASSWORD CHECK**
         if ($password === $user['password']) {
-            $stmt->close(); $conn->close(); return true;
+            
+            // If the user is a supplier, check if their account is approved.
+            if ($user['role'] === 'supplier') {
+                if ($user['status'] === 'Approved') {
+                    $stmt->close(); $conn->close();
+                    return ['success' => true, 'role' => $user['role'], 'message' => 'Login successful.'];
+                } elseif ($user['status'] === 'Pending') {
+                    $stmt->close(); $conn->close();
+                    return ['success' => false, 'role' => null, 'message' => 'Your supplier account is pending approval.'];
+                } else { // Handles 'Rejected' or any other status
+                    $stmt->close(); $conn->close();
+                    return ['success' => false, 'role' => null, 'message' => 'Your supplier account has been rejected or is inactive.'];
+                }
+            }
+            
+            // For all other non-supplier roles, login is successful.
+            $stmt->close(); $conn->close();
+            return ['success' => true, 'role' => $user['role'], 'message' => 'Login successful.'];
         }
     }
-    $stmt->close(); $conn->close(); return false;
+    
+    // This message is returned if the username is not found or the password does not match.
+    $stmt->close(); $conn->close();
+    return ['success' => false, 'role' => null, 'message' => 'Invalid username or password.'];
 }
+
 
 function getUserRole($username) {
     $conn = getDbConnection();
@@ -58,7 +92,7 @@ function requireLogin() {
 }
 
 function requireAdmin() {
-    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'procurement')) {
         header("Location: dashboard.php");
         exit();
     }

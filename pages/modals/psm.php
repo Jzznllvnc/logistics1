@@ -76,12 +76,7 @@
       <input type="hidden" name="action" value="create_po">
       
       <div class="mb-5">
-        <label for="supplier_id_po" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Supplier</label>
-        <select name="supplier_id_po" id="supplier_id_po" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
-          <option value="">-- Select Supplier --</option>
-          <?php foreach($suppliers as $supplier): ?>
-            <option value="<?php echo $supplier['id']; ?>"><?php echo htmlspecialchars($supplier['supplier_name']); ?></option>
-          <?php endforeach; ?>
+        
         </select>
       </div>
       

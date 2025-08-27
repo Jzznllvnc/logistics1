@@ -2,7 +2,8 @@
 require_once '../includes/functions/auth.php';
 require_once '../includes/functions/supplier.php';
 require_once '../includes/functions/purchase_order.php';
-require_once '../includes/functions/inventory.php'; // For item list
+require_once '../includes/functions/inventory.php'; // For item list in modal
+require_once '../includes/functions/bids.php';     // For handling bids
 requireLogin();
 
 // Role check for admin/procurement
@@ -11,11 +12,53 @@ if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'procurement') {
     exit();
 }
 
-// Handle all form submissions
+// Handle all form submissions for this page
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    
-    // --- Admin-Only Actions ---
+
+    // --- Actions for both Admin & Procurement ---
+    if ($action === 'create_po') {
+        $itemName = $_POST['item_name_po'] ?? '';
+        $quantity = $_POST['quantity_po'] ?? 0;
+        if (createPurchaseOrder(null, $itemName, $quantity)) {
+             $_SESSION['flash_message'] = "Purchase Order for <strong>" . htmlspecialchars($itemName) . "</strong> created and is pending approval.";
+             $_SESSION['flash_message_type'] = 'success';
+        } else {
+            $_SESSION['flash_message'] = "Failed to create Purchase Order.";
+            $_SESSION['flash_message_type'] = 'error';
+        }
+    } elseif ($action === 'open_for_bidding') {
+        $po_id = $_POST['po_id'] ?? 0;
+        if (openPOForBidding($po_id)) {
+            $_SESSION['flash_message'] = "Purchase Order #$po_id is now open for bidding.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else {
+            $_SESSION['flash_message'] = "Failed to open PO for bidding.";
+            $_SESSION['flash_message_type'] = 'error';
+        }
+    } elseif ($action === 'award_bid') {
+        $po_id = $_POST['po_id'] ?? 0;
+        $supplier_id = $_POST['supplier_id'] ?? 0;
+        $bid_id = $_POST['bid_id'] ?? 0;
+        if (awardPOToSupplier($po_id, $supplier_id, $bid_id)) {
+            $_SESSION['flash_message'] = "Bid #$bid_id has been awarded for PO #$po_id.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else {
+            $_SESSION['flash_message'] = "Failed to award the bid.";
+            $_SESSION['flash_message_type'] = 'error';
+        }
+    } elseif ($action === 'reject_bid') {
+        $bid_id = $_POST['bid_id'] ?? 0;
+        if (rejectBid($bid_id)) {
+            $_SESSION['flash_message'] = "Bid #$bid_id has been rejected.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else {
+            $_SESSION['flash_message'] = "Failed to reject the bid.";
+            $_SESSION['flash_message_type'] = 'error';
+        }
+    }
+
+    // --- Admin-Only Actions for Supplier Management ---
     if ($_SESSION['role'] === 'admin') {
         if ($action === 'create_supplier' || $action === 'update_supplier') {
             $name = $_POST['supplier_name'] ?? '';
@@ -28,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['flash_message'] = "Supplier <strong>" . htmlspecialchars($name) . "</strong> created successfully.";
                     $_SESSION['flash_message_type'] = 'success';
                 } else {
-                    $_SESSION['flash_message'] = "Failed to create supplier. Please try again.";
+                    $_SESSION['flash_message'] = "Failed to create supplier.";
                     $_SESSION['flash_message_type'] = 'error';
                 }
             } else {
@@ -37,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['flash_message'] = "Supplier <strong>" . htmlspecialchars($name) . "</strong> updated successfully.";
                     $_SESSION['flash_message_type'] = 'success';
                 } else {
-                    $_SESSION['flash_message'] = "Failed to update supplier. Please try again.";
+                    $_SESSION['flash_message'] = "Failed to update supplier.";
                     $_SESSION['flash_message_type'] = 'error';
                 }
             }
@@ -47,44 +90,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['flash_message'] = "Supplier deleted successfully.";
                 $_SESSION['flash_message_type'] = 'success';
             } else {
-                $_SESSION['flash_message'] = "Failed to delete supplier. Please try again.";
+                $_SESSION['flash_message'] = "Failed to delete supplier.";
                 $_SESSION['flash_message_type'] = 'error';
             }
         }
     }
 
-    // --- Actions for All Roles on this Page ---
-    if ($action === 'create_po') {
-        $supplier_id = $_POST['supplier_id_po'] ?? 0;
-        $item_name = $_POST['item_name_po'] ?? '';
-        $quantity = $_POST['quantity_po'] ?? 0;
-        if (createPurchaseOrder($supplier_id, $item_name, $quantity)) {
-            $_SESSION['flash_message'] = "Purchase order created successfully for <strong>" . htmlspecialchars($quantity) . "</strong> x <strong>" . htmlspecialchars($item_name) . "</strong>.";
-            $_SESSION['flash_message_type'] = 'success';
-        } else {
-            $_SESSION['flash_message'] = "Failed to create purchase order. Please try again.";
-            $_SESSION['flash_message_type'] = 'error';
-        }
-    }
-    
     header("Location: procurement_sourcing.php");
     exit();
-}
-
-// Check for flash messages
-if (isset($_SESSION['flash_message'])) {
-    $message = $_SESSION['flash_message'];
-    $message_type = $_SESSION['flash_message_type'] ?? 'info';
-    unset($_SESSION['flash_message'], $_SESSION['flash_message_type']);
-} else {
-    $message = '';
-    $message_type = '';
 }
 
 // Fetch data for the page
 $suppliers = getAllSuppliers();
 $inventoryItems = getInventory();
-$purchaseOrders = getRecentPurchaseOrders();
+$purchaseOrders = getRecentPurchaseOrders(50);
+$bids_by_po = [];
+foreach ($purchaseOrders as $po) {
+    if ($po['status'] === 'Open for Bidding' || $po['status'] === 'Awarded') {
+        $bids_by_po[$po['id']] = getBidsForPO($po['id']);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -94,11 +119,10 @@ $purchaseOrders = getRecentPurchaseOrders();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logistics 1 - PSM</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
   <div class="sidebar" id="sidebar"> <?php include '../partials/sidebar.php'; ?> </div>
@@ -106,177 +130,202 @@ $purchaseOrders = getRecentPurchaseOrders();
     <div class="content" id="mainContent">
       <?php include '../partials/header.php'; ?>
       <h1 class="font-semibold page-title">Procurement & Sourcing</h1>
-      
-      <!-- Tabs Navigator -->
-      <div class="tabs-container mb-3">
+
+       <div class="tabs-container mb-3">
         <div class="tabs-bar">
-          <button class="tab-button active" data-tab="suppliers">
-            <i data-lucide="waypoints" class="w-4 h-4 mr-2"></i>
-            Suppliers
-          </button>
-          <button class="tab-button" data-tab="purchase-orders">
+          <button class="tab-button active" data-tab="purchase-orders">
             <i data-lucide="shopping-cart" class="w-4 h-4 mr-2"></i>
             Purchase Orders
           </button>
+           <?php if ($_SESSION['role'] === 'admin'): ?>
+          <button class="tab-button" data-tab="suppliers">
+            <i data-lucide="waypoints" class="w-4 h-4 mr-2"></i>
+            Suppliers
+          </button>
+          <?php endif; ?>
         </div>
       </div>
-      
-      <!-- Tab Content -->
-      <div class="tab-content active" id="suppliers-tab">
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
-            <div class="flex justify-between items-center mb-5">
-              <h2 class="text-2xl font-semibold text-[var(--text-color)]">Supplier Management</h2>
-              <?php if ($_SESSION['role'] === 'admin'): ?>
-              <button type="button" class="btn-primary" onclick="openCreateSupplierModal()">
-                <i data-lucide="workflow" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Add Supplier</span>
-              </button>
-              <?php endif; ?>
+
+      <div class="tab-content active" id="purchase-orders-tab">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Manage Purchase Orders</h2>
+                <button class="btn-primary" onclick="window.openModal(document.getElementById('createPOModal'))">
+                    <i data-lucide="plus" class="w-5 h-5 mr-2"></i>Create New PO
+                </button>
             </div>
+
             <div class="table-container">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Supplier Name</th>
-                    <th>Contact Person</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <?php if ($_SESSION['role'] === 'admin'): ?><th>Action</th><?php endif; ?>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php foreach($suppliers as $supplier): ?>
-                  <tr>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['supplier_name']); ?></td>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['contact_person']); ?></td>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['email']); ?></td>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($supplier['phone']); ?></td>
-                    <?php if ($_SESSION['role'] === 'admin'): ?>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]">
-                      <div class="relative">
-                        <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleSupplierDropdown(<?php echo $supplier['id']; ?>)">
-                          <i data-lucide="more-horizontal" class="w-6 h-6"></i>
-                        </button>
-                        <div id="supplier-dropdown-<?php echo $supplier['id']; ?>" class="action-dropdown hidden">
-                          <button type="button" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)'>
-                            <i data-lucide="edit-3" class="w-4 h-4 mr-3"></i>
-                            Edit
-                          </button>
-                          <button type="button" onclick="confirmDeleteSupplier(<?php echo $supplier['id']; ?>)">
-                            <i data-lucide="trash-2" class="w-4 h-4 mr-3"></i>
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                    <?php endif; ?>
-                  </tr>
-                  <?php endforeach; ?>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="tab-content" id="purchase-orders-tab">
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          <div class="xl:col-span-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6 shadow-sm">
-            <div class="flex justify-between items-center mb-5">
-              <h2 class="text-2xl font-semibold text-[var(--text-color)]">Recent Purchase Orders</h2>
-              <button type="button" id="createPOBtn" class="btn-primary">
-                <i data-lucide="shopping-cart" class="w-5 h-5 lg:mr-2 sm:mr-0"></i><span class="hidden sm:inline">Create PO</span>
-              </button>
-            </div>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Supplier</th>
-                    <th>Item</th>
-                    <th>Qty</th>
+                    <th>PO ID</th>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
                     <th>Status</th>
-                    <th>Date</th>
+                    <th>Order Date</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <?php foreach($purchaseOrders as $po): ?>
-                  <tr>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['supplier_name']); ?></td>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['item_name']); ?></td>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo htmlspecialchars($po['quantity']); ?></td>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]">
-                      <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full font-medium text-sm <?php 
-                        $status_class = '';
-                        $status_icon = '';
-                        switch(strtolower(str_replace(' ', '-', $po['status']))) {
-                          case 'pending': 
-                            $status_class = 'bg-amber-50 text-amber-700 border border-amber-200'; 
-                            $status_icon = 'clock';
-                            break;
-                          case 'approved': 
-                            $status_class = 'bg-blue-50 text-blue-700 border border-blue-200'; 
-                            $status_icon = 'check-circle';
-                            break;
-                          case 'shipped': 
-                            $status_class = 'bg-purple-50 text-purple-700 border border-purple-200'; 
-                            $status_icon = 'truck';
-                            break;
-                          case 'delivered': 
-                            $status_class = 'bg-emerald-50 text-emerald-700 border border-emerald-200'; 
-                            $status_icon = 'package-check';
-                            break;
-                          case 'cancelled': 
-                            $status_class = 'bg-red-50 text-red-700 border border-red-200'; 
-                            $status_icon = 'x-circle';
-                            break;
-                          case 'processing': 
-                            $status_class = 'bg-blue-50 text-blue-700 border border-blue-200'; 
-                            $status_icon = 'settings';
-                            break;
-                          default: 
-                            $status_class = 'bg-gray-50 text-gray-700 border border-gray-200';
-                            $status_icon = 'help-circle';
-                        }
-                        echo $status_class;
-                      ?>">
-                        <i data-lucide="<?php echo $status_icon; ?>" class="w-3.5 h-3.5"></i>
-                        <?php echo htmlspecialchars($po['status']); ?>
-                      </span>
-                    </td>
-                    <td class="py-3 px-4 border-b border-[var(--card-border)]"><?php echo date('M d, Y', strtotime($po['order_date'])); ?></td>
-                  </tr>
-                  <?php endforeach; ?>
+                  <?php if (empty($purchaseOrders)): ?>
+                    <tr><td colspan="6" class="table-empty">No purchase orders found.</td></tr>
+                  <?php else: foreach ($purchaseOrders as $po): ?>
+                      <tr>
+                        <td>#<?php echo $po['id']; ?></td>
+                        <td><?php echo htmlspecialchars($po['item_name']); ?></td>
+                        <td><?php echo $po['quantity']; ?></td>
+                        <td>
+                            <span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full
+                                <?php if ($po['status'] === 'Pending') echo 'bg-yellow-100 text-yellow-700';
+                                      elseif ($po['status'] === 'Open for Bidding') echo 'bg-blue-100 text-blue-700';
+                                      elseif ($po['status'] === 'Awarded') echo 'bg-green-100 text-green-700';
+                                      else echo 'bg-gray-100 text-gray-700'; ?>">
+                                <?php echo htmlspecialchars($po['status']); ?>
+                            </span>
+                        </td>
+                        <td><?php echo date("M j, Y", strtotime($po['order_date'])); ?></td>
+                        <td>
+                            <?php if ($po['status'] === 'Pending'): ?>
+                                <form method="POST" class="form-no-margin">
+                                    <input type="hidden" name="po_id" value="<?php echo $po['id']; ?>">
+                                    <button type="submit" name="action" value="open_for_bidding" class="btn-primary btn-small">Open for Bidding</button>
+                                </form>
+                            <?php elseif ($po['status'] === 'Open for Bidding' || $po['status'] === 'Awarded'): ?>
+                                <button class="btn-primary btn-small" onclick='openViewBidsModal(<?php echo $po["id"]; ?>, <?php echo json_encode($bids_by_po[$po["id"]] ?? []); ?>, "<?php echo $po["status"]; ?>")'>
+                                    View Bids (<?php echo count($bids_by_po[$po['id']] ?? []); ?>)
+                                </button>
+                            <?php endif; ?>
+                        </td>
+                      </tr>
+                  <?php endforeach; endif; ?>
                 </tbody>
               </table>
             </div>
-          </div>
         </div>
       </div>
+
+      <?php if ($_SESSION['role'] === 'admin'): ?>
+      <div class="tab-content" id="suppliers-tab">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Manage Suppliers</h2>
+                <button class="btn-primary" onclick="openCreateSupplierModal()">
+                   <i data-lucide="plus" class="w-5 h-5 mr-2"></i>Add Supplier
+                </button>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Supplier Name</th><th>Contact Person</th><th>Email</th><th>Phone</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach($suppliers as $supplier): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($supplier['supplier_name']); ?></td>
+                            <td><?php echo htmlspecialchars($supplier['contact_person']); ?></td>
+                            <td><?php echo htmlspecialchars($supplier['email']); ?></td>
+                            <td><?php echo htmlspecialchars($supplier['phone']); ?></td>
+                            <td>
+                                <div class="flex gap-2">
+                                    <button class="text-blue-500 hover:text-blue-700" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)'><i data-lucide="edit-3" class="w-5 h-5"></i></button>
+                                    <form method="POST" class="form-no-margin" onsubmit="return confirm('Are you sure you want to delete this supplier?');">
+                                        <input type="hidden" name="action" value="delete_supplier">
+                                        <input type="hidden" name="supplier_id" value="<?php echo $supplier['id']; ?>">
+                                        <button type="submit" class="text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+      </div>
+      <?php endif; ?>
+
     </div>
   </div>
 
   <?php include 'modals/psm.php'; ?>
+  <div id="viewBidsModal" class="modal hidden">
+    <div class="modal-content p-8 max-w-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="modal-title">Review Bids</h2>
+            <button type="button" class="close-button" onclick="window.closeModal(document.getElementById('viewBidsModal'))"><i data-lucide="x"></i></button>
+        </div>
+        <div id="bidsContainer" class="space-y-4 max-h-96 overflow-y-auto"></div>
+        <div class="flex justify-end mt-6">
+            <button type="button" class="btn bg-gray-200" onclick="window.closeModal(document.getElementById('viewBidsModal'))">Close</button>
+        </div>
+    </div>
+  </div>
 
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
   <script src="../assets/js/procurement.js"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-  
-  <?php if ($message && !empty(trim($message))): ?>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if (window.showCustomAlert) {
-            showCustomAlert(<?php echo json_encode($message); ?>, <?php echo json_encode($message_type); ?>);
+    lucide.createIcons();
+
+    function openViewBidsModal(po_id, bids, po_status) {
+        const modal = document.getElementById('viewBidsModal');
+        const container = document.getElementById('bidsContainer');
+        container.innerHTML = '';
+
+        if (!bids || bids.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center py-8">No bids have been submitted for this item yet.</p>';
         } else {
-            // Fallback - strip HTML for plain alert
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = <?php echo json_encode($message); ?>;
-            alert(tempDiv.textContent || tempDiv.innerText || '');
+            bids.forEach(bid => {
+                const isAwarded = bid.status === 'Awarded';
+                const isRejected = bid.status === 'Rejected';
+                const bidElement = document.createElement('div');
+                let bgColor = 'border-gray-200';
+                if (isAwarded) bgColor = 'bg-green-50 border-green-200';
+                if (isRejected) bgColor = 'bg-red-50 border-red-200';
+
+                bidElement.className = `border rounded-lg p-4 flex justify-between items-center ${bgColor}`;
+
+                let actionButtons = '';
+                if (po_status === 'Open for Bidding' && bid.status === 'Pending') {
+                    actionButtons = `
+                        <div class="flex gap-2">
+                            <form method="POST" class="form-no-margin">
+                                <input type="hidden" name="action" value="award_bid">
+                                <input type="hidden" name="po_id" value="${po_id}">
+                                <input type="hidden" name="supplier_id" value="${bid.supplier_id}">
+                                <input type="hidden" name="bid_id" value="${bid.id}">
+                                <button type="submit" class="btn-primary btn-small">Award</button>
+                            </form>
+                            <form method="POST" class="form-no-margin">
+                                <input type="hidden" name="action" value="reject_bid">
+                                <input type="hidden" name="bid_id" value="${bid.id}">
+                                <button type="submit" class="btn btn-danger btn-small">Reject</button>
+                            </form>
+                        </div>
+                    `;
+                } else if (isAwarded) {
+                    actionButtons = `<span class="font-bold text-green-600">AWARDED</span>`;
+                } else if (isRejected) {
+                     actionButtons = `<span class="font-bold text-red-600">REJECTED</span>`;
+                }
+
+                bidElement.innerHTML = `
+                    <div>
+                        <p class="font-bold text-lg">${bid.supplier_name}</p>
+                        <p class="text-2xl font-light ${isAwarded ? 'text-green-600' : 'text-gray-800'}">$${parseFloat(bid.bid_amount).toFixed(2)}</p>
+                        <p class="text-sm text-gray-600 mt-1"><em>${bid.notes || 'No notes provided.'}</em></p>
+                    </div>
+                    ${actionButtons}
+                `;
+                container.appendChild(bidElement);
+            });
         }
-    });
+
+        if (window.openModal) {
+            window.openModal(modal);
+        }
+    }
   </script>
-  <?php endif; ?>
 </body>
 </html>

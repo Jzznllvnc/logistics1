@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 26, 2025 at 03:59 PM
+-- Generation Time: Aug 27, 2025 at 05:25 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -33,21 +33,22 @@ CREATE TABLE `assets` (
   `asset_type` varchar(100) DEFAULT NULL,
   `purchase_date` date DEFAULT NULL,
   `status` varchar(50) DEFAULT 'Operational',
+  `image_path` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Assets table with image upload support for ALMS';
 
 --
 -- Dumping data for table `assets`
 --
 
-INSERT INTO `assets` (`id`, `asset_name`, `asset_type`, `purchase_date`, `status`, `created_at`) VALUES
-(1, 'Forklift #1', 'Material Handling', '2023-05-15', 'Operational', '2025-08-21 17:42:03'),
-(2, 'Delivery Truck - D07', 'Vehicle', '2022-11-20', 'Operational', '2025-08-21 17:42:03'),
-(3, 'Pallet Jack - A', 'Material Handling', '2024-01-30', 'Under Maintenance', '2025-08-21 17:42:03'),
-(4, 'Warehouse Conveyor Belt', 'Equipment', '2021-08-01', 'Operational', '2025-08-21 17:42:03'),
-(5, 'Cargo Van - CV01', 'Vehicle', '2023-01-10', 'Operational', '2025-08-26 02:00:00'),
-(6, 'Reach Truck - RT02', 'Material Handling', '2022-09-22', 'Operational', '2025-08-26 02:00:00'),
-(7, 'Shipping Container 40ft', 'Equipment', '2021-05-18', 'Operational', '2025-08-26 02:00:00');
+INSERT INTO `assets` (`id`, `asset_name`, `asset_type`, `purchase_date`, `status`, `image_path`, `created_at`) VALUES
+(1, 'Forklift #1', 'Material Handling', '2023-05-15', 'Operational', 'assets/images/uploads/assets/asset_68ae9f2ecf211.png', '2025-08-21 17:42:03'),
+(2, 'Delivery Truck - D07', 'Vehicle', '2022-11-20', 'Operational', 'assets/images/uploads/assets/asset_68ae9e3be22d5.png', '2025-08-21 17:42:03'),
+(3, 'Pallet Jack - A', 'Material Handling', '2024-01-30', 'Under Maintenance', 'assets/images/uploads/assets/asset_68ae9fe352590.png', '2025-08-21 17:42:03'),
+(4, 'Warehouse Conveyor Belt', 'Equipment', '2021-08-01', 'Operational', 'assets/images/uploads/assets/asset_68aea289cdc3f.png', '2025-08-21 17:42:03'),
+(5, 'Cargo Van - CV01', 'Vehicle', '2023-01-10', 'Operational', 'assets/images/uploads/assets/asset_68aea34ed961d.png', '2025-08-26 02:00:00'),
+(6, 'Reach Truck - RT02', 'Material Handling', '2022-09-22', 'Operational', 'assets/images/uploads/assets/asset_68aea147d82be.png', '2025-08-26 02:00:00'),
+(7, 'Shipping Container 40ft', 'Equipment', '2021-05-18', 'Operational', 'assets/images/uploads/assets/asset_68aea1c00556e.png', '2025-08-26 02:00:00');
 
 -- --------------------------------------------------------
 
@@ -67,13 +68,13 @@ CREATE TABLE `asset_forecast_cache` (
 --
 
 INSERT INTO `asset_forecast_cache` (`asset_id`, `risk`, `next_maintenance`, `cached_at`) VALUES
-(1, 'Low', 'Feb 22, 2026', '2025-08-26 15:46:29'),
-(2, 'Low', 'Nov 20, 2026', '2025-08-26 15:49:10'),
-(3, 'Low', 'Nov 21, 2025', '2025-08-26 15:46:29'),
-(4, 'Low', 'Dec 10, 2025', '2025-08-26 15:46:29'),
-(5, 'Medium', 'Nov 15, 2025', '2025-08-26 15:46:29'),
-(6, 'Medium', 'May 10, 2026', '2025-08-26 15:46:29'),
-(7, 'Low', 'Feb 20, 2026', '2025-08-26 15:46:29');
+(1, 'Low', 'Feb 22, 2026', '2025-08-27 16:03:59'),
+(2, 'Low', 'Nov 20, 2025', '2025-08-27 16:03:59'),
+(3, 'Medium', 'Sep 27, 2025', '2025-08-27 16:03:59'),
+(4, 'Low', 'Dec 10, 2025', '2025-08-27 16:03:59'),
+(5, 'Low', 'Nov 27, 2025', '2025-08-27 16:03:59'),
+(6, 'Low', 'May 10, 2026', '2025-08-27 16:03:59'),
+(7, 'Low', 'Feb 20, 2026', '2025-08-27 16:03:59');
 
 -- --------------------------------------------------------
 
@@ -138,6 +139,29 @@ INSERT INTO `asset_usage_logs` (`log_id`, `asset_id`, `log_date`, `metric_name`,
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `bids`
+--
+
+CREATE TABLE `bids` (
+  `id` int NOT NULL,
+  `po_id` int NOT NULL,
+  `supplier_id` int NOT NULL,
+  `bid_amount` decimal(10,2) NOT NULL,
+  `notes` text,
+  `bid_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `status` varchar(50) DEFAULT 'Pending'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
+-- Dumping data for table `bids`
+--
+
+INSERT INTO `bids` (`id`, `po_id`, `supplier_id`, `bid_amount`, `notes`, `bid_date`, `status`) VALUES
+(7, 6, 10, '1233.00', 'penge pera', '2025-08-27 17:23:20', 'Pending');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `documents`
 --
 
@@ -187,7 +211,7 @@ INSERT INTO `inventory` (`id`, `item_name`, `quantity`, `last_updated`) VALUES
 (12, 'Cardboard Boxes (Small)', 1500, '2025-08-21 16:15:36'),
 (13, 'Bubble Wrap Rolls', 75, '2025-08-21 16:15:36'),
 (14, 'Shipping Labels (Pack of 1000)', 50, '2025-08-21 16:15:36'),
-(15, 'Bill of Lading Forms (Pack of 500)', 59, '2025-08-25 09:00:26'),
+(15, 'Bill of Lading Forms (Pack of 500)', 59, '2025-08-26 20:09:22'),
 (17, 'Cargo Straps', 110, '2025-08-26 15:55:37'),
 (18, 'Safety Box Cutters', 30, '2025-08-21 16:15:36'),
 (19, 'Work Gloves (Pairs)', 90, '2025-08-21 16:15:36');
@@ -210,21 +234,21 @@ CREATE TABLE `inventory_forecast_cache` (
 --
 
 INSERT INTO `inventory_forecast_cache` (`item_id`, `analysis`, `action`, `cached_at`) VALUES
-(4, 'Tape stock is declining rapidly.', 'Expedite Reorder', '2025-08-25 09:30:07'),
-(5, 'Standard pallets show a significant drop recently.', 'Expedite Reorder', '2025-08-25 09:30:07'),
-(6, 'Euro Pallets stock is steadily declining.', 'Reorder Soon', '2025-08-26 13:26:12'),
-(7, 'Heat Treated Pallets stock is declining, with a period of stability.', 'Reorder Soon', '2025-08-26 13:26:12'),
-(8, 'Shrink wrap stock is erratic, needs closer monitoring.', 'Monitor Stock', '2025-08-25 09:30:07'),
-(9, 'Packing Tape Rolls stock shows a recent significant increase after a period of decline.', 'Monitor Stock', '2025-08-26 13:26:12'),
-(10, 'Cardboard Boxes (Large) stock is consistently declining.', 'Expedite Reorder', '2025-08-26 13:26:12'),
-(11, 'Cardboard Boxes (Medium) stock shows a recent increase after a period of decline.', 'Monitor Stock', '2025-08-26 13:26:12'),
-(12, 'Cardboard Boxes (Small) stock is slowly decreasing.', 'Monitor Stock', '2025-08-26 13:26:12'),
-(13, 'Bubble Wrap Rolls stock is rapidly depleting.', 'Expedite Reorder', '2025-08-26 13:26:12'),
-(14, 'Shipping labels are depleting steadily.', 'Reorder Soon', '2025-08-25 09:30:07'),
-(15, 'Bill of Lading Forms stock is steadily decreasing.', 'Reorder Soon', '2025-08-26 13:26:12'),
-(17, 'Cargo Straps stock is steadily increasing.', 'Monitor Stock', '2025-08-26 13:26:12'),
-(18, 'Safety Box Cutters stock is slowly decreasing.', 'Monitor Stock', '2025-08-26 13:26:12'),
-(19, 'Work gloves stock shows inconsistent usage.', 'Monitor Stock', '2025-08-25 09:30:07');
+(4, 'API Error', 'Error', '2025-08-26 17:03:17'),
+(5, 'API Error', 'Error', '2025-08-26 17:03:17'),
+(6, 'Euro Pallets stock is steadily declining.', 'Reorder Soon', '2025-08-27 14:14:44'),
+(7, 'Heat Treated Pallets stock is declining, with a period of stability.', 'Reorder Soon', '2025-08-27 14:14:44'),
+(8, 'API Error', 'Error', '2025-08-26 17:03:17'),
+(9, 'Packing Tape Rolls stock shows a recent significant increase after a period of decline.', 'Monitor Stock', '2025-08-27 14:14:44'),
+(10, 'Cardboard Boxes (Large) stock is consistently declining.', 'Expedite Reorder', '2025-08-27 14:14:44'),
+(11, 'Cardboard Boxes (Medium) stock shows a recent increase after a period of decline.', 'Monitor Stock', '2025-08-27 14:14:44'),
+(12, 'Cardboard Boxes (Small) stock is slowly decreasing.', 'Monitor Stock', '2025-08-27 14:14:44'),
+(13, 'Bubble Wrap Rolls stock is rapidly depleting.', 'Expedite Reorder', '2025-08-27 14:14:44'),
+(14, 'API Error', 'Error', '2025-08-26 17:03:17'),
+(15, 'Bill of Lading Forms stock is steadily decreasing.', 'Reorder Soon', '2025-08-27 14:14:44'),
+(17, 'Cargo Straps stock is steadily increasing.', 'Monitor Stock', '2025-08-27 14:14:44'),
+(18, 'Safety Box Cutters stock is slowly decreasing.', 'Monitor Stock', '2025-08-27 14:14:44'),
+(19, 'API Error', 'Error', '2025-08-26 17:03:17');
 
 -- --------------------------------------------------------
 
@@ -524,7 +548,24 @@ INSERT INTO `maintenance_history` (`id`, `asset_id`, `status`, `notes`, `timesta
 (25, 7, 'Operational', 'Initial registration.', '2021-05-18 03:00:00'),
 (26, 7, 'Under Maintenance', 'Structural integrity check and door seal replacement.', '2025-01-20 05:00:00'),
 (27, 7, 'Operational', 'Inspection passed, maintenance complete.', '2025-01-22 02:00:00'),
-(28, 2, 'Operational', 'Maintenance task completed.', '2025-08-26 15:49:09');
+(28, 2, 'Operational', 'Maintenance task completed.', '2025-08-26 15:49:09'),
+(30, 5, 'Operational', 'Status updated.', '2025-08-26 19:12:20'),
+(31, 5, 'Operational', 'Status updated.', '2025-08-26 19:12:25'),
+(32, 5, 'Operational', 'Status updated.', '2025-08-26 19:17:12'),
+(33, 5, 'Operational', 'Status updated.', '2025-08-26 19:17:23'),
+(34, 5, 'Operational', 'Status updated.', '2025-08-26 19:19:51'),
+(35, 5, 'Operational', 'Status updated.', '2025-08-26 19:19:58'),
+(37, 5, 'Operational', 'Status updated.', '2025-08-26 19:24:53'),
+(38, 5, 'Operational', 'Status updated.', '2025-08-26 19:25:00'),
+(39, 5, 'Operational', 'Status updated.', '2025-08-27 05:44:56'),
+(40, 2, 'Operational', 'Status updated.', '2025-08-27 05:57:15'),
+(41, 1, 'Operational', 'Status updated.', '2025-08-27 06:01:18'),
+(42, 3, 'Under Maintenance', 'Status updated.', '2025-08-27 06:04:19'),
+(43, 6, 'Operational', 'Status updated.', '2025-08-27 06:07:33'),
+(44, 6, 'Operational', 'Status updated.', '2025-08-27 06:10:15'),
+(45, 7, 'Operational', 'Status updated.', '2025-08-27 06:12:16'),
+(46, 4, 'Operational', 'Status updated.', '2025-08-27 06:15:37'),
+(47, 5, 'Operational', 'Status updated.', '2025-08-27 06:18:54');
 
 -- --------------------------------------------------------
 
@@ -552,6 +593,27 @@ INSERT INTO `maintenance_schedules` (`id`, `asset_id`, `task_description`, `sche
 (10, 3, 'AI Recommended: Proactive check-up.', '2025-09-21', 'Completed', '2025-08-26', 'Automated based on High risk prediction.'),
 (11, 2, 'AI Recommended: Proactive check-up.', '2025-10-20', 'Completed', '2025-08-26', 'Automated based on High risk prediction.'),
 (12, 6, 'AI Recommended: Proactive check-up.', '2026-05-10', 'Scheduled', NULL, 'Automated based on Medium risk prediction.');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` int NOT NULL,
+  `supplier_id` int NOT NULL,
+  `message` text NOT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
+-- Dumping data for table `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `supplier_id`, `message`, `is_read`, `created_at`) VALUES
+(4, 10, 'Congratulations! Your bid for \'tape\' (PO #1) has been awarded.', 1, '2025-08-27 17:11:48');
 
 -- --------------------------------------------------------
 
@@ -604,13 +666,6 @@ CREATE TABLE `project_resources` (
   `supplier_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
---
--- Dumping data for table `project_resources`
---
-
-INSERT INTO `project_resources` (`project_id`, `supplier_id`) VALUES
-(2, 2);
-
 -- --------------------------------------------------------
 
 --
@@ -619,22 +674,22 @@ INSERT INTO `project_resources` (`project_id`, `supplier_id`) VALUES
 
 CREATE TABLE `purchase_orders` (
   `id` int NOT NULL,
-  `supplier_id` int NOT NULL,
+  `supplier_id` int DEFAULT NULL,
   `item_name` varchar(255) NOT NULL,
   `quantity` int NOT NULL,
   `status` varchar(50) DEFAULT 'Pending',
-  `order_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `order_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `awarded_to_supplier_id` int DEFAULT NULL,
+  `awarded_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
 -- Dumping data for table `purchase_orders`
 --
 
-INSERT INTO `purchase_orders` (`id`, `supplier_id`, `item_name`, `quantity`, `status`, `order_date`) VALUES
-(1, 2, 'tape', 23123, 'Pending', '2025-08-21 16:33:45'),
-(2, 2, 'Cargo Straps', 400, 'Pending', '2025-08-25 11:05:07'),
-(3, 2, 'Euro Pallets (1200x800)', 12, 'Pending', '2025-08-26 15:55:52'),
-(4, 4, 'Flashlight', 10, 'Pending', '2025-08-26 15:58:24');
+INSERT INTO `purchase_orders` (`id`, `supplier_id`, `item_name`, `quantity`, `status`, `order_date`, `awarded_to_supplier_id`, `awarded_at`) VALUES
+(5, NULL, 'Standard Pallets (48x40)', 31, 'Open for Bidding', '2025-08-27 17:18:07', NULL, NULL),
+(6, NULL, 'Work Gloves (Pairs)', 123123, 'Open for Bidding', '2025-08-27 17:20:35', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -649,6 +704,8 @@ CREATE TABLE `suppliers` (
   `email` varchar(255) DEFAULT NULL,
   `phone` varchar(50) DEFAULT NULL,
   `address` text,
+  `verification_document_path` varchar(255) DEFAULT NULL,
+  `status` varchar(50) DEFAULT 'Pending',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
@@ -656,11 +713,8 @@ CREATE TABLE `suppliers` (
 -- Dumping data for table `suppliers`
 --
 
-INSERT INTO `suppliers` (`id`, `supplier_name`, `contact_person`, `email`, `phone`, `address`, `created_at`) VALUES
-(1, 'Global Freight Forwarders', 'John Davis', 'john.d@gff.com', '+1-202-555-0171', '123 Shipping Lane, Long Beach, CA 90802', '2025-08-21 16:28:42'),
-(2, 'Express Cargo Inc.', 'Maria Rodriguez', 'maria.r@expresscargo.com', '+44 20 7946 0958', 'Unit 5, Cargo Terminal, Heathrow Airport, UK', '2025-08-21 16:28:42'),
-(3, 'Oceanic Transport Co.', 'Wei Chen', 'wei.c@oceanictrans.com', '+65 6749 8888', '70 Shenton Way, #12-01, Singapore 079118', '2025-08-21 16:28:42'),
-(4, 'rovic', 'bebe123', 'roviccastrodes@yahoo.com', '099123', '55 vaedrew', '2025-08-21 16:34:18');
+INSERT INTO `suppliers` (`id`, `supplier_name`, `contact_person`, `email`, `phone`, `address`, `verification_document_path`, `status`, `created_at`) VALUES
+(10, 'supplier1', 'sup1', 'jazznelle002@gmail.com', '099123', 'weqweqwe', 'uploads/verification/68af3bde25e40-cor (1) (1).pdf', 'Approved', '2025-08-27 17:09:50');
 
 -- --------------------------------------------------------
 
@@ -673,6 +727,7 @@ CREATE TABLE `users` (
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` varchar(50) NOT NULL,
+  `supplier_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
@@ -680,13 +735,16 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `password`, `role`, `created_at`) VALUES
-(1, 'admin', 'admin123', 'admin', '2025-08-21 17:20:50'),
-(2, 'warehouse', 'wh123', 'smart_warehousing', '2025-08-21 17:20:50'),
-(3, 'procure', 'pr123', 'procurement', '2025-08-21 17:20:50'),
-(4, 'pltuser', 'plt123', 'plt', '2025-08-21 17:20:50'),
-(5, 'almsuser', 'alms123', 'alms', '2025-08-21 17:20:50'),
-(6, 'dtrsuser', 'dtrs123', 'dtrs', '2025-08-21 17:20:50');
+INSERT INTO `users` (`id`, `username`, `password`, `role`, `supplier_id`, `created_at`) VALUES
+(1, 'admin', 'admin123', 'admin', NULL, '2025-08-21 17:20:50'),
+(2, 'warehouse', 'wh123', 'smart_warehousing', NULL, '2025-08-21 17:20:50'),
+(3, 'procure', 'pr123', 'procurement', NULL, '2025-08-21 17:20:50'),
+(4, 'pltuser', 'plt123', 'plt', NULL, '2025-08-21 17:20:50'),
+(5, 'almsuser', 'alms123', 'alms', NULL, '2025-08-21 17:20:50'),
+(6, 'dtrsuser', 'dtrs123', 'dtrs', NULL, '2025-08-21 17:20:50'),
+(10, 'chrovic', 'pogi1234567', 'supplier', NULL, '2025-08-27 15:41:26'),
+(11, 'pogi', 'pogi12345', 'supplier', NULL, '2025-08-27 16:05:48'),
+(12, 'sup1', 'sup123', 'supplier', 10, '2025-08-27 17:09:50');
 
 --
 -- Indexes for dumped tables
@@ -710,6 +768,14 @@ ALTER TABLE `asset_forecast_cache`
 ALTER TABLE `asset_usage_logs`
   ADD PRIMARY KEY (`log_id`),
   ADD KEY `asset_id` (`asset_id`);
+
+--
+-- Indexes for table `bids`
+--
+ALTER TABLE `bids`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `po_id` (`po_id`),
+  ADD KEY `supplier_id` (`supplier_id`);
 
 --
 -- Indexes for table `documents`
@@ -752,6 +818,13 @@ ALTER TABLE `maintenance_schedules`
   ADD KEY `asset_id` (`asset_id`);
 
 --
+-- Indexes for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `supplier_id` (`supplier_id`);
+
+--
 -- Indexes for table `procurement_requests`
 --
 ALTER TABLE `procurement_requests`
@@ -789,7 +862,8 @@ ALTER TABLE `suppliers`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `username` (`username`);
+  ADD UNIQUE KEY `username` (`username`),
+  ADD KEY `fk_user_supplier` (`supplier_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -799,13 +873,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `assets`
 --
 ALTER TABLE `assets`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `asset_usage_logs`
 --
 ALTER TABLE `asset_usage_logs`
   MODIFY `log_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+
+--
+-- AUTO_INCREMENT for table `bids`
+--
+ALTER TABLE `bids`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `documents`
@@ -829,13 +909,19 @@ ALTER TABLE `inventory_history`
 -- AUTO_INCREMENT for table `maintenance_history`
 --
 ALTER TABLE `maintenance_history`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT for table `maintenance_schedules`
 --
 ALTER TABLE `maintenance_schedules`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT for table `notifications`
+--
+ALTER TABLE `notifications`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `procurement_requests`
@@ -853,19 +939,19 @@ ALTER TABLE `projects`
 -- AUTO_INCREMENT for table `purchase_orders`
 --
 ALTER TABLE `purchase_orders`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `suppliers`
 --
 ALTER TABLE `suppliers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Constraints for dumped tables
@@ -882,6 +968,13 @@ ALTER TABLE `asset_forecast_cache`
 --
 ALTER TABLE `asset_usage_logs`
   ADD CONSTRAINT `asset_usage_logs_ibfk_1` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `bids`
+--
+ALTER TABLE `bids`
+  ADD CONSTRAINT `bids_ibfk_1` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bids_ibfk_2` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `inventory_forecast_cache`
@@ -908,6 +1001,12 @@ ALTER TABLE `maintenance_schedules`
   ADD CONSTRAINT `maintenance_schedules_ibfk_1` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `procurement_requests`
 --
 ALTER TABLE `procurement_requests`
@@ -925,6 +1024,12 @@ ALTER TABLE `project_resources`
 --
 ALTER TABLE `purchase_orders`
   ADD CONSTRAINT `purchase_orders_ibfk_1` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `users`
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `fk_user_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

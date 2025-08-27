@@ -1,0 +1,112 @@
+/* assets/css/register.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white;
+}
+
+.main-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.register-container {
+    width: 100%;
+    max-width: 500px;
+    background: rgba(31, 42, 56, 0.8);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.register-panel {
+    padding: 40px 30px;
+}
+
+.register-box {
+    width: 100%;
+    text-align: center;
+}
+
+.register-box img {
+    width: 150px;
+    margin-bottom: 15px;
+}
+
+.register-box h2 {
+    margin-bottom: 25px;
+    color: #ffffff;
+}
+
+.register-box input[type="text"],
+.register-box input[type="email"],
+.register-box input[type="tel"],
+.register-box input[type="password"],
+.register-box textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.register-box input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 6px;
+}
+
+.register-box label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #a0a0a0;
+}
+
+.register-box .register-button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(to right, #0072ff, #00c6ff);
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.register-box .register-button:hover {
+    background: linear-gradient(to right, #0052cc, #009ee3);
+}
+
+.login-link {
+    margin-top: 20px;
+    font-size: 0.9em;
+}
+
+.login-link a {
+    color: #00c6ff;
+    text-decoration: none;
+}
