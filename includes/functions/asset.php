@@ -11,10 +11,10 @@ function getAllAssets() {
     return $assets;
 }
 
-function createAsset($name, $type, $purchase_date, $status) {
+function createAsset($name, $type, $purchase_date, $status, $image_path = null) {
     $conn = getDbConnection();
-    $stmt = $conn->prepare("INSERT INTO assets (asset_name, asset_type, purchase_date, status) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $name, $type, $purchase_date, $status);
+    $stmt = $conn->prepare("INSERT INTO assets (asset_name, asset_type, purchase_date, status, image_path) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssss", $name, $type, $purchase_date, $status, $image_path);
     $success = $stmt->execute();
     if ($success) {
         $asset_id = $conn->insert_id;
@@ -28,10 +28,18 @@ function createAsset($name, $type, $purchase_date, $status) {
     return $success;
 }
 
-function updateAsset($id, $name, $type, $purchase_date, $status) {
+function updateAsset($id, $name, $type, $purchase_date, $status, $image_path = null) {
     $conn = getDbConnection();
-    $stmt = $conn->prepare("UPDATE assets SET asset_name = ?, asset_type = ?, purchase_date = ?, status = ? WHERE id = ?");
-    $stmt->bind_param("ssssi", $name, $type, $purchase_date, $status, $id);
+    
+    // If image_path is provided, update it; otherwise, keep the existing image
+    if ($image_path !== null) {
+        $stmt = $conn->prepare("UPDATE assets SET asset_name = ?, asset_type = ?, purchase_date = ?, status = ?, image_path = ? WHERE id = ?");
+        $stmt->bind_param("sssssi", $name, $type, $purchase_date, $status, $image_path, $id);
+    } else {
+        $stmt = $conn->prepare("UPDATE assets SET asset_name = ?, asset_type = ?, purchase_date = ?, status = ? WHERE id = ?");
+        $stmt->bind_param("ssssi", $name, $type, $purchase_date, $status, $id);
+    }
+    
     $success = $stmt->execute();
     if ($success) {
         $hist_stmt = $conn->prepare("INSERT INTO maintenance_history (asset_id, status, notes) VALUES (?, ?, 'Status updated.')");
@@ -46,12 +54,86 @@ function updateAsset($id, $name, $type, $purchase_date, $status) {
 
 function deleteAsset($id) {
     $conn = getDbConnection();
+    
+    // Get the image path before deleting the asset
+    $stmt_select = $conn->prepare("SELECT image_path FROM assets WHERE id = ?");
+    $stmt_select->bind_param("i", $id);
+    $stmt_select->execute();
+    $result = $stmt_select->get_result();
+    $asset = $result->fetch_assoc();
+    $stmt_select->close();
+    
+    // Delete the asset record
     $stmt = $conn->prepare("DELETE FROM assets WHERE id = ?");
     $stmt->bind_param("i", $id);
     $success = $stmt->execute();
+    
+    // If deletion was successful and there was an image, delete the file
+    if ($success && $asset && !empty($asset['image_path'])) {
+        $file_path = __DIR__ . '/../../' . $asset['image_path'];
+        if (file_exists($file_path)) {
+            unlink($file_path);
+        }
+    }
+    
     $stmt->close();
     $conn->close();
     return $success;
+}
+
+// --- Image Upload Helper Functions ---
+function handleAssetImageUpload($existing_image_path = null) {
+    if (!isset($_FILES['asset_image']) || $_FILES['asset_image']['error'] === UPLOAD_ERR_NO_FILE) {
+        return $existing_image_path; // No new file uploaded, keep existing
+    }
+    
+    $file = $_FILES['asset_image'];
+    
+    // Check for upload errors
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        return false;
+    }
+    
+    // Validate file size (5MB limit)
+    if ($file['size'] > 5 * 1024 * 1024) {
+        return false;
+    }
+    
+    // Validate file type
+    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+    $file_info = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($file_info, $file['tmp_name']);
+    finfo_close($file_info);
+    
+    if (!in_array($mime_type, $allowed_types)) {
+        return false;
+    }
+    
+    // Generate unique filename
+    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $filename = 'asset_' . uniqid() . '.' . $extension;
+    $upload_dir = __DIR__ . '/../../assets/images/uploads/assets/';
+    $upload_path = $upload_dir . $filename;
+    
+    // Create upload directory if it doesn't exist
+    if (!is_dir($upload_dir)) {
+        mkdir($upload_dir, 0755, true);
+    }
+    
+    // Move uploaded file
+    if (move_uploaded_file($file['tmp_name'], $upload_path)) {
+        // Delete old image if it exists and we're updating
+        if ($existing_image_path && !empty($existing_image_path)) {
+            $old_file_path = __DIR__ . '/../../' . $existing_image_path;
+            if (file_exists($old_file_path)) {
+                unlink($old_file_path);
+            }
+        }
+        
+        return 'assets/images/uploads/assets/' . $filename;
+    }
+    
+    return false;
 }
 
 // --- Maintenance Schedule Functions ---

@@ -6,8 +6,8 @@ function openCreateProjectModal() {
     document.getElementById('projectModalTitleText').innerText = 'Create New Project';
     document.getElementById('projectModalSubtitle').innerText = 'Create a new logistics project for tracking.';
     document.getElementById('formAction').value = 'create_project';
-    // Clear supplier selections
-    Array.from(document.querySelectorAll('#assigned_suppliers option')).forEach(opt => opt.selected = false);
+    // Clear supplier checkbox selections
+    Array.from(document.querySelectorAll('input[name="assigned_suppliers[]"]')).forEach(checkbox => checkbox.checked = false);
     if (window.openModal) {
         window.openModal(document.getElementById('projectModal'));
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -30,14 +30,14 @@ function openEditProjectModal(project, allSuppliers) {
     document.getElementById('start_date').value = project.start_date;
     document.getElementById('end_date').value = project.end_date;
     
-    // Pre-select the assigned suppliers
+    // Pre-check the assigned supplier checkboxes
     const assigned = project.assigned_suppliers ? project.assigned_suppliers.split(', ') : [];
-    Array.from(document.querySelectorAll('#assigned_suppliers option')).forEach(opt => {
-        const supplier = allSuppliers.find(s => s.id == opt.value);
+    Array.from(document.querySelectorAll('input[name="assigned_suppliers[]"]')).forEach(checkbox => {
+        const supplier = allSuppliers.find(s => s.id == checkbox.value);
         if (supplier && assigned.includes(supplier.supplier_name)) {
-            opt.selected = true;
+            checkbox.checked = true;
         } else {
-            opt.selected = false;
+            checkbox.checked = false;
         }
     });
 

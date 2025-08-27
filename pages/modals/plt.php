@@ -52,13 +52,24 @@
           </div>
           
           <div>
-            <label for="assigned_suppliers" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Assign Resources (Suppliers)</label>
-            <select name="assigned_suppliers[]" id="assigned_suppliers" multiple size="5" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
+            <label class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Assign Resources (Suppliers)</label>
+            <div class="w-full max-h-32 overflow-y-auto p-3 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)]">
               <?php foreach($allSuppliers as $supplier): ?>
-                <option value="<?php echo $supplier['id']; ?>"><?php echo htmlspecialchars($supplier['supplier_name']); ?></option>
+                <div class="flex items-center mb-2 last:mb-0">
+                  <input 
+                    type="checkbox" 
+                    name="assigned_suppliers[]" 
+                    value="<?php echo $supplier['id']; ?>" 
+                    id="supplier_<?php echo $supplier['id']; ?>"
+                    class="w-4 h-4 text-blue-600 bg-[var(--input-bg)] border-[var(--input-border)] rounded focus:ring-blue-500 focus:ring-2"
+                  >
+                  <label for="supplier_<?php echo $supplier['id']; ?>" class="ml-2 text-sm text-[var(--text-color)] cursor-pointer">
+                    <?php echo htmlspecialchars($supplier['supplier_name']); ?>
+                  </label>
+                </div>
               <?php endforeach; ?>
-            </select>
-            <p class="text-sm text-[var(--placeholder-color)] mt-1">Hold Ctrl/Cmd to select multiple suppliers</p>
+            </div>
+            <p class="text-sm text-[var(--placeholder-color)] mt-1">Select multiple suppliers as needed</p>
           </div>
         </div>
       </div>

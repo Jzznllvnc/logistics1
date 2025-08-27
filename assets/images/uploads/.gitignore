@@ -1,0 +1,6 @@
+# Ignore all uploaded files except this .gitignore
+*
+!.gitignore
+!/assets/
+assets/*
+!assets/.gitignore
