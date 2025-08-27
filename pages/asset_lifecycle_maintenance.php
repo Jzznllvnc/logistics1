@@ -21,25 +21,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $purchase_date = $_POST['purchase_date'] ?? null;
             $status = $_POST['status'] ?? '';
             if ($action === 'create_asset') {
-                createAsset($name, $type, $purchase_date, $status);
+                if (createAsset($name, $type, $purchase_date, $status)) {
+                    $_SESSION['flash_message'] = "Asset <strong>" . htmlspecialchars($name) . "</strong> created successfully.";
+                    $_SESSION['flash_message_type'] = 'success';
+                } else {
+                    $_SESSION['flash_message'] = "Failed to create asset. Please try again.";
+                    $_SESSION['flash_message_type'] = 'error';
+                }
             } else {
                 $id = $_POST['asset_id'] ?? 0;
-                updateAsset($id, $name, $type, $purchase_date, $status);
+                if (updateAsset($id, $name, $type, $purchase_date, $status)) {
+                    $_SESSION['flash_message'] = "Asset <strong>" . htmlspecialchars($name) . "</strong> updated successfully.";
+                    $_SESSION['flash_message_type'] = 'success';
+                } else {
+                    $_SESSION['flash_message'] = "Failed to update asset. Please try again.";
+                    $_SESSION['flash_message_type'] = 'error';
+                }
             }
         } elseif ($action === 'delete_asset') {
-            deleteAsset($_POST['asset_id'] ?? 0);
+            $id = $_POST['asset_id'] ?? 0;
+            if (deleteAsset($id)) {
+                $_SESSION['flash_message'] = "Asset deleted successfully.";
+                $_SESSION['flash_message_type'] = 'success';
+            } else {
+                $_SESSION['flash_message'] = "Failed to delete asset. Please try again.";
+                $_SESSION['flash_message_type'] = 'error';
+            }
         }
     }
     
     // Maintenance Scheduling Actions
     if ($action === 'schedule_maintenance') {
-        createMaintenanceSchedule($_POST['asset_id_maint'] ?? 0, $_POST['task_description'] ?? '', $_POST['scheduled_date'] ?? null, 'Manual Entry');
+        $asset_id = $_POST['asset_id_maint'] ?? 0;
+        $task_description = $_POST['task_description'] ?? '';
+        $scheduled_date = $_POST['scheduled_date'] ?? null;
+        if (createMaintenanceSchedule($asset_id, $task_description, $scheduled_date, 'Manual Entry')) {
+            $_SESSION['flash_message'] = "Maintenance task <strong>" . htmlspecialchars($task_description) . "</strong> scheduled successfully.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else {
+            $_SESSION['flash_message'] = "Failed to schedule maintenance task. Please try again.";
+            $_SESSION['flash_message_type'] = 'error';
+        }
     } elseif ($action === 'update_maintenance_status') {
-        updateMaintenanceStatus($_POST['schedule_id'] ?? 0, $_POST['new_status'] ?? '');
+        $schedule_id = $_POST['schedule_id'] ?? 0;
+        $new_status = $_POST['new_status'] ?? '';
+        if (updateMaintenanceStatus($schedule_id, $new_status)) {
+            $_SESSION['flash_message'] = "Maintenance status updated to <strong>" . htmlspecialchars($new_status) . "</strong>.";
+            $_SESSION['flash_message_type'] = 'success';
+        } else {
+            $_SESSION['flash_message'] = "Failed to update maintenance status. Please try again.";
+            $_SESSION['flash_message_type'] = 'error';
+        }
     }
     
     header("Location: asset_lifecycle_maintenance.php");
     exit();
+}
+
+// Check for flash messages
+if (isset($_SESSION['flash_message'])) {
+    $message = $_SESSION['flash_message'];
+    $message_type = $_SESSION['flash_message_type'] ?? 'info';
+    unset($_SESSION['flash_message'], $_SESSION['flash_message_type']);
+} else {
+    $message = '';
+    $message_type = '';
 }
 
 // --- Data Fetching and Automation ---
@@ -61,6 +107,7 @@ $usageLogsByAsset = getAllUsageLogsGroupedByAsset();
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
@@ -104,7 +151,12 @@ $usageLogsByAsset = getAllUsageLogsGroupedByAsset();
                   <th>Name</th>
                   <th>Type</th>
                   <th>Status</th>
-                  <th>Failure Risk</th>
+                  <th>Failure Risk 
+                      <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.3 text-[0.8rem] font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-full align-top">
+                        <i data-lucide="bot" class="w-4 h-4"></i>
+                        AI
+                      </span>
+                    </th>
                   <th>Predicted Next Service</th>
                   <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'alms'): ?><th>Action</th><?php endif; ?>
                 </tr>
@@ -143,8 +195,8 @@ $usageLogsByAsset = getAllUsageLogsGroupedByAsset();
                         <i data-lucide="more-horizontal" class="w-6 h-6"></i>
                       </button>
                       <div id="asset-dropdown-<?php echo $asset['id']; ?>" class="action-dropdown hidden">
-                        <button type="button" onclick='openEditAssetModal(<?php echo json_encode($asset); ?>)'>Edit</button>
-                        <button type="button" onclick="confirmDeleteAsset(<?php echo $asset['id']; ?>)">Delete</button>
+                        <button type="button" onclick='openEditAssetModal(<?php echo json_encode($asset); ?>)'><i data-lucide="edit-3" class="w-4 h-4 mr-3"></i>Edit</button>
+                        <button type="button" onclick="confirmDeleteAsset(<?php echo $asset['id']; ?>)"><i data-lucide="trash-2" class="w-4 h-4 mr-3"></i>Delete</button>
                       </div>
                     </div>
                   </td>
@@ -169,8 +221,18 @@ $usageLogsByAsset = getAllUsageLogsGroupedByAsset();
               <table class="data-table">
                   <thead>
                       <tr>
-                          <th>Asset</th>
-                          <th>Task</th>
+                          <th>Asset 
+                            <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.3 text-[0.8rem] font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-full align-top">
+                              <i data-lucide="bot" class="w-4 h-4"></i>
+                              AI
+                            </span>
+                          </th>
+                          <th>Task
+                            <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.3 text-[0.8rem] font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-full align-top">
+                              <i data-lucide="bot" class="w-4 h-4"></i>
+                              AI
+                            </span>
+                          </th>
                           <th>Scheduled Date</th>
                           <th>Status</th>
                           <th>Action</th>
@@ -247,10 +309,27 @@ $usageLogsByAsset = getAllUsageLogsGroupedByAsset();
     </div>
   </div>
 
-  <?php include 'modals/asset_modals.php'; ?>
+  <?php include 'modals/alms.php'; ?>
 
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
   <script src="../assets/js/alms.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  
+  <?php if ($message && !empty(trim($message))): ?>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.showCustomAlert) {
+            showCustomAlert(<?php echo json_encode($message); ?>, <?php echo json_encode($message_type); ?>);
+        } else {
+            // Fallback - strip HTML for plain alert
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = <?php echo json_encode($message); ?>;
+            alert(tempDiv.textContent || tempDiv.innerText || '');
+        }
+    });
+  </script>
+  <?php endif; ?>
 </body>
 </html>

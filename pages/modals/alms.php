@@ -16,19 +16,19 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                     <label for="asset_name" class="block text-sm font-semibold mb-2">Asset Name</label>
-                    <input type="text" name="asset_name" id="asset_name" required class="w-full p-2.5 border rounded-md">
+                    <input type="text" name="asset_name" id="asset_name" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="e.g., Forklift Unit 01, Delivery Truck A1, Warehouse Scanner">
                 </div>
                 <div>
                     <label for="asset_type" class="block text-sm font-semibold mb-2">Asset Type</label>
-                    <input type="text" name="asset_type" id="asset_type" class="w-full p-2.5 border rounded-md">
+                    <input type="text" name="asset_type" id="asset_type" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]" placeholder="e.g., Vehicle, Equipment, Technology, Infrastructure">
                 </div>
                 <div>
                     <label for="purchase_date" class="block text-sm font-semibold mb-2">Purchase Date</label>
-                    <input type="date" name="purchase_date" id="purchase_date" class="w-full p-2.5 border rounded-md">
+                    <input type="date" name="purchase_date" id="purchase_date" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
                 </div>
                 <div>
                     <label for="status" class="block text-sm font-semibold mb-2">Status</label>
-                    <select name="status" id="status" class="w-full p-2.5 border rounded-md">
+                    <select name="status" id="status" class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
                         <option>Operational</option>
                         <option>Under Maintenance</option>
                         <option>Decommissioned</option>
@@ -67,11 +67,11 @@
             </div>
             <div class="mb-5">
                 <label for="task_description" class="block text-sm font-semibold mb-2">Task Description</label>
-                <textarea name="task_description" id="task_description" rows="3" required class="w-full p-2.5 border rounded-md"></textarea>
+                <textarea name="task_description" id="task_description" placeholder="e.g., Replace the battery, Check the brakes, Clean the scanner" rows="3" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]"></textarea>
             </div>
             <div class="mb-6">
                 <label for="scheduled_date" class="block text-sm font-semibold mb-2">Scheduled Date</label>
-                <input type="date" name="scheduled_date" id="scheduled_date" required class="w-full p-2.5 border rounded-md">
+                <input type="date" name="scheduled_date" id="scheduled_date" required class="w-full p-2.5 border border-[var(--input-border)] rounded-md bg-[var(--input-bg)] text-[var(--input-text)]">
             </div>
             <div class="flex justify-end gap-3 mt-5">
                 <button type="button" class="px-5 py-2.5 rounded-md border" onclick="closeModal(document.getElementById('scheduleMaintenanceModal'))">Cancel</button>
