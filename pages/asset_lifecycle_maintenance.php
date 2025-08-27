@@ -217,11 +217,11 @@ $usageLogsByAsset = getAllUsageLogsGroupedByAsset();
                   <td><?php echo htmlspecialchars($asset['asset_name']); ?></td>
                   <td><?php echo htmlspecialchars($asset['asset_type']); ?></td>
                   <td>
-                    <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full font-medium text-sm <?php 
-                      $status_class = 'bg-gray-50 text-gray-700 border border-gray-200';
-                      if ($asset['status'] === 'Operational') $status_class = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
-                      if ($asset['status'] === 'Under Maintenance') $status_class = 'bg-amber-50 text-amber-700 border border-amber-200';
-                      if ($asset['status'] === 'Decommissioned') $status_class = 'bg-red-50 text-red-700 border border-red-200';
+                    <span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full <?php 
+                      $status_class = 'bg-gray-100 text-gray-700';
+                      if ($asset['status'] === 'Operational') $status_class = 'bg-green-100 text-green-700';
+                      if ($asset['status'] === 'Under Maintenance') $status_class = 'bg-yellow-100 text-yellow-700';
+                      if ($asset['status'] === 'Decommissioned') $status_class = 'bg-red-100 text-red-700';
                       echo $status_class;
                     ?>">
                       <?php echo htmlspecialchars($asset['status']); ?>
@@ -300,12 +300,20 @@ $usageLogsByAsset = getAllUsageLogsGroupedByAsset();
                           <td><?php echo htmlspecialchars($schedule['task_description']); ?></td>
                           <td><?php echo date('M d, Y', strtotime($schedule['scheduled_date'])); ?></td>
                           <td>
-                              <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full font-medium text-sm <?php 
-                                $status_class = 'bg-gray-50 text-gray-700 border border-gray-200';
-                                if ($schedule['status'] === 'Scheduled') $status_class = 'bg-blue-50 text-blue-700 border border-blue-200';
-                                if ($schedule['status'] === 'Completed') $status_class = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+                              <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full font-semibold leading-tight text-xs <?php 
+                                $status_class = 'bg-gray-100 text-gray-700';
+                                $status_icon = 'circle';
+                                if ($schedule['status'] === 'Scheduled') {
+                                    $status_class = 'bg-blue-100 text-blue-700';
+                                    $status_icon = 'calendar';
+                                }
+                                if ($schedule['status'] === 'Completed') {
+                                    $status_class = 'bg-green-100 text-green-700';
+                                    $status_icon = 'check-circle';
+                                }
                                 echo $status_class;
                               ?>">
+                                <i data-lucide="<?php echo $status_icon; ?>" class="w-3 h-3"></i>
                                 <?php echo htmlspecialchars($schedule['status']); ?>
                               </span>
                           </td>

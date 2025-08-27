@@ -100,6 +100,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
+// Check for flash messages
+if (isset($_SESSION['flash_message'])) {
+    $message = $_SESSION['flash_message'];
+    $message_type = $_SESSION['flash_message_type'] ?? 'info';
+    unset($_SESSION['flash_message'], $_SESSION['flash_message_type']);
+} else {
+    $message = '';
+    $message_type = '';
+}
+
 // Fetch data for the page
 $suppliers = getAllSuppliers();
 $inventoryItems = getInventory();
@@ -119,10 +129,11 @@ foreach ($purchaseOrders as $po) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logistics 1 - PSM</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
   <div class="sidebar" id="sidebar"> <?php include '../partials/sidebar.php'; ?> </div>
@@ -147,11 +158,11 @@ foreach ($purchaseOrders as $po) {
       </div>
 
       <div class="tab-content active" id="purchase-orders-tab">
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <div style="background: var(--card-bg); border: 1px solid var(--card-border);" class="p-6 rounded-lg shadow-md">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold text-gray-800">Manage Purchase Orders</h2>
+                <h2 class="text-2xl font-bold" style="color: var(--text-color);">Manage Purchase Orders</h2>
                 <button class="btn-primary" onclick="window.openModal(document.getElementById('createPOModal'))">
-                    <i data-lucide="plus" class="w-5 h-5 mr-2"></i>Create New PO
+                    <i data-lucide="shopping-cart" class="w-5 h-5 mr-2"></i>Create New PO
                 </button>
             </div>
 
@@ -207,11 +218,11 @@ foreach ($purchaseOrders as $po) {
 
       <?php if ($_SESSION['role'] === 'admin'): ?>
       <div class="tab-content" id="suppliers-tab">
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <div style="background: var(--card-bg); border: 1px solid var(--card-border);" class="p-6 rounded-lg shadow-md">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold text-gray-800">Manage Suppliers</h2>
+                <h2 class="text-2xl font-bold" style="color: var(--text-color);">Manage Suppliers</h2>
                 <button class="btn-primary" onclick="openCreateSupplierModal()">
-                   <i data-lucide="plus" class="w-5 h-5 mr-2"></i>Add Supplier
+                   <i data-lucide="workflow" class="w-5 h-5 mr-2"></i>Add Supplier
                 </button>
             </div>
             <div class="table-container">
@@ -227,13 +238,20 @@ foreach ($purchaseOrders as $po) {
                             <td><?php echo htmlspecialchars($supplier['email']); ?></td>
                             <td><?php echo htmlspecialchars($supplier['phone']); ?></td>
                             <td>
-                                <div class="flex gap-2">
-                                    <button class="text-blue-500 hover:text-blue-700" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)'><i data-lucide="edit-3" class="w-5 h-5"></i></button>
-                                    <form method="POST" class="form-no-margin" onsubmit="return confirm('Are you sure you want to delete this supplier?');">
-                                        <input type="hidden" name="action" value="delete_supplier">
-                                        <input type="hidden" name="supplier_id" value="<?php echo $supplier['id']; ?>">
-                                        <button type="submit" class="text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
-                                    </form>
+                                <div class="relative">
+                                    <button type="button" class="action-dropdown-btn p-2 rounded-full transition-colors" onclick="toggleSupplierDropdown(<?php echo $supplier['id']; ?>)">
+                                        <i data-lucide="more-horizontal" class="w-6 h-6"></i>
+                                    </button>
+                                    <div id="supplier-dropdown-<?php echo $supplier['id']; ?>" class="action-dropdown hidden">
+                                        <button type="button" onclick='openEditSupplierModal(<?php echo json_encode($supplier); ?>)'>
+                                            <i data-lucide="edit-3" class="w-4 h-4 mr-3"></i>
+                                            Edit
+                                        </button>
+                                        <button type="button" onclick="confirmDeleteSupplier(<?php echo $supplier['id']; ?>)">
+                                            <i data-lucide="trash-2" class="w-4 h-4 mr-3"></i>
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -249,24 +267,27 @@ foreach ($purchaseOrders as $po) {
   </div>
 
   <?php include 'modals/psm.php'; ?>
-  <div id="viewBidsModal" class="modal hidden">
-    <div class="modal-content p-8 max-w-2xl">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="modal-title">Review Bids</h2>
-            <button type="button" class="close-button" onclick="window.closeModal(document.getElementById('viewBidsModal'))"><i data-lucide="x"></i></button>
-        </div>
-        <div id="bidsContainer" class="space-y-4 max-h-96 overflow-y-auto"></div>
-        <div class="flex justify-end mt-6">
-            <button type="button" class="btn bg-gray-200" onclick="window.closeModal(document.getElementById('viewBidsModal'))">Close</button>
-        </div>
-    </div>
-  </div>
 
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
+  <script src="../assets/js/custom-alerts.js"></script>
   <script src="../assets/js/procurement.js"></script>
   <script>
     lucide.createIcons();
+    
+    // Display flash message if present
+    <?php if ($message): ?>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.showCustomAlert) {
+            showCustomAlert(<?php echo json_encode($message); ?>, <?php echo json_encode($message_type); ?>);
+        } else {
+            // Fallback - strip HTML for plain alert
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = <?php echo json_encode($message); ?>;
+            alert(tempDiv.textContent || tempDiv.innerText || '');
+        }
+    });
+    <?php endif; ?>
 
     function openViewBidsModal(po_id, bids, po_status) {
         const modal = document.getElementById('viewBidsModal');
@@ -274,49 +295,49 @@ foreach ($purchaseOrders as $po) {
         container.innerHTML = '';
 
         if (!bids || bids.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-center py-8">No bids have been submitted for this item yet.</p>';
+            container.innerHTML = '<p class="text-[var(--placeholder-color)] text-center py-8">No bids have been submitted for this item yet.</p>';
         } else {
             bids.forEach(bid => {
                 const isAwarded = bid.status === 'Awarded';
                 const isRejected = bid.status === 'Rejected';
                 const bidElement = document.createElement('div');
-                let bgColor = 'border-gray-200';
-                if (isAwarded) bgColor = 'bg-green-50 border-green-200';
-                if (isRejected) bgColor = 'bg-red-50 border-red-200';
+                let bgColor = 'border-[var(--card-border)] bg-[var(--card-bg)]';
 
-                bidElement.className = `border rounded-lg p-4 flex justify-between items-center ${bgColor}`;
+                bidElement.className = `border rounded-lg p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 ${bgColor}`;
 
                 let actionButtons = '';
                 if (po_status === 'Open for Bidding' && bid.status === 'Pending') {
                     actionButtons = `
-                        <div class="flex gap-2">
+                        <div class="flex gap-3 justify-end sm:justify-start">
                             <form method="POST" class="form-no-margin">
                                 <input type="hidden" name="action" value="award_bid">
                                 <input type="hidden" name="po_id" value="${po_id}">
                                 <input type="hidden" name="supplier_id" value="${bid.supplier_id}">
                                 <input type="hidden" name="bid_id" value="${bid.id}">
-                                <button type="submit" class="btn-primary btn-small">Award</button>
+                                <button type="submit" class="btn-primary">Award</button>
                             </form>
                             <form method="POST" class="form-no-margin">
                                 <input type="hidden" name="action" value="reject_bid">
                                 <input type="hidden" name="bid_id" value="${bid.id}">
-                                <button type="submit" class="btn btn-danger btn-small">Reject</button>
+                                <button type="submit" class="btn-primary-danger">Reject</button>
                             </form>
                         </div>
                     `;
                 } else if (isAwarded) {
-                    actionButtons = `<span class="font-bold text-green-600">AWARDED</span>`;
+                    actionButtons = `<div class="flex justify-end sm:justify-start"><span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full bg-green-100 text-green-700">AWARDED</span></div>`;
                 } else if (isRejected) {
-                     actionButtons = `<span class="font-bold text-red-600">REJECTED</span>`;
+                     actionButtons = `<div class="flex justify-end sm:justify-start"><span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full bg-red-100 text-red-700">REJECTED</span></div>`;
                 }
 
                 bidElement.innerHTML = `
-                    <div>
-                        <p class="font-bold text-lg">${bid.supplier_name}</p>
-                        <p class="text-2xl font-light ${isAwarded ? 'text-green-600' : 'text-gray-800'}">$${parseFloat(bid.bid_amount).toFixed(2)}</p>
-                        <p class="text-sm text-gray-600 mt-1"><em>${bid.notes || 'No notes provided.'}</em></p>
+                    <div class="flex-1 space-y-2">
+                        <p class="font-bold text-lg text-[var(--text-color)]">${bid.supplier_name}</p>
+                        <p class="text-2xl font-light ${isAwarded ? 'text-green-700' : 'text-[var(--text-color)]'}">$${parseFloat(bid.bid_amount).toFixed(2)}</p>
+                        <p class="text-sm text-[var(--text-color)] mt-2"><em>${bid.notes || 'No notes provided.'}</em></p>
                     </div>
-                    ${actionButtons}
+                    <div class="flex-shrink-0">
+                        ${actionButtons}
+                    </div>
                 `;
                 container.appendChild(bidElement);
             });
@@ -327,5 +348,6 @@ foreach ($purchaseOrders as $po) {
         }
     }
   </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </body>
 </html>

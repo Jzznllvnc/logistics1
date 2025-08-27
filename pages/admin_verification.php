@@ -30,6 +30,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
+// Check for flash messages
+if (isset($_SESSION['flash_message'])) {
+    $message = $_SESSION['flash_message'];
+    $message_type = $_SESSION['flash_message_type'] ?? 'info';
+    unset($_SESSION['flash_message'], $_SESSION['flash_message_type']);
+} else {
+    $message = '';
+    $message_type = '';
+}
+
 $pending_suppliers = getPendingSuppliers();
 ?>
 <!DOCTYPE html>
@@ -42,6 +52,7 @@ $pending_suppliers = getPendingSuppliers();
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
@@ -100,5 +111,24 @@ $pending_suppliers = getPendingSuppliers();
 
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
+  <script src="../assets/js/custom-alerts.js"></script>
+  <script>
+    lucide.createIcons();
+    
+    // Display flash message if present
+    <?php if ($message): ?>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.showCustomAlert) {
+            showCustomAlert(<?php echo json_encode($message); ?>, <?php echo json_encode($message_type); ?>);
+        } else {
+            // Fallback - strip HTML for plain alert
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = <?php echo json_encode($message); ?>;
+            alert(tempDiv.textContent || tempDiv.innerText || '');
+        }
+    });
+    <?php endif; ?>
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </body>
 </html>

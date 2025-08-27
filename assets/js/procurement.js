@@ -130,7 +130,7 @@ function initProcurement() {
     // Initialize dropdown functionality
     initSupplierDropdowns();
     
-    // Initialize tabs functionality
+    // Always initialize tabs for PJAX compatibility
     initPSMTabs();
 }
 
@@ -185,15 +185,32 @@ function switchPSMTab(tabName, withAnimation = false) {
 function initPSMTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
     
+    // Remove any existing listeners and add fresh ones for PJAX compatibility
     tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        // Create a new function each time to avoid stale closures
+        const clickHandler = function() {
             const tabName = this.getAttribute('data-tab');
             switchPSMTab(tabName, true); // Enable animation for user clicks
-        });
+        };
+        
+        // Remove old listeners (if any) and add new one
+        button.removeEventListener('click', button._psmTabHandler);
+        button._psmTabHandler = clickHandler;
+        button.addEventListener('click', clickHandler);
     });
     
-    // Set default active tab on load without animation
-    switchPSMTab('suppliers', false);
+    // Ensure Purchase Orders is default if no active tab exists
+    const purchaseOrdersBtn = document.querySelector('[data-tab="purchase-orders"]');
+    const purchaseOrdersTab = document.getElementById('purchase-orders-tab');
+    const suppliersTab = document.getElementById('suppliers-tab');
+    
+    // Check if any tab is currently active, if not set purchase orders as default
+    const activeTab = document.querySelector('.tab-content.active');
+    if (!activeTab && purchaseOrdersBtn && purchaseOrdersTab) {
+        purchaseOrdersBtn.classList.add('active');
+        purchaseOrdersTab.classList.add('active');
+        if (suppliersTab) suppliersTab.classList.remove('active');
+    }
 }
 
 // Make tab function globally accessible

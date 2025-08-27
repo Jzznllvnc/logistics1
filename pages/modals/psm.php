@@ -106,3 +106,28 @@
     </form>
   </div>
 </div>
+
+<!-- Review Bids Modal -->
+<div id="viewBidsModal" class="modal hidden">
+  <div class="modal-content p-8 max-w-3xl">
+    <div class="flex justify-between items-center mb-2">
+      <h2 class="modal-title flex items-center min-w-0 flex-1">
+        <i data-lucide="ticket-slash" class="w-6 h-6 mr-3 flex-shrink-0"></i>
+        <span class="truncate">Review Bids</span>
+      </h2>
+      <button type="button" class="close-button flex-shrink-0 ml-3" onclick="window.closeModal(document.getElementById('viewBidsModal'))">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <p class="modal-subtitle">Review and manage submitted bids for this purchase order.</p>
+    <div class="border-b border-[var(--card-border)] mb-6"></div>
+    
+    <div id="bidsContainer" class="space-y-4 max-h-96 overflow-y-auto mb-6"></div>
+    
+    <div class="flex justify-end">
+      <button type="button" class="px-5 py-2.5 rounded-md border border-gray-300 cursor-pointer font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="window.closeModal(document.getElementById('viewBidsModal'))">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
