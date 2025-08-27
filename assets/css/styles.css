@@ -508,8 +508,13 @@ select:focus {
     margin-left: 0;
   }
   
+  .header {
+    gap: 10px;
+  }
+  
   .header h1 {
     font-size: 20px;
+    margin-left: -10px;
   }
   
   .header .system-title {
@@ -517,7 +522,9 @@ select:focus {
   }
 
   .theme-toggle-container {
-    margin-left: 10px;
+    margin-left: auto;
+    gap: 8px;
+    flex-shrink: 0;
   }
   
   .theme-label {
@@ -525,17 +532,38 @@ select:focus {
   }
   
   .theme-switch {
-    width: 50px;
+    width: 60px;
+    height: 40px;
+    flex-shrink: 0;
   }
 
   .admin-profile {
       margin-right: 0;
+      gap: 6px;
+  }
+
+  .admin-name {
+    display: none;
   }
 
   .dropdown-menu {
       right: 0;
       left: auto;
       top: 45px;
+  }
+
+  /* Keep theme switch slider properly sized to match profile dropdown */
+  .slider:before {
+    height: 26px;
+    width: 26px;
+    left: 5px;
+    bottom: 5px;
+    font-size: 16px;
+    top: 7px;
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(26px);
   }
 }
 
