@@ -9,30 +9,34 @@ $all_notifications = getAllNotificationsBySupplier($supplier_id_for_notif);
 $notification_count = getUnreadNotificationCountBySupplier($supplier_id_for_notif);
 ?>
 <header class="supplier-header">
-  <h1 class="text-2xl font-bold text-[var(--sp-heading)]">Supplier Portal</h1>
-  <div class="flex items-center gap-4">
-    <div class="relative" id="notification-button">
-      <i class="fas fa-bell text-gray-500 text-xl cursor-pointer"></i>
+  <div class="header-left">
+    <img src="../assets/images/slate2.png" alt="SLATE Logo" class="header-logo">
+    <h1 class="supplier-portal-title">Supplier Portal</h1>
+  </div>
+  
+  <div class="header-right">
+    <div class="notification-container" id="notification-button">
+      <i data-lucide="bell" class="notification-bell"></i>
       <?php if ($notification_count > 0): ?>
-        <span class="notification-count absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+        <span class="notification-count">
           <?php echo $notification_count; ?>
         </span>
       <?php endif; ?>
-      <div id="notification-panel" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl overflow-hidden z-20 border">
-          <div class="py-2 px-4 text-sm font-semibold text-gray-700 border-b">Notifications</div>
-          <ul class="max-h-96 overflow-y-auto">
+      <div id="notification-panel" class="notification-panel">
+          <div class="notification-header">Notifications</div>
+          <ul class="notification-list">
               <?php if (empty($all_notifications)): ?>
-                  <li class="p-4 text-sm text-gray-500">You have no notifications.</li>
+                  <li class="no-notifications">You have no notifications.</li>
               <?php else: ?>
                   <?php foreach ($all_notifications as $notif): ?>
-                      <li class="notification-item border-b hover:bg-gray-50 p-4 <?php echo $notif['is_read'] ? '' : 'bg-blue-50'; ?>" data-read="<?php echo $notif['is_read']; ?>">
-                          <div class="flex items-start">
+                      <li class="notification-item <?php echo $notif['is_read'] ? '' : 'unread'; ?>" data-read="<?php echo $notif['is_read']; ?>">
+                          <div class="notification-content">
                               <?php if (!$notif['is_read']): ?>
-                                <span class="unread-dot h-2 w-2 bg-blue-500 rounded-full mr-3 mt-1.5 flex-shrink-0"></span>
+                                <span class="unread-dot"></span>
                               <?php endif; ?>
-                              <div class="flex-grow">
-                                <p class="text-sm text-gray-800"><?php echo htmlspecialchars($notif['message']); ?></p>
-                                <p class="text-xs text-gray-400 mt-1"><?php echo date("F j, Y, g:i a", strtotime($notif['created_at'])); ?></p>
+                              <div class="notification-text">
+                                <p class="notification-message"><?php echo htmlspecialchars($notif['message']); ?></p>
+                                <p class="notification-time"><?php echo date("F j, Y, g:i a", strtotime($notif['created_at'])); ?></p>
                               </div>
                           </div>
                       </li>
@@ -41,7 +45,51 @@ $notification_count = getUnreadNotificationCountBySupplier($supplier_id_for_noti
           </ul>
       </div>
     </div>
-    <div class="w-px h-6 bg-gray-200"></div>
-    <span class="font-medium text-gray-700">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</span>
+    
+    <div class="supplier-profile-dropdown">
+        <div class="supplier-profile" id="supplierProfileToggle">
+            <span class="supplier-name">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</span>
+            <i data-lucide="chevron-down" class="chevron-down"></i>
+        </div>
+        <div class="dropdown-menu" id="supplierDropdownMenu">
+            <a href="supplier_profile.php" class="dropdown-link">
+                <i data-lucide="user-circle" class="dropdown-icon"></i>
+                My Profile
+            </a>
+            <a href="#" onclick="showLogoutModal()" class="dropdown-link">
+                <i data-lucide="log-out" class="dropdown-icon"></i> 
+                Logout
+            </a>
+        </div>
+    </div>
   </div>
 </header>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const profileToggle = document.getElementById('supplierProfileToggle');
+    const dropdownMenu = document.getElementById('supplierDropdownMenu');
+    
+    if (profileToggle && dropdownMenu) {
+        profileToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (dropdownMenu.style.display === 'block') {
+                dropdownMenu.style.display = 'none';
+            } else {
+                dropdownMenu.style.display = 'block';
+            }
+        });
+        
+        document.addEventListener('click', function() {
+            dropdownMenu.style.display = 'none';
+        });
+        
+        dropdownMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+
+});
+</script>

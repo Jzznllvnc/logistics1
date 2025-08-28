@@ -22,7 +22,7 @@
         </a>
     </nav>
     <div class="mt-auto">
-        <a href="?action=logout" class="sidebar-link text-red-500 hover:bg-red-50 hover:text-red-600">
+        <a href="#" onclick="showLogoutModal()" class="sidebar-link text-red-500 hover:bg-red-50 hover:text-red-600">
             <i class="fas fa-sign-out-alt fa-fw"></i>
             <span>Logout</span>
         </a>

@@ -8,6 +8,21 @@
     font-family: 'Inter', sans-serif;
 }
 
+:root {
+    --input-bg: #2f3847;
+    --input-text: #ffffff;
+}
+
+/* --- Autofill Style Override --- */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+    -webkit-text-fill-color: var(--input-text) !important;
+    caret-color: var(--input-text) !important;
+}
+
 body {
     min-height: 100vh;
     display: flex;
@@ -26,15 +41,35 @@ body {
 
 .register-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 1200px;
+    display: flex;
     background: rgba(31, 42, 56, 0.8);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
+.welcome-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: linear-gradient(135deg, rgba(0,114,255,0.2), rgba(0,198,255,0.2));
+}
+
+.welcome-panel .hero-image {
+    width: 110%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
 .register-panel {
+    width: 450px;
     padding: 40px 30px;
+    background: rgba(22, 33, 49, 0.95);
 }
 
 .register-box {
@@ -43,13 +78,27 @@ body {
 }
 
 .register-box img {
-    width: 150px;
-    margin-bottom: 15px;
+    width: 180px;
+    height: auto;
+    margin-bottom: 20px;
 }
 
 .register-box h2 {
-    margin-bottom: 25px;
+    margin-bottom: 30px;
     color: #ffffff;
+}
+
+/* Form Grid Layout */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
 }
 
 .register-box input[type="text"],
@@ -67,13 +116,43 @@ body {
     transition: all 0.3s ease;
 }
 
+.register-box input:focus,
+.register-box textarea:focus {
+    outline: none;
+    border-color: #00c6ff;
+    box-shadow: 0 0 0 2px rgba(0,198,255,0.2);
+}
+
+.register-box input::placeholder,
+.register-box textarea::placeholder {
+    color: #a0a0a0;
+}
+
+.register-box textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.file-upload-section {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
 .register-box input[type="file"] {
     width: 100%;
     padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 20px;
+    margin-top: 8px;
+    margin-bottom: 0;
+    background: rgba(255,255,255,0.05);
     border: 1px dashed rgba(255,255,255,0.2);
     border-radius: 6px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.register-box input[type="file"]:hover {
+    border-color: rgba(0,198,255,0.3);
+    background: rgba(255,255,255,0.08);
 }
 
 .register-box label {
@@ -86,7 +165,7 @@ body {
 
 .register-box .register-button {
     width: 100%;
-    padding: 12px;
+    padding: 12px 24px;
     background: linear-gradient(to right, #0072ff, #00c6ff);
     border: none;
     border-radius: 6px;
@@ -94,19 +173,59 @@ body {
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
 .register-box .register-button:hover {
     background: linear-gradient(to right, #0052cc, #009ee3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
 .login-link {
-    margin-top: 20px;
-    font-size: 0.9em;
+    margin-top: 15px;
+    font-size: 14px;
 }
 
 .login-link a {
     color: #00c6ff;
     text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .register-container {
+        flex-direction: column;
+        width: calc(100% - 40px);
+        margin: 20px;
+        max-width: none;
+    }
+
+    .welcome-panel {
+        display: none;
+    }
+
+    .register-panel {
+        width: 100%;
+        padding: 30px 20px;
+    }
+    
+    .register-box img {
+        width: 150px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .register-box input[type="text"],
+    .register-box input[type="email"],
+    .register-box input[type="tel"],
+    .register-box input[type="password"] {
+        margin-bottom: 15px;
+    }
 }

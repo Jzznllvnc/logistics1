@@ -268,9 +268,9 @@ foreach ($purchaseOrders as $po) {
 
   <?php include 'modals/psm.php'; ?>
 
+  <script src="../assets/js/custom-alerts.js"></script>
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
-  <script src="../assets/js/custom-alerts.js"></script>
   <script src="../assets/js/procurement.js"></script>
   <script>
     lucide.createIcons();
@@ -289,15 +289,49 @@ foreach ($purchaseOrders as $po) {
     });
     <?php endif; ?>
 
-    function openViewBidsModal(po_id, bids, po_status) {
+    // Store current modal state for UI updates
+    let currentPOId = null;
+    let currentPOStatus = null;
+
+    async function openViewBidsModal(po_id, bids = null, po_status = null) {
         const modal = document.getElementById('viewBidsModal');
         const container = document.getElementById('bidsContainer');
-        container.innerHTML = '';
+        
+        // Show loading state
+        container.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="mt-2 text-gray-500">Loading bids...</p></div>';
+        
+        // Open modal immediately to show loading state
+        if (window.openModal) {
+            window.openModal(modal);
+        }
+        
+        try {
+            // Start both the API call and minimum loading time
+            const [response, _] = await Promise.all([
+                fetch(`../includes/ajax/get_bids.php?po_id=${po_id}`),
+                new Promise(resolve => setTimeout(resolve, 800)) // Minimum 800ms loading
+            ]);
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Failed to fetch bid data');
+            }
+            
+            const freshBids = result.bids;
+            const freshPOStatus = result.po_status;
+            
+                         // Store current modal state
+             currentPOId = po_id;
+             currentPOStatus = freshPOStatus;
+            
+            // Clear loading state
+            container.innerHTML = '';
 
-        if (!bids || bids.length === 0) {
-            container.innerHTML = '<p class="text-[var(--placeholder-color)] text-center py-8">No bids have been submitted for this item yet.</p>';
-        } else {
-            bids.forEach(bid => {
+            if (!freshBids || freshBids.length === 0) {
+                container.innerHTML = '<p class="text-[var(--placeholder-color)] text-center py-8">No bids have been submitted for this item yet.</p>';
+            } else {
+                freshBids.forEach(bid => {
                 const isAwarded = bid.status === 'Awarded';
                 const isRejected = bid.status === 'Rejected';
                 const bidElement = document.createElement('div');
@@ -306,21 +340,21 @@ foreach ($purchaseOrders as $po) {
                 bidElement.className = `border rounded-lg p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 ${bgColor}`;
 
                 let actionButtons = '';
-                if (po_status === 'Open for Bidding' && bid.status === 'Pending') {
+                if (currentPOStatus === 'Open for Bidding' && bid.status === 'Pending') {
                     actionButtons = `
                         <div class="flex gap-3 justify-end sm:justify-start">
-                            <form method="POST" class="form-no-margin">
-                                <input type="hidden" name="action" value="award_bid">
-                                <input type="hidden" name="po_id" value="${po_id}">
-                                <input type="hidden" name="supplier_id" value="${bid.supplier_id}">
-                                <input type="hidden" name="bid_id" value="${bid.id}">
-                                <button type="submit" class="btn-primary">Award</button>
-                            </form>
-                            <form method="POST" class="form-no-margin">
-                                <input type="hidden" name="action" value="reject_bid">
-                                <input type="hidden" name="bid_id" value="${bid.id}">
-                                <button type="submit" class="btn-primary-danger">Reject</button>
-                            </form>
+                            <button type="button" class="btn-primary" onclick="awardBid(${bid.id}, ${po_id}, ${bid.supplier_id}, this)">
+                                <span class="button-text">Award</span>
+                                <span class="button-spinner hidden">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </span>
+                            </button>
+                            <button type="button" class="btn-primary-danger" onclick="rejectBid(${bid.id}, this)">
+                                <span class="button-text">Reject</span>
+                                <span class="button-spinner hidden">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </span>
+                            </button>
                         </div>
                     `;
                 } else if (isAwarded) {
@@ -342,11 +376,199 @@ foreach ($purchaseOrders as $po) {
                 container.appendChild(bidElement);
             });
         }
-
-        if (window.openModal) {
-            window.openModal(modal);
+        
+        } catch (error) {
+            console.error('Error loading bids:', error);
+            container.innerHTML = `<div class="text-center py-8 text-red-500">
+                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                <p>Failed to load bids: ${error.message}</p>
+                <button onclick="openViewBidsModal(${po_id})" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Retry</button>
+            </div>`;
         }
     }
+
+    // AJAX function to award a bid
+    async function awardBid(bidId, poId, supplierId, buttonElement) {
+        const buttonText = buttonElement.querySelector('.button-text');
+        const buttonSpinner = buttonElement.querySelector('.button-spinner');
+        
+        // Show loading state
+        buttonText.classList.add('hidden');
+        buttonSpinner.classList.remove('hidden');
+        buttonElement.disabled = true;
+        
+        try {
+            const response = await fetch('../includes/ajax/bid_actions.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'award_bid',
+                    bid_id: bidId,
+                    po_id: poId,
+                    supplier_id: supplierId
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show success message
+                if (window.showCustomAlert) {
+                    showCustomAlert(result.message, 'success');
+                }
+                
+                // Update the bid element to show "AWARDED" status
+                updateBidStatus(bidId, 'Awarded');
+                
+                // Update other pending bids in the UI to show as rejected
+                updateOtherBidsToRejected(bidId);
+                
+            } else {
+                throw new Error(result.message || 'Failed to award bid');
+            }
+        } catch (error) {
+            console.error('Error awarding bid:', error);
+            if (window.showCustomAlert) {
+                showCustomAlert(error.message || 'Failed to award bid. Please try again.', 'error');
+            } else {
+                alert('Failed to award bid. Please try again.');
+            }
+        } finally {
+            // Reset button state
+            buttonText.classList.remove('hidden');
+            buttonSpinner.classList.add('hidden');
+            buttonElement.disabled = false;
+        }
+    }
+
+    // AJAX function to reject a bid
+    async function rejectBid(bidId, buttonElement) {
+        const buttonText = buttonElement.querySelector('.button-text');
+        const buttonSpinner = buttonElement.querySelector('.button-spinner');
+        
+        // Show loading state
+        buttonText.classList.add('hidden');
+        buttonSpinner.classList.remove('hidden');
+        buttonElement.disabled = true;
+        
+        try {
+            const response = await fetch('../includes/ajax/bid_actions.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'reject_bid',
+                    bid_id: bidId
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show success message
+                if (window.showCustomAlert) {
+                    showCustomAlert(result.message, 'success');
+                }
+                
+                // Update the bid element to show "REJECTED" status
+                updateBidStatus(bidId, 'Rejected');
+                
+            } else {
+                throw new Error(result.message || 'Failed to reject bid');
+            }
+        } catch (error) {
+            console.error('Error rejecting bid:', error);
+            if (window.showCustomAlert) {
+                showCustomAlert(error.message || 'Failed to reject bid. Please try again.', 'error');
+            } else {
+                alert('Failed to reject bid. Please try again.');
+            }
+        } finally {
+            // Reset button state
+            buttonText.classList.remove('hidden');
+            buttonSpinner.classList.add('hidden');
+            buttonElement.disabled = false;
+        }
+    }
+
+    // Update bid status in the modal UI
+    function updateBidStatus(bidId, newStatus) {
+        const bidsContainer = document.getElementById('bidsContainer');
+        const bidElements = bidsContainer.children;
+        
+        for (let i = 0; i < bidElements.length; i++) {
+            const bidElement = bidElements[i];
+            const actionDiv = bidElement.querySelector('.flex.gap-3');
+            
+            if (actionDiv) {
+                const buttons = actionDiv.querySelectorAll('button');
+                let isBidElement = false;
+                
+                // Check if this is the correct bid by looking at the onclick attributes
+                buttons.forEach(button => {
+                    const onclick = button.getAttribute('onclick');
+                    if (onclick && onclick.includes(`(${bidId},`)) {
+                        isBidElement = true;
+                    }
+                });
+                
+                if (isBidElement) {
+                    // Replace action buttons with status badge
+                    const isAwarded = newStatus === 'Awarded';
+                    const statusClass = isAwarded ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                    const statusText = isAwarded ? 'AWARDED' : 'REJECTED';
+                    
+                    actionDiv.innerHTML = `<span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full ${statusClass} status-badge-transition">${statusText}</span>`;
+                    
+                    // Update price color if awarded
+                    if (isAwarded) {
+                        const priceElement = bidElement.querySelector('.text-2xl.font-light');
+                        if (priceElement) {
+                            priceElement.classList.add('text-green-700');
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    // When a bid is awarded, update other pending bids in the UI to show as rejected
+    function updateOtherBidsToRejected(awardedBidId) {
+        const bidsContainer = document.getElementById('bidsContainer');
+        const bidElements = bidsContainer.children;
+        
+        for (let i = 0; i < bidElements.length; i++) {
+            const bidElement = bidElements[i];
+            const actionDiv = bidElement.querySelector('.flex.gap-3');
+            
+            if (actionDiv) {
+                const buttons = actionDiv.querySelectorAll('button');
+                let bidId = null;
+                
+                // Get the bid ID from button onclick attributes
+                buttons.forEach(button => {
+                    const onclick = button.getAttribute('onclick');
+                    if (onclick && onclick.includes('(')) {
+                        const match = onclick.match(/\((\d+),/);
+                        if (match) {
+                            bidId = parseInt(match[1]);
+                        }
+                    }
+                });
+                
+                // If this is a different bid with pending status, mark as rejected
+                if (bidId && bidId != awardedBidId && buttons.length > 0) {
+                    updateBidStatus(bidId, 'Rejected');
+                }
+            }
+        }
+    }
+    
+
   </script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </body>

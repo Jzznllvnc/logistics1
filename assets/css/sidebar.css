@@ -68,6 +68,21 @@ html.loaded .sidebar {
   text-align: center;
 }
 
+/* Sidebar Category Headers */
+.sidebar-category {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 25px 12px 10px 12px;
+  padding-bottom: 4px;
+}
+
+.sidebar-category:first-of-type {
+  margin-top: 15px;
+}
+
 .sidebar::-webkit-scrollbar {
   width: 6px;
   background: transparent;

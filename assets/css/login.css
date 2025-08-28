@@ -58,7 +58,7 @@
     }
 
     .welcome-panel .hero-image {
-      max-width: 70%;
+      width: 110%;
       height: auto;
       display: block;
       margin: 0 auto;

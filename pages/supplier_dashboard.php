@@ -32,6 +32,7 @@ $supplier_id = getSupplierIdFromUsername($_SESSION['username']);
 $open_bids_count = getOpenBiddingCount();
 $awarded_bids_count = getAwardedBidsCountBySupplier($supplier_id);
 $active_proposals_count = getActiveBidsCountBySupplier($supplier_id);
+$currentPage = basename($_SERVER['SCRIPT_NAME']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,58 +42,84 @@ $active_proposals_count = getActiveBidsCountBySupplier($supplier_id);
     <link rel="icon" href="../assets/images/slate2.png" type="image/png">
     <link rel="stylesheet" href="../assets/css/supplier_portal.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
-    <?php include '../partials/supplier_sidebar.php'; ?>
-
-    <div class="supplier-content">
+    <div class="supplier-content-full">
         <?php include '../partials/supplier_header.php'; ?>
 
-        <main class="mt-8">
-            <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8 rounded-xl shadow-lg mb-8">
-                <h2 class="text-3xl font-bold mb-2">Ready to Bid?</h2>
-                <p class="text-blue-100 max-w-2xl">
-                    Here's a quick overview of your bidding activity. Find new opportunities and manage your ongoing proposals all in one place.
-                </p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="stat-card">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-500">Open for Bidding</h3>
-                        <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
-                            <i class="fas fa-gavel fa-lg"></i>
-                        </div>
-                    </div>
-                    <p class="text-4xl font-bold mt-4"><?php echo $open_bids_count; ?></p>
-                    <a href="supplier_bidding.php" class="text-blue-600 font-semibold mt-2 inline-block">View Opportunities &rarr;</a>
-                </div>
-
-                <div class="stat-card">
-                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-500">Bids Awarded</h3>
-                        <div class="bg-green-100 text-green-600 p-3 rounded-full">
-                            <i class="fas fa-trophy fa-lg"></i>
-                        </div>
-                    </div>
-                    <p class="text-4xl font-bold mt-4"><?php echo $awarded_bids_count; ?></p>
-                     <a href="#" class="text-green-600 font-semibold mt-2 inline-block">View History &rarr;</a>
-                </div>
-
-                <div class="stat-card">
-                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-500">Active Proposals</h3>
-                        <div class="bg-yellow-100 text-yellow-600 p-3 rounded-full">
-                            <i class="fas fa-file-alt fa-lg"></i>
-                        </div>
-                    </div>
-                    <p class="text-4xl font-bold mt-4"><?php echo $active_proposals_count; ?></p>
-                    <a href="#" class="text-yellow-600 font-semibold mt-2 inline-block">Manage Bids &rarr;</a>
+        <div class="supplier-content-area">
+            <!-- Navigation Tabs -->
+            <div class="supplier-tabs-container">
+                <div class="supplier-tabs-bar">
+                    <a href="supplier_dashboard.php" class="supplier-tab-button <?php echo ($currentPage === 'supplier_dashboard.php') ? 'active' : ''; ?>">
+                        <i data-lucide="layout-dashboard" class="tab-icon"></i>
+                        Dashboard
+                    </a>
+                    <a href="supplier_bidding.php" class="supplier-tab-button <?php echo ($currentPage === 'supplier_bidding.php') ? 'active' : ''; ?>">
+                        <i data-lucide="gavel" class="tab-icon"></i>
+                        Open Bids
+                    </a>
+                    <a href="supplier_bid_history.php" class="supplier-tab-button <?php echo ($currentPage === 'supplier_bid_history.php') ? 'active' : ''; ?>">
+                        <i data-lucide="history" class="tab-icon"></i>
+                        Bid History
+                    </a>
                 </div>
             </div>
-        </main>
+
+            <main class="supplier-main">
+                <div class="hero-section">
+                    <h2 class="hero-title">Ready to Bid?</h2>
+                    <p class="hero-description">
+                        Here's a quick overview of your bidding activity. Find new opportunities and manage your ongoing proposals all in one place.
+                    </p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3 class="stat-title">Open for Bidding</h3>
+                            <div class="stat-icon-blue">
+                                <i data-lucide="gavel"></i>
+                            </div>
+                        </div>
+                        <p class="stat-number"><?php echo $open_bids_count; ?></p>
+                        <a href="supplier_bidding.php" class="stat-link">View Opportunities →</a>
+                    </div>
+
+                    <div class="stat-card">
+                         <div class="stat-header">
+                            <h3 class="stat-title">Bids Awarded</h3>
+                            <div class="stat-icon-green">
+                                <i data-lucide="trophy"></i>
+                            </div>
+                        </div>
+                        <p class="stat-number"><?php echo $awarded_bids_count; ?></p>
+                         <a href="supplier_bid_history.php" class="stat-link text-green-600">View History →</a>
+                    </div>
+
+                    <div class="stat-card">
+                         <div class="stat-header">
+                            <h3 class="stat-title">Active Proposals</h3>
+                            <div class="stat-icon-yellow">
+                                <i data-lucide="file-text"></i>
+                            </div>
+                        </div>
+                        <p class="stat-number"><?php echo $active_proposals_count; ?></p>
+                        <a href="supplier_bid_history.php" class="stat-link text-yellow-600">Manage Bids →</a>
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+    <?php include 'modals/supplier.php'; ?>
+    
+    <script src="../assets/js/custom-alerts.js"></script>
     <script src="../assets/js/supplier_portal.js"></script>
 </body>
 </html>

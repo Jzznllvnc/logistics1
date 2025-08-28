@@ -36,6 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
   <div class="main-container">
     <div class="register-container">
+      <div class="welcome-panel">
+        <img src="../assets/images/hero.png" alt="Freight Management System Logo" class="hero-image">
+      </div>
       <div class="register-panel">
         <div class="register-box">
           <img src="../assets/images/slate1.png" alt="Logo" />
@@ -48,17 +51,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p style="color: #10b981; margin-bottom: 20px;"><?php echo htmlspecialchars($success_message); ?></p>
             <?php endif; ?>
             
-            <input type="text" name="supplier_name" placeholder="Company Name" required>
-            <input type="text" name="contact_person" placeholder="Contact Person" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="tel" name="phone" placeholder="Phone" required>
+            <div class="form-grid">
+              <div class="form-column">
+                <input type="text" name="supplier_name" placeholder="Company Name" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="text" name="username" placeholder="Username" required>
+              </div>
+              <div class="form-column">
+                <input type="text" name="contact_person" placeholder="Contact Person" required>
+                <input type="tel" name="phone" placeholder="Phone" required>
+                <input type="password" name="password" placeholder="Password" required>
+              </div>
+            </div>
+            
             <textarea name="address" placeholder="Address" rows="3" required></textarea>
             
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            
-            <label for="verification_document">Verification Document (e.g., Business Permit)</label>
-            <input type="file" name="verification_document" id="verification_document" accept=".pdf,.jpg,.jpeg,.png" required>
+            <div class="file-upload-section">
+              <label for="verification_document">Verification Document (e.g., Business Permit)</label>
+              <input type="file" name="verification_document" id="verification_document" accept=".pdf,.jpg,.jpeg,.png" required>
+            </div>
 
             <button type="submit" class="register-button">Register</button>
           </form>

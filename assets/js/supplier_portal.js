@@ -5,9 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (notificationButton && notificationPanel) {
         notificationButton.addEventListener('click', (event) => {
             event.stopPropagation();
-            const isHidden = notificationPanel.classList.contains('hidden');
+            const isHidden = notificationPanel.style.display === 'none' || notificationPanel.style.display === '';
             
-            notificationPanel.classList.toggle('hidden', !isHidden);
+            notificationPanel.style.display = isHidden ? 'block' : 'none';
 
             if (isHidden && notificationButton.querySelector('.notification-count')) {
                 fetch('?mark_notifications_as_read=true')
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Visually mark all items as read
                             const unreadItems = notificationPanel.querySelectorAll('.notification-item[data-read="0"]');
                             unreadItems.forEach(item => {
-                                item.classList.remove('bg-blue-50');
+                                item.classList.remove('unread');
                                 const dot = item.querySelector('.unread-dot');
                                 if (dot) {
                                     dot.remove();
@@ -36,8 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         window.addEventListener('click', (event) => {
-            if (!notificationPanel.classList.contains('hidden') && !notificationPanel.contains(event.target)) {
-                notificationPanel.classList.add('hidden');
+            if (notificationPanel.style.display === 'block' && !notificationPanel.contains(event.target)) {
+                notificationPanel.style.display = 'none';
             }
         });
     }
