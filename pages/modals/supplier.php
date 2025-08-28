@@ -149,6 +149,8 @@ window.openBidModal = function(po_id, item_name) {
     document.getElementById('bidModalTitle').innerText = `Place Your Bid for "${item_name}"`;
     document.getElementById('po_id_input').value = po_id;
     document.getElementById('bidModal').classList.remove('hidden');
+    // Reinitialize Lucide icons after modal is shown
+    lucide.createIcons();
 };
 
 window.closeBidModal = function() {
