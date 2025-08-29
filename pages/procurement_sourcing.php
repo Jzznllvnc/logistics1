@@ -296,94 +296,83 @@ foreach ($purchaseOrders as $po) {
     async function openViewBidsModal(po_id, bids = null, po_status = null) {
         const modal = document.getElementById('viewBidsModal');
         const container = document.getElementById('bidsContainer');
+        const analysisContainer = document.getElementById('bidsAnalysisContainer') || document.createElement('div');
+        analysisContainer.id = 'bidsAnalysisContainer';
+        analysisContainer.className = 'bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-4';
+        analysisContainer.innerHTML = '<div class="flex items-center"><i class="fas fa-spinner fa-spin text-xl mr-3"></i><p>Analyzing supplier performance with AI...</p></div>';
+
+        const modalContent = modal.querySelector('.modal-content');
+        if (!document.getElementById('bidsAnalysisContainer')) {
+            modalContent.insertBefore(analysisContainer, container);
+        }
         
-        // Show loading state
+        // Remove the manual button if it exists
+        const oldButton = document.getElementById('analyzeSuppliersBtn');
+        if (oldButton) {
+            oldButton.remove();
+        }
+        
         container.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="mt-2 text-gray-500">Loading bids...</p></div>';
         
-        // Open modal immediately to show loading state
         if (window.openModal) {
             window.openModal(modal);
         }
+
+        // --- Automatically fetch the analysis ---
+        getSupplierAnalysis(po_id); 
         
         try {
-            // Start both the API call and minimum loading time
-            const [response, _] = await Promise.all([
-                fetch(`../includes/ajax/get_bids.php?po_id=${po_id}`),
-                new Promise(resolve => setTimeout(resolve, 800)) // Minimum 800ms loading
-            ]);
-            
+            const response = await fetch(`../includes/ajax/get_bids.php?po_id=${po_id}`);
             const result = await response.json();
             
-            if (!result.success) {
-                throw new Error(result.message || 'Failed to fetch bid data');
-            }
+            if (!result.success) throw new Error(result.message);
             
             const freshBids = result.bids;
-            const freshPOStatus = result.po_status;
+            currentPOId = po_id;
+            currentPOStatus = result.po_status;
             
-                         // Store current modal state
-             currentPOId = po_id;
-             currentPOStatus = freshPOStatus;
-            
-            // Clear loading state
             container.innerHTML = '';
-
             if (!freshBids || freshBids.length === 0) {
                 container.innerHTML = '<p class="text-[var(--placeholder-color)] text-center py-8">No bids have been submitted for this item yet.</p>';
             } else {
                 freshBids.forEach(bid => {
-                const isAwarded = bid.status === 'Awarded';
-                const isRejected = bid.status === 'Rejected';
-                const bidElement = document.createElement('div');
-                let bgColor = 'border-[var(--card-border)] bg-[var(--card-bg)]';
+                    const isAwarded = bid.status === 'Awarded';
+                    const isRejected = bid.status === 'Rejected';
+                    const bidElement = document.createElement('div');
+                    bidElement.className = `border rounded-lg p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border-[var(--card-border)] bg-[var(--card-bg)]`;
 
-                bidElement.className = `border rounded-lg p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 ${bgColor}`;
+                    let actionButtons = '';
+                    if (currentPOStatus === 'Open for Bidding' && bid.status === 'Pending') {
+                        actionButtons = `
+                            <div class="flex gap-3 justify-end sm:justify-start">
+                                <button type="button" class="btn-primary" onclick="awardBid(${bid.id}, ${po_id}, ${bid.supplier_id}, this)">
+                                    <span class="button-text">Award</span>
+                                    <span class="button-spinner hidden"><i class="fas fa-spinner fa-spin"></i></span>
+                                </button>
+                                <button type="button" class="btn-primary-danger" onclick="rejectBid(${bid.id}, this)">
+                                    <span class="button-text">Reject</span>
+                                    <span class="button-spinner hidden"><i class="fas fa-spinner fa-spin"></i></span>
+                                </button>
+                            </div>`;
+                    } else if (isAwarded) {
+                        actionButtons = `<div class="flex justify-end sm:justify-start"><span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full bg-green-100 text-green-700">AWARDED</span></div>`;
+                    } else if (isRejected) {
+                         actionButtons = `<div class="flex justify-end sm:justify-start"><span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full bg-red-100 text-red-700">REJECTED</span></div>`;
+                    }
 
-                let actionButtons = '';
-                if (currentPOStatus === 'Open for Bidding' && bid.status === 'Pending') {
-                    actionButtons = `
-                        <div class="flex gap-3 justify-end sm:justify-start">
-                            <button type="button" class="btn-primary" onclick="awardBid(${bid.id}, ${po_id}, ${bid.supplier_id}, this)">
-                                <span class="button-text">Award</span>
-                                <span class="button-spinner hidden">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                </span>
-                            </button>
-                            <button type="button" class="btn-primary-danger" onclick="rejectBid(${bid.id}, this)">
-                                <span class="button-text">Reject</span>
-                                <span class="button-spinner hidden">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                </span>
-                            </button>
+                    bidElement.innerHTML = `
+                        <div class="flex-1 space-y-2">
+                            <p class="font-bold text-lg text-[var(--text-color)]">${bid.supplier_name}</p>
+                            <p class="text-2xl font-light ${isAwarded ? 'text-green-700' : 'text-[var(--text-color)]'}">₱${parseFloat(bid.bid_amount).toFixed(2)}</p>
+                            <p class="text-sm text-[var(--text-color)] mt-2"><em>${bid.notes || 'No notes provided.'}</em></p>
                         </div>
-                    `;
-                } else if (isAwarded) {
-                    actionButtons = `<div class="flex justify-end sm:justify-start"><span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full bg-green-100 text-green-700">AWARDED</span></div>`;
-                } else if (isRejected) {
-                     actionButtons = `<div class="flex justify-end sm:justify-start"><span class="px-2 py-1 font-semibold leading-tight text-xs rounded-full bg-red-100 text-red-700">REJECTED</span></div>`;
-                }
-
-                bidElement.innerHTML = `
-                    <div class="flex-1 space-y-2">
-                        <p class="font-bold text-lg text-[var(--text-color)]">${bid.supplier_name}</p>
-                        <p class="text-2xl font-light ${isAwarded ? 'text-green-700' : 'text-[var(--text-color)]'}">₱${parseFloat(bid.bid_amount).toFixed(2)}</p>
-                        <p class="text-sm text-[var(--text-color)] mt-2"><em>${bid.notes || 'No notes provided.'}</em></p>
-                    </div>
-                    <div class="flex-shrink-0">
-                        ${actionButtons}
-                    </div>
-                `;
-                container.appendChild(bidElement);
-            });
-        }
-        
+                        <div class="flex-shrink-0">${actionButtons}</div>`;
+                    container.appendChild(bidElement);
+                });
+            }
         } catch (error) {
             console.error('Error loading bids:', error);
-            container.innerHTML = `<div class="text-center py-8 text-red-500">
-                <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                <p>Failed to load bids: ${error.message}</p>
-                <button onclick="openViewBidsModal(${po_id})" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Retry</button>
-            </div>`;
+            container.innerHTML = `<div class="text-center py-8 text-red-500"><i class="fas fa-exclamation-triangle text-2xl mb-2"></i><p>Failed to load bids: ${error.message}</p></div>`;
         }
     }
 
@@ -567,8 +556,26 @@ foreach ($purchaseOrders as $po) {
             }
         }
     }
-    
 
+    async function getSupplierAnalysis(po_id) {
+        const analysisContainer = document.getElementById('bidsAnalysisContainer');
+        
+        try {
+            const response = await fetch(`../includes/ajax/analyze_supplier.php?po_id=${po_id}`);
+            const result = await response.json();
+
+            if (result.success) {
+                // Format the response for display
+                analysisContainer.innerHTML = `<p class="font-bold">AI Analysis:</p><p>${result.analysis.replace(/\\n/g, '<br>')}</p>`;
+            } else {
+                analysisContainer.innerHTML = `<p class="text-red-500 font-bold">Error:</p><p>${result.error}</p>`;
+            }
+        } catch (error) {
+            analysisContainer.innerHTML = '<p class="text-red-500 font-bold">An error occurred while fetching the analysis.</p>';
+            console.error('Analysis error:', error);
+        }
+    }
+    
   </script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </body>

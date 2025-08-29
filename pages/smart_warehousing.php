@@ -1,8 +1,9 @@
 <?php
 require_once '../includes/functions/auth.php';
 require_once '../includes/functions/inventory.php';
-require_once '../includes/functions/supplier.php'; // Added for supplier list
-require_once '../includes/functions/purchase_order.php'; // Added for creating POs
+require_once '../includes/functions/supplier.php';
+require_once '../includes/functions/purchase_order.php';
+require_once '../includes/functions/bids.php'; // Needed for price history function
 requireLogin();
 
 // Role check
@@ -21,15 +22,16 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'pagination') {
     $totalPages = ceil($totalItems / $itemsPerPage);
     $inventory = getPaginatedInventory($offset, $itemsPerPage);
     
-    // Get automatic forecasts for the items on the current page
+    // Get both stock and price forecasts
     $forecasts = getAutomaticForecasts($inventory);
+    $price_forecasts = getAutomaticPriceForecasts($inventory);
     
-    // Return JSON response
     header('Content-Type: application/json');
     echo json_encode([
         'success' => true,
         'inventory' => $inventory,
         'forecasts' => $forecasts,
+        'price_forecasts' => $price_forecasts, // Send price forecasts in JSON response
         'currentPage' => $currentPage,
         'totalPages' => $totalPages,
         'totalItems' => $totalItems,
@@ -39,12 +41,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'pagination') {
     exit();
 }
 
-// Pagination settings
+// Standard Page Load
 $itemsPerPage = 10;
 $currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($currentPage - 1) * $itemsPerPage;
 
-// Handle POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
@@ -106,15 +107,14 @@ if (isset($_SESSION['flash_message'])) {
     $message = '';
 }
 
-// Get total count and paginated inventory
+// Get data for initial page load
 $totalItems = getTotalInventoryCount();
 $totalPages = ceil($totalItems / $itemsPerPage);
 $inventory = getPaginatedInventory($offset, $itemsPerPage);
-$allInventory = getInventory(); // For the modal datalist
-$allSuppliers = getAllSuppliers(); // For the supplier dropdown
-
-// Get automatic forecasts for the items on the current page
+$allInventory = getInventory();
+$allSuppliers = getAllSuppliers();
 $forecasts = getAutomaticForecasts($inventory);
+$price_forecasts = getAutomaticPriceForecasts($inventory); // Get price forecasts for initial load
 ?>
 
 <!DOCTYPE html>
@@ -125,7 +125,6 @@ $forecasts = getAutomaticForecasts($inventory);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logistics 1 - SWS</title>
   <link rel="icon" href="../assets/images/slate2.png" type="image/png">
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="stylesheet" href="../assets/css/styles.css">
   <link rel="stylesheet" href="../assets/css/sidebar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
@@ -141,11 +140,6 @@ $forecasts = getAutomaticForecasts($inventory);
         document.addEventListener('DOMContentLoaded', () => {
             if (window.showCustomAlert) {
                 showCustomAlert(<?php echo json_encode($message); ?>, <?php echo json_encode($message_type); ?>);
-            } else {
-                // Fallback - strip HTML for plain alert
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = <?php echo json_encode($message); ?>;
-                alert(tempDiv.textContent || tempDiv.innerText || '');
             }
         });
         <?php endif; ?>
@@ -186,27 +180,34 @@ $forecasts = getAutomaticForecasts($inventory);
               <tr>
                 <th>Item Name</th>
                 <th>Current Quantity</th>
-                                  <th>
+                <th>
                     Stock Trend Analysis 
                     <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.3 text-[0.8rem] font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-full align-top">
                       <i data-lucide="bot" class="w-4 h-4"></i>
                       AI
                     </span>
-                  </th>
-                  <th>
-                    Recommended<br>Action 
+                </th>
+                <th>
+                    Recommended Action 
                     <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.3 text-[0.8rem] font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-full align-top">
                       <i data-lucide="bot" class="w-4 h-4"></i>
                       AI
                     </span>
-                  </th>
+                </th>
+                <th>
+                    Price Forecast
+                    <span class="inline-flex items-center gap-1 ml-2 px-2 py-0.3 text-[0.8rem] font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-full align-top">
+                      <i data-lucide="bot" class="w-4 h-4"></i>
+                      AI
+                    </span>
+                </th>
                 <th>Last Updated</th>
                 <?php if ($_SESSION['role'] === 'admin'): ?><th>Action</th><?php endif; ?>
               </tr>
             </thead>
             <tbody id="inventoryTableBody">
               <?php if (empty($inventory)): ?>
-                <tr><td colspan="<?php echo ($_SESSION['role'] === 'admin') ? '6' : '5'; ?>" class="table-empty">No items in inventory.</td></tr>
+                <tr><td colspan="<?php echo ($_SESSION['role'] === 'admin') ? '7' : '6'; ?>" class="table-empty">No items in inventory.</td></tr>
               <?php else: foreach ($inventory as $item): ?>
                   <tr>
                     <td><?php echo htmlspecialchars($item['item_name']); ?></td>
@@ -214,12 +215,9 @@ $forecasts = getAutomaticForecasts($inventory);
                       <?php echo htmlspecialchars($item['quantity']); ?>
                       <?php if ($item['quantity'] < 10): ?> (Low Stock)<?php endif; ?>
                     </td>
-                    <td>
-                      <?php echo $forecasts[$item['id']]['analysis'] ?? '<span class="text-gray-400">N/A</span>'; ?>
-                    </td>
-                    <td>
-                      <?php echo $forecasts[$item['id']]['action'] ?? '<span class="text-gray-400">N/A</span>'; ?>
-                    </td>
+                    <td><?php echo $forecasts[$item['id']]['analysis'] ?? '<span class="text-gray-400">N/A</span>'; ?></td>
+                    <td><?php echo $forecasts[$item['id']]['action'] ?? '<span class="text-gray-400">N/A</span>'; ?></td>
+                    <td><?php echo $price_forecasts[$item['item_name']] ?? '<span class="text-gray-400">N/A</span>'; ?></td>
                     <td><?php echo date('M d, Y g:i A', strtotime($item['last_updated'])); ?></td>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
                       <td>
@@ -248,43 +246,7 @@ $forecasts = getAutomaticForecasts($inventory);
         
         <?php if ($totalPages > 1): ?>
         <div class="flex justify-center items-center mt-6 gap-2" id="paginationContainer">
-          <?php if ($currentPage > 1): ?>
-            <button onclick="loadPage(<?php echo $currentPage - 1; ?>)" class="pagination-btn">
-              <i data-lucide="chevron-left" class="w-4 h-4 mr-1"></i>
-              Previous
-            </button>
-          <?php endif; ?>
-          
-          <?php
-          $startPage = max(1, $currentPage - 2);
-          $endPage = min($totalPages, $currentPage + 2);
-          
-          if ($startPage > 1): ?>
-            <button onclick="loadPage(1)" class="pagination-btn <?php echo ($currentPage == 1) ? 'active' : ''; ?>">1</button>
-            <?php if ($startPage > 2): ?>
-              <span class="pagination-ellipsis">...</span>
-            <?php endif; ?>
-          <?php endif; ?>
-          
-          <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
-            <button onclick="loadPage(<?php echo $i; ?>)" class="pagination-btn <?php echo ($currentPage == $i) ? 'active' : ''; ?>" data-page="<?php echo $i; ?>"><?php echo $i; ?></button>
-          <?php endfor; ?>
-          
-          <?php if ($endPage < $totalPages): ?>
-            <?php if ($endPage < $totalPages - 1): ?>
-              <span class="pagination-ellipsis">...</span>
-            <?php endif; ?>
-            <button onclick="loadPage(<?php echo $totalPages; ?>)" class="pagination-btn <?php echo ($currentPage == $totalPages) ? 'active' : ''; ?>"><?php echo $totalPages; ?></button>
-          <?php endif; ?>
-          
-          <?php if ($currentPage < $totalPages): ?>
-            <button onclick="loadPage(<?php echo $currentPage + 1; ?>)" class="pagination-btn">
-              Next
-              <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
-            </button>
-          <?php endif; ?>
-        </div>
-        
+          </div>
         <div class="pagination-info" id="paginationInfo">
           Showing <?php echo (($currentPage - 1) * $itemsPerPage) + 1; ?> to <?php echo min($currentPage * $itemsPerPage, $totalItems); ?> of <?php echo $totalItems; ?> items
         </div>
@@ -300,7 +262,6 @@ $forecasts = getAutomaticForecasts($inventory);
   <script src="../assets/js/smart_warehousing.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script>
-    // Initialize Lucide icons
     if (typeof lucide !== 'undefined') {
       lucide.createIcons();
     }

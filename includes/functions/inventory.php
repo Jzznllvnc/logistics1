@@ -520,4 +520,89 @@ function getCurrentTotalInventory() {
     $conn->close();
     return $total;
 }
+/**
+ * Fetches price forecasts from cache or Gemini API for a list of items.
+ * @param array $inventoryItems An array of inventory items.
+ * @return array An array of price forecasts.
+ */
+function getAutomaticPriceForecasts(array $inventoryItems): array
+{
+    $conn = getDbConnection();
+    $finalForecasts = [];
+    $itemsToFetchFromApi = [];
+    $cacheExpiryHours = 24; // Cache results for 24 hours
+
+    // 1. Check the cache first for each item
+    foreach ($inventoryItems as $item) {
+        $stmt = $conn->prepare(
+            "SELECT forecast_text FROM price_forecast_cache 
+             WHERE item_name = ? AND cached_at > NOW() - INTERVAL ? HOUR"
+        );
+        $stmt->bind_param("si", $item['item_name'], $cacheExpiryHours);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $cachedData = $result->fetch_assoc();
+            $finalForecasts[$item['item_name']] = $cachedData['forecast_text'] . " (from cache)";
+        } else {
+            $itemsToFetchFromApi[] = $item;
+        }
+        $stmt->close();
+    }
+
+    // 2. If there are items that need a fresh forecast, call the API
+    if (!empty($itemsToFetchFromApi)) {
+        foreach($itemsToFetchFromApi as $item) {
+            $history = getItemPriceHistory($item['item_name']);
+            if (count($history) < 3) {
+                $finalForecasts[$item['item_name']] = "<span class='text-gray-400'>Not enough data</span>";
+                continue;
+            }
+
+            $price_data_points = [];
+            foreach ($history as $record) {
+                $date = date('F Y', strtotime($record['bid_date']));
+                $price_data_points[] = "- {$date}: ₱" . number_format($record['bid_amount'], 2);
+            }
+
+            $prompt = "As a supply chain analyst, analyze the price history for '{$item['item_name']}'. Provide a one-sentence trend analysis and a recommendation ('Buy Now', 'Wait', or 'Monitor'). Start the final sentence with 'Recommendation:'.\\n\\nPrice History:\\n" . implode("\\n", $price_data_points);
+
+            $apiKey = 'AIzaSyAmMMCjXOlS7tSXFmF9jiJOxa7OW3gsjO0';
+            $geminiApiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' . $apiKey;
+            $payload = json_encode(["contents" => [["parts" => [["text" => $prompt]]]]]);
+
+            $ch = curl_init($geminiApiUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 45);
+            $response = curl_exec($ch);
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            $analysis = 'API Error';
+            if ($http_code == 200 && $response) {
+                $result = json_decode($response, true);
+                $analysis = $result['candidates'][0]['content']['parts'][0]['text'] ?? 'Could not retrieve forecast.';
+            }
+            
+            $finalForecasts[$item['item_name']] = $analysis;
+
+            // Save the new analysis to the cache
+            $stmt_cache = $conn->prepare(
+                "INSERT INTO price_forecast_cache (item_name, forecast_text, cached_at)
+                 VALUES (?, ?, NOW())
+                 ON DUPLICATE KEY UPDATE forecast_text = VALUES(forecast_text), cached_at = NOW()"
+            );
+            $stmt_cache->bind_param("ss", $item['item_name'], $analysis);
+            $stmt_cache->execute();
+            $stmt_cache->close();
+        }
+    }
+    
+    $conn->close();
+    return $finalForecasts;
+}
 ?>

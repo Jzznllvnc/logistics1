@@ -129,6 +129,10 @@ function updateTableContent(inventory, isAdmin, forecasts = {}) {
                                     <i data-lucide="trash-2" class="w-5 h-5 mr-3"></i>
                                     Delete
                                 </button>
+                                <button type="button" onclick="getPriceForecast('${item.item_name.replace(/'/g, "\\'")}')">
+                                    <i data-lucide="trending-up" class="w-4 h-4 mr-3"></i>
+                                    Forecast Price
+                                </button>
                             </div>
                         </div>
                     </td>
@@ -679,5 +683,46 @@ async function confirmDeleteItem(itemId) {
         `;
         document.body.appendChild(form);
         form.submit();
+    }
+}
+
+
+// --- Price Forecasting Functions ---
+
+async function getPriceForecast(itemName) {
+    const modal = document.getElementById('priceForecastModal');
+    const title = document.getElementById('forecastModalTitle');
+    const container = document.getElementById('forecastResultContainer');
+
+    if (!modal || !title || !container) {
+        console.error('Price forecast modal elements not found.');
+        return;
+    }
+
+    // Set title and show loading state
+    title.textContent = `Price Forecast for "${itemName}"`;
+    container.innerHTML = '<div class="flex items-center justify-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="ml-3 text-gray-500">Generating AI forecast...</p></div>';
+    
+    if (window.openModal) {
+        window.openModal(modal);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    try {
+        const response = await fetch(`../includes/ajax/get_price_forecast.php?item_name=${encodeURIComponent(itemName)}`);
+        const result = await response.json();
+
+        if (result.success) {
+            // Format the response with clear sections
+            const formattedForecast = result.forecast
+                .replace(/Recommendation:/g, '<strong class="block mt-4 text-blue-600">Recommendation:</strong>');
+
+            container.innerHTML = `<div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">${formattedForecast.replace(/\n/g, '<br>')}</div>`;
+        } else {
+            container.innerHTML = `<div class="text-red-500 text-center py-8"><p class="font-bold">Error:</p><p>${result.error}</p></div>`;
+        }
+    } catch (error) {
+        container.innerHTML = '<div class="text-red-500 text-center py-8"><p class="font-bold">An error occurred while fetching the forecast.</p></div>';
+        console.error('Forecast error:', error);
     }
 }

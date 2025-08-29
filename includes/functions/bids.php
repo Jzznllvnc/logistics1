@@ -190,4 +190,49 @@ function getBidsBySupplier($supplier_id) {
     $conn->close();
     return $bids;
 }
+/**
+ * Retrieves the full bidding history for a specific supplier.
+ * @param int $supplier_id The supplier's ID.
+ * @return array An array of the supplier's bids with item names.
+ */
+function getBiddingHistoryBySupplier($supplier_id) {
+    if (!$supplier_id) return [];
+    $conn = getDbConnection();
+    $stmt = $conn->prepare(
+        "SELECT b.status, b.bid_amount, po.item_name
+         FROM bids b
+         JOIN purchase_orders po ON b.po_id = po.id
+         WHERE b.supplier_id = ?"
+    );
+    $stmt->bind_param("i", $supplier_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $history = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    $stmt->close();
+    $conn->close();
+    return $history;
+}
+/**
+ * Retrieves the price history for a specific item from past bids.
+ * @param string $item_name The name of the item.
+ * @return array An array of the item's price history.
+ */
+function getItemPriceHistory($item_name) {
+    if (empty($item_name)) return [];
+    $conn = getDbConnection();
+    $stmt = $conn->prepare(
+        "SELECT b.bid_amount, b.bid_date
+         FROM bids b
+         JOIN purchase_orders po ON b.po_id = po.id
+         WHERE po.item_name = ?
+         ORDER BY b.bid_date ASC"
+    );
+    $stmt->bind_param("s", $item_name);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $history = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    $stmt->close();
+    $conn->close();
+    return $history;
+}
 ?>
