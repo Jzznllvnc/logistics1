@@ -123,4 +123,54 @@ function awardPOToSupplier($po_id, $supplier_id, $bid_id) {
         return false;
     }
 }
+
+/**
+ * Gets count of pending purchase orders.
+ * @return int The number of pending orders.
+ */
+function getPendingOrdersCount() {
+    $conn = getDbConnection();
+    $result = $conn->query("SELECT COUNT(*) as count FROM purchase_orders WHERE status = 'Pending'");
+    $count = 0;
+    
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $count = (int)$row['count'];
+    }
+    
+    $conn->close();
+    return $count;
+}
+
+/**
+ * Gets recent bidding history for dashboard display.
+ * @param int $limit The maximum number of bids to retrieve.
+ * @return array An array of recent bid records with PO and supplier details.
+ */
+function getRecentBiddingHistory($limit = 5) {
+    $conn = getDbConnection();
+    $sql = "SELECT 
+                b.id,
+                b.bid_amount,
+                b.bid_date,
+                b.status as bid_status,
+                po.item_name,
+                po.quantity as po_quantity,
+                po.status as po_status,
+                s.supplier_name
+            FROM bids b
+            LEFT JOIN purchase_orders po ON b.po_id = po.id
+            LEFT JOIN suppliers s ON b.supplier_id = s.id
+            ORDER BY b.bid_date DESC
+            LIMIT ?";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $bids = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    $stmt->close();
+    $conn->close();
+    return $bids;
+}
 ?>

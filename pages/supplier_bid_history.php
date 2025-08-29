@@ -75,7 +75,7 @@ $currentPage = basename($_SERVER['SCRIPT_NAME']);
                                 <?php else: foreach($bid_history as $bid): ?>
                                 <tr>
                                     <td class="table-item-name"><?php echo htmlspecialchars($bid['item_name']); ?></td>
-                                    <td class="table-amount">$<?php echo number_format($bid['bid_amount'], 2); ?></td>
+                                    <td class="table-amount">₱<?php echo number_format($bid['bid_amount'], 2); ?></td>
                                     <td class="table-date"><?php echo date("F j, Y", strtotime($bid['bid_date'])); ?></td>
                                     <td>
                                         <span class="status-badge <?php 

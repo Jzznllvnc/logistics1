@@ -49,7 +49,7 @@
             <input type="hidden" name="po_id" id="po_id_input">
             
             <div class="mb-4">
-                <label for="bid_amount" class="form-label">Bid Amount ($)</label>
+                <label for="bid_amount" class="form-label">Bid Amount (₱)</label>
                 <input type="number" name="bid_amount" id="bid_amount" step="0.01" placeholder="Enter your bid amount" class="form-input" required>
             </div>
 

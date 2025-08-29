@@ -294,17 +294,15 @@ function initAjaxPagination() {
  * @param {string} action - Either 'stock-in' or 'stock-out'
  */
 function openStockModal(action) {
-    // Initialize elements if not already done
-    if (!stockManagementModal) {
-        stockManagementModal = document.getElementById('stockManagementModal');
-        modalTitle = document.getElementById('modalTitle');
-        stockModalSubtitle = document.getElementById('stockModalSubtitle');
-        stockAction = document.getElementById('stockAction');
-        confirmStockBtn = document.getElementById('confirmStockBtn');
-    }
+    // Always re-initialize elements to ensure they're fresh after PJAX navigation
+    stockManagementModal = document.getElementById('stockManagementModal');
+    modalTitle = document.getElementById('modalTitle');
+    stockModalSubtitle = document.getElementById('stockModalSubtitle');
+    stockAction = document.getElementById('stockAction');
+    confirmStockBtn = document.getElementById('confirmStockBtn');
 
     if (!stockManagementModal || !modalTitle || !stockModalSubtitle || !stockAction || !confirmStockBtn) {
-        console.warn('Stock management modal elements not found');
+        console.warn('Stock management modal elements not found after PJAX navigation');
         return;
     }
 
@@ -360,23 +358,42 @@ function initStockManagement() {
     const stockInBtn = document.getElementById('stockInBtn');
     const stockOutBtn = document.getElementById('stockOutBtn');
 
-    if (stockInBtn && stockOutBtn) {
-        stockInBtn.removeEventListener('click', handleStockInClick);
-        stockOutBtn.removeEventListener('click', handleStockOutClick);
-        
-        stockInBtn.addEventListener('click', handleStockInClick);
-        stockOutBtn.addEventListener('click', handleStockOutClick);
+    // Remove existing event listeners first
+    if (window.swsStockEventListeners) {
+        window.swsStockEventListeners.forEach(({element, event, handler}) => {
+            if (element) {
+                element.removeEventListener(event, handler);
+            }
+        });
     }
+    window.swsStockEventListeners = [];
+
+    // Add new event listeners with tracking
+    if (stockInBtn) {
+        const stockInHandler = function() {
+            openStockModal('stock-in');
+        };
+        stockInBtn.addEventListener('click', stockInHandler);
+        window.swsStockEventListeners.push({element: stockInBtn, event: 'click', handler: stockInHandler});
+    }
+
+    if (stockOutBtn) {
+        const stockOutHandler = function() {
+            openStockModal('stock-out');
+        };
+        stockOutBtn.addEventListener('click', stockOutHandler);
+        window.swsStockEventListeners.push({element: stockOutBtn, event: 'click', handler: stockOutHandler});
+    }
+
+    // Reset modal element references to ensure they're fresh
+    stockManagementModal = null;
+    modalTitle = null;
+    stockModalSubtitle = null;
+    stockAction = null;
+    confirmStockBtn = null;
 }
 
-// Event handler functions
-function handleStockInClick() {
-    openStockModal('stock-in');
-}
-
-function handleStockOutClick() {
-    openStockModal('stock-out');
-}
+// Event handler functions removed - now handled inline for better PJAX compatibility
 
 /**
  * Toggle action dropdown for table rows with smart positioning
@@ -437,23 +454,130 @@ function positionDropdownSmart(dropdown, itemId) {
  */
 function initInventorySearch() {
     const searchInput = document.getElementById('inventorySearchInput');
-    const filterSelect = document.getElementById('inventoryFilter');
+    const filterButton = document.getElementById('inventoryFilterBtn');
     
+    // Remove existing search event listeners
+    if (window.swsSearchEventListeners) {
+        window.swsSearchEventListeners.forEach(({element, event, handler}) => {
+            if (element) {
+                element.removeEventListener(event, handler);
+            }
+        });
+    }
+    window.swsSearchEventListeners = [];
+    
+    // Add search input event listener with tracking
     if (searchInput) {
-        searchInput.removeEventListener('keyup', applyFiltersAndSearch);
-        searchInput.addEventListener('keyup', applyFiltersAndSearch);
+        const searchHandler = function() {
+            applyFiltersAndSearch();
+        };
+        searchInput.addEventListener('keyup', searchHandler);
+        window.swsSearchEventListeners.push({element: searchInput, event: 'keyup', handler: searchHandler});
     }
     
-    if (filterSelect) {
-        filterSelect.removeEventListener('change', applyFiltersAndSearch);
-        filterSelect.addEventListener('change', applyFiltersAndSearch);
+    // Remove existing filter event listeners
+    if (window.swsFilterEventListeners) {
+        window.swsFilterEventListeners.forEach(({element, event, handler}) => {
+            if (element) {
+                element.removeEventListener(event, handler);
+            }
+        });
+    }
+    window.swsFilterEventListeners = [];
+    
+    // Add new filter button event listener
+    if (filterButton) {
+        const filterHandler = function() {
+            toggleInventoryFilter();
+        };
+        filterButton.addEventListener('click', filterHandler);
+        window.swsFilterEventListeners.push({element: filterButton, event: 'click', handler: filterHandler});
     }
     
-    document.addEventListener('click', function(event) {
+    // Remove existing global click listeners for dropdowns
+    if (window.swsGlobalClickHandler) {
+        document.removeEventListener('click', window.swsGlobalClickHandler);
+    }
+    
+    // Add global click handler for closing dropdowns
+    window.swsGlobalClickHandler = function(event) {
         if (!event.target.closest('.action-dropdown-btn') && !event.target.closest('.action-dropdown')) {
             document.querySelectorAll('.action-dropdown').forEach(d => d.classList.add('hidden'));
         }
-    });
+    };
+    document.addEventListener('click', window.swsGlobalClickHandler);
+}
+
+// Global variable to track current filter value
+let currentInventoryFilter = 'all';
+
+/**
+ * Toggle inventory filter dropdown
+ */
+function toggleInventoryFilter() {
+    // Remove existing filter if it exists
+    const existingFilter = document.getElementById('inventoryFilterDropdown');
+    if (existingFilter) {
+        existingFilter.remove();
+        return;
+    }
+    
+    // Get filter button position
+    const filterButton = document.getElementById('inventoryFilterBtn');
+    
+    // Create filter dropdown
+    const filterContainer = document.createElement('div');
+    filterContainer.id = 'inventoryFilterDropdown';
+    filterContainer.className = 'absolute z-50 bg-white rounded-lg shadow-lg border py-2 min-w-48';
+    filterContainer.style.background = 'var(--card-bg)';
+    filterContainer.style.border = '1px solid var(--card-border)';
+    filterContainer.style.top = '50px';
+    filterContainer.style.left = '0px';
+    
+    filterContainer.innerHTML = `
+        <div class="py-1">
+            <button onclick="applyInventoryFilter('all')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${currentInventoryFilter === 'all' ? 'bg-blue-50 text-blue-700' : ''}" style="color: var(--text-color);" onmouseover="this.style.backgroundColor='var(--close-btn-hover-bg)'" onmouseout="this.style.backgroundColor='${currentInventoryFilter === 'all' ? 'rgb(239 246 255)' : 'transparent'}'">
+                All Items
+            </button>
+            <button onclick="applyInventoryFilter('low-stock')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${currentInventoryFilter === 'low-stock' ? 'bg-blue-50 text-blue-700' : ''}" style="color: var(--text-color);" onmouseover="this.style.backgroundColor='var(--close-btn-hover-bg)'" onmouseout="this.style.backgroundColor='${currentInventoryFilter === 'low-stock' ? 'rgb(239 246 255)' : 'transparent'}'">
+                Low Stock (&lt;10)
+            </button>
+            <button onclick="applyInventoryFilter('normal-stock')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${currentInventoryFilter === 'normal-stock' ? 'bg-blue-50 text-blue-700' : ''}" style="color: var(--text-color);" onmouseover="this.style.backgroundColor='var(--close-btn-hover-bg)'" onmouseout="this.style.backgroundColor='${currentInventoryFilter === 'normal-stock' ? 'rgb(239 246 255)' : 'transparent'}'">
+                Normal Stock (10-100)
+            </button>
+            <button onclick="applyInventoryFilter('high-stock')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${currentInventoryFilter === 'high-stock' ? 'bg-blue-50 text-blue-700' : ''}" style="color: var(--text-color);" onmouseover="this.style.backgroundColor='var(--close-btn-hover-bg)'" onmouseout="this.style.backgroundColor='${currentInventoryFilter === 'high-stock' ? 'rgb(239 246 255)' : 'transparent'}'">
+                High Stock (>100)
+            </button>
+        </div>
+    `;
+    
+    // Position relative to the filter button
+    filterButton.parentElement.style.position = 'relative';
+    filterButton.parentElement.appendChild(filterContainer);
+    
+    // Close filter when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', function closeFilter(e) {
+            if (!filterContainer.contains(e.target) && e.target.id !== 'inventoryFilterBtn') {
+                filterContainer.remove();
+                document.removeEventListener('click', closeFilter);
+            }
+        });
+    }, 100);
+}
+
+/**
+ * Apply inventory filter
+ */
+function applyInventoryFilter(filterValue) {
+    currentInventoryFilter = filterValue;
+    applyFiltersAndSearch();
+    
+    // Close the filter dropdown
+    const filterDropdown = document.getElementById('inventoryFilterDropdown');
+    if (filterDropdown) {
+        filterDropdown.remove();
+    }
 }
 
 /**
@@ -461,13 +585,12 @@ function initInventorySearch() {
  */
 function applyFiltersAndSearch() {
     const searchInput = document.getElementById('inventorySearchInput');
-    const filterSelect = document.getElementById('inventoryFilter');
     const tableBody = document.getElementById('inventoryTableBody');
     
-    if (!searchInput || !filterSelect || !tableBody) return;
+    if (!searchInput || !tableBody) return;
     
     const searchTerm = searchInput.value.toLowerCase();
-    const filterValue = filterSelect.value;
+    const filterValue = currentInventoryFilter;
     const rows = tableBody.getElementsByTagName('tr');
 
     for (let i = 0; i < rows.length; i++) {
@@ -503,9 +626,16 @@ function initSmartWarehousing() {
     const urlParams = new URLSearchParams(window.location.search);
     currentPaginationPage = parseInt(urlParams.get('page')) || 1;
     
+    // Reset filter state on page initialization
+    currentInventoryFilter = 'all';
+    
     initStockManagement();
     initInventorySearch();
     initAjaxPagination(); // Initialize AJAX pagination
+    
+    // Make filter functions globally available for onclick handlers
+    window.applyInventoryFilter = applyInventoryFilter;
+    window.toggleInventoryFilter = toggleInventoryFilter;
 }
 
 // Make the initializer globally available for PJAX

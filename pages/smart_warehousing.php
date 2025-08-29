@@ -165,16 +165,10 @@ $forecasts = getAutomaticForecasts($inventory);
               <input type="text" id="inventorySearchInput" placeholder="Search..." class="py-2 pl-10 pr-3 w-full rounded-full border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
             </div>
             <div class="relative inline-block">
-              <select id="inventoryFilter" class="py-2 pl-10 pr-3 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)] appearance-none cursor-pointer opacity-0 absolute inset-0 w-full h-full">
-                <option value="all">All Items</option>
-                <option value="low-stock">Low Stock (&lt;10)</option>
-                <option value="normal-stock">Normal Stock (10-100)</option>
-                <option value="high-stock">High Stock (>100)</option>
-              </select>
-              <div class="flex items-center py-2 pl-4 pr-4 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] cursor-pointer">
-                <i data-lucide="list-filter" class="w-5 h-5 mr-3 text-[var(--input-text)]"></i>
-                <span class="text-[var(--input-text)] text-[1rem] whitespace-nowrap">Filter</span>
-              </div>
+              <button id="inventoryFilterBtn" class="flex items-center py-2 pl-4 pr-4 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] cursor-pointer transition-colors" style="color: var(--input-text);" onmouseover="this.style.backgroundColor='var(--close-btn-hover-bg)'" onmouseout="this.style.backgroundColor='var(--input-bg)'">
+                <i data-lucide="list-filter" class="w-5 h-5 mr-3"></i>
+                <span class="text-[1rem] whitespace-nowrap">Filter</span>
+              </button>
             </div>
             <div class="h-8 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
             <button id="stockInBtn" type="button" class="btn-primary text-sm sm:text-base whitespace-nowrap">
@@ -304,5 +298,12 @@ $forecasts = getAutomaticForecasts($inventory);
   <script src="../assets/js/sidebar.js"></script>
   <script src="../assets/js/script.js"></script>
   <script src="../assets/js/smart_warehousing.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  </script>
 </body>
 </html>

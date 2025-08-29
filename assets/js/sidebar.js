@@ -230,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const page = new URL(url, window.location.href).pathname.split('/').pop();
                     const pageInitMap = {
+                        'dashboard.php': 'initDashboard',
                         'smart_warehousing.php': 'initSmartWarehousing',
                         'procurement_sourcing.php': 'initProcurement',
                         'asset_lifecycle_maintenance.php': 'initALMS',

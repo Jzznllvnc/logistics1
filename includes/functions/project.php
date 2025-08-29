@@ -74,4 +74,56 @@ function updateProjectResources($projectId, $supplierIds) {
     }
     $conn->close();
 }
+
+/**
+ * Gets count of active projects.
+ * @return int The number of active projects.
+ */
+function getActiveProjectsCount() {
+    $conn = getDbConnection();
+    $result = $conn->query("SELECT COUNT(*) as count FROM projects WHERE status IN ('In Progress', 'Not Started')");
+    $count = 0;
+    
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $count = (int)$row['count'];
+    }
+    
+    $conn->close();
+    return $count;
+}
+
+/**
+ * Gets the percentage change in active projects compared to previous month.
+ * @return array Contains percentage and whether it's positive/negative.
+ */
+function getActiveProjectsChange() {
+    $conn = getDbConnection();
+    
+    // Get current total active projects
+    $currentCount = getActiveProjectsCount();
+    
+    // Get count of projects that were active 30 days ago
+    $prevResult = $conn->query("
+        SELECT COUNT(*) as count 
+        FROM projects 
+        WHERE status IN ('In Progress', 'Not Started') 
+        AND start_date <= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        AND (end_date IS NULL OR end_date >= DATE_SUB(NOW(), INTERVAL 30 DAY))
+    ");
+    $prevCount = $prevResult ? $prevResult->fetch_assoc()['count'] : 0;
+    
+    $conn->close();
+    
+    // Calculate percentage change
+    if ($prevCount == 0) {
+        return ['percentage' => $currentCount > 0 ? 100 : 0, 'is_positive' => $currentCount > 0];
+    }
+    
+    $change = (($currentCount - $prevCount) / $prevCount) * 100;
+    return [
+        'percentage' => abs(round($change, 1)), 
+        'is_positive' => $change >= 0
+    ];
+}
 ?>

@@ -378,4 +378,76 @@ function fetchForecastsFromGeminiForAssets(array $assets): array {
     }
     return $forecasts;
 }
+
+/**
+ * Gets count of operational assets.
+ * @return int The number of operational assets.
+ */
+function getOperationalAssetsCount() {
+    $conn = getDbConnection();
+    $result = $conn->query("SELECT COUNT(*) as count FROM assets WHERE status = 'Operational'");
+    $count = 0;
+    
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $count = (int)$row['count'];
+    }
+    
+    $conn->close();
+    return $count;
+}
+
+/**
+ * Gets the delivery truck asset for dashboard display.
+ * @return array|null The delivery truck asset data.
+ */
+function getDeliveryTruckAsset() {
+    $conn = getDbConnection();
+    $stmt = $conn->prepare("SELECT * FROM assets WHERE asset_name LIKE '%Delivery Truck%' LIMIT 1");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $asset = null;
+    if ($result && $result->num_rows > 0) {
+        $asset = $result->fetch_assoc();
+    }
+    
+    $stmt->close();
+    $conn->close();
+    return $asset;
+}
+
+/**
+ * Gets the percentage change in operational assets compared to previous month.
+ * @return array Contains percentage and whether it's positive/negative.
+ */
+function getOperationalAssetsChange() {
+    $conn = getDbConnection();
+    
+    // Get current operational assets count
+    $currentCount = getOperationalAssetsCount();
+    
+    // Get operational assets count from 30 days ago based on maintenance_history
+    $prevResult = $conn->query("
+        SELECT COUNT(DISTINCT mh.asset_id) as count
+        FROM maintenance_history mh
+        WHERE mh.status = 'Operational'
+        AND mh.timestamp <= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        AND mh.asset_id IN (SELECT id FROM assets)
+    ");
+    $prevCount = $prevResult ? $prevResult->fetch_assoc()['count'] : 0;
+    
+    $conn->close();
+    
+    // Calculate percentage change
+    if ($prevCount == 0) {
+        return ['percentage' => $currentCount > 0 ? 100 : 0, 'is_positive' => $currentCount > 0];
+    }
+    
+    $change = (($currentCount - $prevCount) / $prevCount) * 100;
+    return [
+        'percentage' => abs(round($change, 1)), 
+        'is_positive' => $change >= 0
+    ];
+}
 ?>

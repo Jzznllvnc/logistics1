@@ -366,7 +366,7 @@ foreach ($purchaseOrders as $po) {
                 bidElement.innerHTML = `
                     <div class="flex-1 space-y-2">
                         <p class="font-bold text-lg text-[var(--text-color)]">${bid.supplier_name}</p>
-                        <p class="text-2xl font-light ${isAwarded ? 'text-green-700' : 'text-[var(--text-color)]'}">$${parseFloat(bid.bid_amount).toFixed(2)}</p>
+                        <p class="text-2xl font-light ${isAwarded ? 'text-green-700' : 'text-[var(--text-color)]'}">₱${parseFloat(bid.bid_amount).toFixed(2)}</p>
                         <p class="text-sm text-[var(--text-color)] mt-2"><em>${bid.notes || 'No notes provided.'}</em></p>
                     </div>
                     <div class="flex-shrink-0">

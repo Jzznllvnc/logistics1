@@ -175,4 +175,62 @@ function updateSupplierProfile($supplier_id, $data) {
     $conn->close();
     return $success;
 }
+
+/**
+ * Gets count of approved suppliers.
+ * @return int The number of approved suppliers.
+ */
+function getSuppliersCount() {
+    $conn = getDbConnection();
+    $result = $conn->query("SELECT COUNT(*) as count FROM suppliers WHERE status = 'Approved'");
+    $count = 0;
+    
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $count = (int)$row['count'];
+    }
+    
+    $conn->close();
+    return $count;
+}
+
+/**
+ * Gets the percentage change in approved suppliers compared to previous month.
+ * @return array Contains percentage and whether it's positive/negative.
+ */
+function getSuppliersChange() {
+    $conn = getDbConnection();
+    
+    // Get current month approved suppliers count
+    $currentResult = $conn->query("
+        SELECT COUNT(*) as count 
+        FROM suppliers 
+        WHERE status = 'Approved' 
+        AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')
+    ");
+    $currentCount = $currentResult ? $currentResult->fetch_assoc()['count'] : 0;
+    
+    // Get previous month approved suppliers count
+    $prevResult = $conn->query("
+        SELECT COUNT(*) as count 
+        FROM suppliers 
+        WHERE status = 'Approved' 
+        AND created_at >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 MONTH), '%Y-%m-01')
+        AND created_at < DATE_FORMAT(NOW(), '%Y-%m-01')
+    ");
+    $prevCount = $prevResult ? $prevResult->fetch_assoc()['count'] : 0;
+    
+    $conn->close();
+    
+    // Calculate percentage change
+    if ($prevCount == 0) {
+        return ['percentage' => $currentCount > 0 ? 100 : 0, 'is_positive' => $currentCount > 0];
+    }
+    
+    $change = (($currentCount - $prevCount) / $prevCount) * 100;
+    return [
+        'percentage' => abs(round($change, 1)), 
+        'is_positive' => $change >= 0
+    ];
+}
 ?>

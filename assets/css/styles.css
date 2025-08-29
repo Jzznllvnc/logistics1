@@ -39,6 +39,7 @@ html.preload *::after {
   --close-btn-hover-bg: #f0f0f0;
   --placeholder-color: #939ca5;
   --dropdown-item-hover: rgba(0, 0, 0, 0.05);
+  --icon-container-bg: #f3f4f6;
   
   /* Pagination colors */
   --pagination-text: #6b7280;
@@ -70,6 +71,7 @@ html.preload *::after {
   --close-btn-hover-bg: rgba(255, 255, 255, 0.1);
   --placeholder-color: #8a9299;
   --dropdown-item-hover: rgba(255, 255, 255, 0.1);
+  --icon-container-bg: #2e2e2e;
   
   /* Dark mode pagination colors */
   --pagination-text: #d1d5db;
