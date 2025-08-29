@@ -39,7 +39,7 @@ async function loadPage(page, updateHistory = true) {
         
         if (data.success) {
             // Update table content
-            updateTableContent(data.inventory, data.isAdmin, data.forecasts);
+            updateTableContent(data.inventory, data.isAdmin, data.forecasts, data.price_forecasts);
             
             // Update pagination
             updatePaginationControls(data.currentPage, data.totalPages);
@@ -87,12 +87,12 @@ async function loadPage(page, updateHistory = true) {
 /**
  * Update table content with new inventory data
  */
-function updateTableContent(inventory, isAdmin, forecasts = {}) {
+function updateTableContent(inventory, isAdmin, forecasts = {}, priceForecasts = {}) {
     const tableBody = document.getElementById('inventoryTableBody');
     if (!tableBody) return;
     
     if (inventory.length === 0) {
-        const colspan = isAdmin ? '6' : '5';
+        const colspan = isAdmin ? '7' : '6';
         tableBody.innerHTML = `<tr><td colspan="${colspan}" class="table-empty">No items in inventory.</td></tr>`;
     } else {
         tableBody.innerHTML = inventory.map(item => {
@@ -111,6 +111,9 @@ function updateTableContent(inventory, isAdmin, forecasts = {}) {
             const itemForecast = forecasts[item.id] || {};
             const trendAnalysis = itemForecast.analysis || '<span class="text-gray-400">N/A</span>';
             const recommendedAction = itemForecast.action || '<span class="text-gray-400">N/A</span>';
+            
+            // Get price forecast for this item
+            const priceForecast = priceForecasts[item.item_name] || '<span class="text-gray-400">N/A</span>';
             
             let actionsColumn = '';
             if (isAdmin) {
@@ -150,6 +153,9 @@ function updateTableContent(inventory, isAdmin, forecasts = {}) {
                     </td>
                     <td>
                         ${recommendedAction}
+                    </td>
+                    <td>
+                        ${priceForecast}
                     </td>
                     <td>${lastUpdated}</td>
                     ${actionsColumn}
@@ -251,6 +257,29 @@ function escapeHtml(unsafe) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+/**
+ * Initialize pagination controls on page load
+ */
+function initPaginationOnLoad() {
+    // Get pagination info from the page to determine total pages
+    const paginationInfo = document.querySelector('.pagination-info');
+    if (!paginationInfo) return;
+    
+    // Extract total items from the pagination info text
+    const infoText = paginationInfo.textContent;
+    const totalItemsMatch = infoText.match(/of (\d+) items/);
+    
+    if (totalItemsMatch) {
+        const totalItems = parseInt(totalItemsMatch[1]);
+        const itemsPerPage = 10; // From PHP configuration
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        
+        if (totalPages > 1) {
+            updatePaginationControls(currentPaginationPage, totalPages);
+        }
+    }
 }
 
 /**
@@ -636,6 +665,7 @@ function initSmartWarehousing() {
     initStockManagement();
     initInventorySearch();
     initAjaxPagination(); // Initialize AJAX pagination
+    initPaginationOnLoad(); // Initialize pagination controls on initial load
     
     // Make filter functions globally available for onclick handlers
     window.applyInventoryFilter = applyInventoryFilter;

@@ -45,7 +45,7 @@ INSERT INTO `assets` (`id`, `asset_name`, `asset_type`, `purchase_date`, `status
 (1, 'Forklift #1', 'Material Handling', '2023-05-15', 'Operational', 'assets/images/uploads/assets/asset_68ae9f2ecf211.png', '2025-08-21 17:42:03'),
 (2, 'Delivery Truck - D07', 'Vehicle', '2022-11-20', 'Operational', 'assets/images/uploads/assets/asset_68ae9e3be22d5.png', '2025-08-21 17:42:03'),
 (3, 'Pallet Jack - A', 'Material Handling', '2024-01-30', 'Under Maintenance', 'assets/images/uploads/assets/asset_68ae9fe352590.png', '2025-08-21 17:42:03'),
-(4, 'Warehouse Conveyor Belt', 'Equipment', '2021-08-01', 'Operational', 'assets/images/uploads/assets/asset_68aea289cdc3f.png', '2025-08-21 17:42:03'),
+(4, 'Warehouse Conveyor Belt', 'Equipment', '2021-08-01', 'Operational', 'assets/images/uploads/assets/asset_68af1ca655f62.png', '2025-08-21 17:42:03'),
 (5, 'Cargo Van - CV01', 'Vehicle', '2023-01-10', 'Operational', 'assets/images/uploads/assets/asset_68aea34ed961d.png', '2025-08-26 02:00:00'),
 (6, 'Reach Truck - RT02', 'Material Handling', '2022-09-22', 'Operational', 'assets/images/uploads/assets/asset_68aea147d82be.png', '2025-08-26 02:00:00'),
 (7, 'Shipping Container 40ft', 'Equipment', '2021-05-18', 'Operational', 'assets/images/uploads/assets/asset_68aea1c00556e.png', '2025-08-26 02:00:00');
