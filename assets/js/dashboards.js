@@ -478,7 +478,8 @@ window.loadPurchaseOrdersData = function(period) {
               width: 8,
               height: 8,
               radius: 2,
-              offsetX: -2,
+              strokeWidth: 0,
+              offsetX: -6,
               offsetY: 0
             },
             itemMargin: {
