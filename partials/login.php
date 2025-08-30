@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        // --- THE FIX IS HERE: Role-Based Redirection ---
+        // --- Role-Based Redirection ---
         if ($authResult['role'] === 'supplier') {
             header("Location: ../pages/supplier_dashboard.php");
         } else {
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Login - SLATE System</title>
     <link rel="icon" href="../assets/images/slate2.png" type="image/png">
     <link rel="stylesheet" href="../assets/css/login.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
 <body>
     <div class="main-container">
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="text" name="username" placeholder="Username" required value="<?php echo htmlspecialchars($remembered_user); ?>">
                         <div class="password-wrapper">
                             <input type="password" name="password" id="password" placeholder="Password" required>
-                            <button type="button" class="toggle-password"><i class="fa-solid fa-eye"></i></button>
+                            <button type="button" class="toggle-password"><i data-lucide="eye"></i></button>
                         </div>
                         <div class="remember-me-container">
                             <input type="checkbox" id="remember_me" name="remember_me" <?php if(!empty($remembered_user)) echo 'checked'; ?>>
@@ -88,13 +88,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
     <script>
-        // Password toggle script
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Eye toggle script
         const toggleButton = document.querySelector('.toggle-password');
         const passwordInput = document.getElementById('password');
         toggleButton.addEventListener('click', function () {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
-            this.querySelector('i').classList.toggle('fa-eye-slash');
+
+            const existingIcon = this.querySelector('svg');
+            if (existingIcon) {
+                existingIcon.remove();
+            }
+            
+            if (type === 'text') {
+                const eyeClosedIcon = lucide.createElement(lucide.icons['EyeClosed']);
+                this.appendChild(eyeClosedIcon);
+            } else {
+                const eyeIcon = lucide.createElement(lucide.icons['Eye']);
+                this.appendChild(eyeIcon);
+            }
         });
     </script>
 </body>
