@@ -29,18 +29,47 @@ function stockIn($itemName, $quantity) {
     $conn = getDbConnection();
     $quantity = (int)$quantity;
 
-    $stmt = $conn->prepare(
-        "INSERT INTO inventory (item_name, quantity) VALUES (?, ?)
-         ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)"
-    );
-    $stmt->bind_param("si", $itemName, $quantity);
+    // Start transaction to ensure both inventory and history are updated together
+    $conn->begin_transaction();
     
-    $success = $stmt->execute();
-    
-    $stmt->close();
-    $conn->close();
-    
-    return $success;
+    try {
+        // Update or insert inventory
+        $stmt = $conn->prepare(
+            "INSERT INTO inventory (item_name, quantity) VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)"
+        );
+        $stmt->bind_param("si", $itemName, $quantity);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Get the item ID and new quantity for history tracking
+        $stmt = $conn->prepare("SELECT id, quantity FROM inventory WHERE item_name = ?");
+        $stmt->bind_param("s", $itemName);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $itemId = $row['id'];
+            $newQuantity = $row['quantity'];
+            
+            // Add history record
+            $historyStmt = $conn->prepare("INSERT INTO inventory_history (item_id, quantity) VALUES (?, ?)");
+            $historyStmt->bind_param("ii", $itemId, $newQuantity);
+            $historyStmt->execute();
+            $historyStmt->close();
+        }
+        $stmt->close();
+        
+        $conn->commit();
+        return true;
+        
+    } catch (Exception $e) {
+        $conn->rollback();
+        return false;
+    } finally {
+        $conn->close();
+    }
 }
 
 /**
@@ -57,34 +86,58 @@ function stockOut($itemName, $quantity) {
     $conn = getDbConnection();
     $quantity = (int)$quantity;
 
-    $stmt = $conn->prepare("SELECT quantity FROM inventory WHERE item_name = ?");
-    $stmt->bind_param("s", $itemName);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    // Start transaction
+    $conn->begin_transaction();
     
-    if ($result->num_rows === 0) {
+    try {
+        // Get item details
+        $stmt = $conn->prepare("SELECT id, quantity FROM inventory WHERE item_name = ?");
+        $stmt->bind_param("s", $itemName);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            $stmt->close();
+            $conn->rollback();
+            $conn->close();
+            return "Item not found in inventory.";
+        }
+
+        $row = $result->fetch_assoc();
+        $itemId = $row['id'];
+        $currentStock = $row['quantity'];
+        
+        if ($currentStock < $quantity) {
+            $stmt->close();
+            $conn->rollback();
+            $conn->close();
+            return "Stock-out failed. Only $currentStock items available.";
+        }
+
+        // Update inventory
+        $updateStmt = $conn->prepare("UPDATE inventory SET quantity = quantity - ? WHERE item_name = ?");
+        $updateStmt->bind_param("is", $quantity, $itemName);
+        $updateStmt->execute();
+        
+        // Add history record
+        $newQuantity = $currentStock - $quantity;
+        $historyStmt = $conn->prepare("INSERT INTO inventory_history (item_id, quantity) VALUES (?, ?)");
+        $historyStmt->bind_param("ii", $itemId, $newQuantity);
+        $historyStmt->execute();
+        
         $stmt->close();
+        $updateStmt->close();
+        $historyStmt->close();
+        $conn->commit();
         $conn->close();
-        return "Item not found in inventory.";
-    }
-
-    $currentStock = $result->fetch_assoc()['quantity'];
-    if ($currentStock < $quantity) {
-        $stmt->close();
+        
+        return "Success";
+        
+    } catch (Exception $e) {
+        $conn->rollback();
         $conn->close();
-        return "Stock-out failed. Only $currentStock items available.";
+        return "An error occurred during stock-out.";
     }
-
-    $updateStmt = $conn->prepare("UPDATE inventory SET quantity = quantity - ? WHERE item_name = ?");
-    $updateStmt->bind_param("is", $quantity, $itemName);
-    
-    $message = $updateStmt->execute() ? "Success" : "An error occurred during stock-out.";
-
-    $stmt->close();
-    $updateStmt->close();
-    $conn->close();
-    
-    return $message;
 }
 
 /**
@@ -604,5 +657,153 @@ function getAutomaticPriceForecasts(array $inventoryItems): array
     
     $conn->close();
     return $finalForecasts;
+}
+
+/**
+ * Gets the top stocked items for dashboard display.
+ * @param int $limit The number of items to retrieve.
+ * @return array An array of top stocked items.
+ */
+function getTopStockedItems($limit = 5) {
+    $conn = getDbConnection();
+    $stmt = $conn->prepare("SELECT id, item_name, quantity, last_updated FROM inventory ORDER BY quantity DESC LIMIT ?");
+    $stmt->bind_param("i", $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $items = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $items[] = $row;
+        }
+    }
+    
+    $stmt->close();
+    $conn->close();
+    return $items;
+}
+
+/**
+ * Gets recent stock movements (last 7 days) for dashboard.
+ * @param int $limit The number of movements to retrieve.
+ * @return array An array of recent stock movements.
+ */
+function getRecentStockMovements($limit = 10) {
+    $conn = getDbConnection();
+    $stmt = $conn->prepare("
+        SELECT 
+            h1.item_id,
+            i.item_name,
+            h1.quantity as current_quantity,
+            h2.quantity as previous_quantity,
+            h1.timestamp,
+            (h1.quantity - h2.quantity) as change_amount
+        FROM inventory_history h1
+        JOIN inventory i ON h1.item_id = i.id
+        LEFT JOIN inventory_history h2 ON h1.item_id = h2.item_id 
+            AND h2.timestamp = (
+                SELECT MAX(h3.timestamp) 
+                FROM inventory_history h3 
+                WHERE h3.item_id = h1.item_id 
+                AND h3.timestamp < h1.timestamp
+            )
+        WHERE h1.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        AND h2.quantity IS NOT NULL
+        ORDER BY h1.timestamp DESC 
+        LIMIT ?
+    ");
+    $stmt->bind_param("i", $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $movements = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $movements[] = $row;
+        }
+    }
+    
+    $stmt->close();
+    $conn->close();
+    return $movements;
+}
+
+/**
+ * Gets inventory statistics for dashboard widgets.
+ * @return array Contains total items, total quantity, average stock level.
+ */
+function getInventoryStats() {
+    $conn = getDbConnection();
+    
+    $result = $conn->query("
+        SELECT 
+            COUNT(*) as total_items,
+            SUM(quantity) as total_quantity,
+            AVG(quantity) as avg_quantity,
+            MAX(quantity) as max_quantity,
+            MIN(quantity) as min_quantity
+        FROM inventory
+    ");
+    
+    $stats = [
+        'total_items' => 0,
+        'total_quantity' => 0,
+        'avg_quantity' => 0,
+        'max_quantity' => 0,
+        'min_quantity' => 0
+    ];
+    
+    if ($result && $row = $result->fetch_assoc()) {
+        $stats = [
+            'total_items' => (int)$row['total_items'],
+            'total_quantity' => (int)$row['total_quantity'],
+            'avg_quantity' => round($row['avg_quantity'], 1),
+            'max_quantity' => (int)$row['max_quantity'],
+            'min_quantity' => (int)$row['min_quantity']
+        ];
+    }
+    
+    $conn->close();
+    return $stats;
+}
+
+/**
+ * Gets items with the most stock movement activity (highest variance).
+ * @param int $limit The number of items to retrieve.
+ * @return array An array of most active items.
+ */
+function getMostActiveItems($limit = 5) {
+    $conn = getDbConnection();
+    $stmt = $conn->prepare("
+        SELECT 
+            h.item_id,
+            i.item_name,
+            i.quantity as current_quantity,
+            COUNT(h.id) as movement_count,
+            STDDEV(h.quantity) as stock_variance,
+            MIN(h.quantity) as min_historical,
+            MAX(h.quantity) as max_historical
+        FROM inventory_history h
+        JOIN inventory i ON h.item_id = i.id
+        WHERE h.timestamp >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY h.item_id, i.item_name, i.quantity
+        HAVING movement_count > 3
+        ORDER BY stock_variance DESC, movement_count DESC
+        LIMIT ?
+    ");
+    $stmt->bind_param("i", $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $items = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $items[] = $row;
+        }
+    }
+    
+    $stmt->close();
+    $conn->close();
+    return $items;
 }
 ?>

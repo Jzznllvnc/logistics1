@@ -22,31 +22,31 @@
     
     <?php if ($_SESSION['role'] === 'smart_warehousing' || $_SESSION['role'] === 'admin'): ?>
       <a href="../pages/smart_warehousing.php" class="sidebar-sub-item">
-        <i class="fas fa-warehouse sidebar-icon"></i> Smart Warehousing System (SWS)
+        <i class="fas fa-warehouse sidebar-icon"></i> Smart Warehousing System
       </a>
     <?php endif; ?>
 
     <?php if ($_SESSION['role'] === 'procurement' || $_SESSION['role'] === 'admin'): ?>
       <a href="../pages/procurement_sourcing.php" class="sidebar-sub-item">
-        <i class="fas fa-truck-loading sidebar-icon"></i> Procurement & Sourcing Management (PSM)
+        <i class="fas fa-truck-loading sidebar-icon"></i> Procurement & Sourcing Management
       </a>
     <?php endif; ?>
 
     <?php if ($_SESSION['role'] === 'plt' || $_SESSION['role'] === 'admin'): ?>
       <a href="../pages/project_logistics_tracker.php" class="sidebar-sub-item">
-        <i class="fas fa-project-diagram sidebar-icon"></i> Project Logistics Tracker (PLT)
+        <i class="fas fa-project-diagram sidebar-icon"></i> Project Logistics Tracker
       </a>
     <?php endif; ?>
 
     <?php if ($_SESSION['role'] === 'alms' || $_SESSION['role'] === 'admin'): ?>
       <a href="../pages/asset_lifecycle_maintenance.php" class="sidebar-sub-item">
-        <i class="fas fa-tools sidebar-icon"></i> Asset Lifecycle & Maintenance (ALMS)
+        <i class="fas fa-tools sidebar-icon"></i> Asset Lifecycle & Maintenance
       </a>
     <?php endif; ?>
 
     <?php if ($_SESSION['role'] === 'dtrs' || $_SESSION['role'] === 'admin'): ?>
       <a href="../pages/document_tracking_records.php" class="sidebar-sub-item">
-        <i class="fas fa-file-alt sidebar-icon"></i> Document Tracking & Logistics Records (DTRS)
+        <i class="fas fa-file-alt sidebar-icon"></i> Document Tracking & Logistics Records
       </a>
     <?php endif; ?>
 

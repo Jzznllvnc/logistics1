@@ -49,15 +49,14 @@ $offset = ($currentPage - 1) * $itemsPerPage;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
-    if ($action === 'create_po') {
-        $supplier_id = $_POST['supplier_id'] ?? 0;
+    if ($action === 'stock-in') {
         $itemName = trim($_POST['item_name'] ?? '');
         $quantity = $_POST['quantity'] ?? 0;
-        if (createPurchaseOrder($supplier_id, $itemName, $quantity)) {
-            $_SESSION['flash_message'] = "Purchase request for $quantity of $itemName sent successfully.";
+        if (stockIn($itemName, $quantity)) {
+            $_SESSION['flash_message'] = "Successfully stocked in $quantity of $itemName.";
             $_SESSION['flash_message_type'] = 'success';
         } else { 
-            $_SESSION['flash_message'] = "Failed to send purchase request. Check input."; 
+            $_SESSION['flash_message'] = "Failed to stock in items. Check input."; 
             $_SESSION['flash_message_type'] = 'error'; 
         }
     } elseif ($action === 'stock-out') {

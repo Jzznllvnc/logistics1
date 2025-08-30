@@ -15,9 +15,13 @@ function createPurchaseOrder($supplier_id, $item_name, $quantity) {
         return false;
     }
     $conn = getDbConnection();
-    // Status defaults to 'Pending'
-    $stmt = $conn->prepare("INSERT INTO purchase_orders (supplier_id, item_name, quantity, status) VALUES (?, ?, ?, 'Pending')");
-    $stmt->bind_param("isi", $supplier_id, $item_name, $quantity);
+    
+    // If no specific supplier is selected, create as 'Open for Bidding'
+    // If a specific supplier is selected, create as 'Pending'
+    $status = ($supplier_id === null) ? 'Open for Bidding' : 'Pending';
+    
+    $stmt = $conn->prepare("INSERT INTO purchase_orders (supplier_id, item_name, quantity, status) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("isis", $supplier_id, $item_name, $quantity, $status);
     $success = $stmt->execute();
     $stmt->close();
     $conn->close();

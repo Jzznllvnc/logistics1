@@ -113,6 +113,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     sidebar.classList.toggle('collapsed', savedCollapsed);
                     currentWrapper.classList.toggle('expanded', savedCollapsed);
                     document.body.classList.toggle('sidebar-active', !savedCollapsed);
+                    
+                    // Set icon state based on saved collapsed state during PJAX
+                    const barsIcon = document.getElementById('barsIcon');
+                    const xmarkIcon = document.getElementById('xmarkIcon');
+                    if (barsIcon && xmarkIcon) {
+                        if (savedCollapsed) {
+                            barsIcon.classList.add('hidden');
+                            xmarkIcon.classList.remove('hidden');
+                        } else {
+                            barsIcon.classList.remove('hidden');
+                            xmarkIcon.classList.add('hidden');
+                        }
+                    }
                 } catch (_) {}
 
                 // Handle page-specific styles
@@ -281,6 +294,18 @@ document.addEventListener('DOMContentLoaded', () => {
             sidebar.classList.toggle('collapsed', savedCollapsed);
             mainContentWrapper.classList.toggle('expanded', savedCollapsed);
             document.body.classList.toggle('sidebar-active', !savedCollapsed);
+            
+            // Set initial icon state based on saved collapsed state
+            if (barsIcon && xmarkIcon) {
+                if (savedCollapsed) {
+                    barsIcon.classList.add('hidden');
+                    xmarkIcon.classList.remove('hidden');
+                } else {
+                    barsIcon.classList.remove('hidden');
+                    xmarkIcon.classList.add('hidden');
+                }
+            }
+            
             // Clean any initial classes possibly added pre-render
             sidebar.classList.remove('initial-collapsed');
             mainContentWrapper.classList.remove('initial-expanded');
@@ -305,10 +330,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = e.target.closest('#hamburger');
             if (!btn) return;
             const wrapper = document.getElementById('mainContentWrapper');
+            const barsIcon = document.getElementById('barsIcon');
+            const xmarkIcon = document.getElementById('xmarkIcon');
             if (!(sidebar && wrapper)) return;
+            
             sidebar.classList.toggle('collapsed');
             wrapper.classList.toggle('expanded');
             document.body.classList.toggle('sidebar-active');
+            
+            // Toggle icons without animation
+            if (sidebar.classList.contains('collapsed')) {
+                barsIcon.classList.add('hidden');
+                xmarkIcon.classList.remove('hidden');
+            } else {
+                barsIcon.classList.remove('hidden');
+                xmarkIcon.classList.add('hidden');
+            }
+            
             try { localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed')); } catch(_) {}
         });
         window.__hamburgerDelegated = true;

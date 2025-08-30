@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 29, 2025 at 03:32 PM
--- Server version: 8.0.30
--- PHP Version: 8.1.10
+-- Generation Time: Aug 30, 2025 at 03:34 PM
+-- Server version: 8.0.42
+-- PHP Version: 8.3.20
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -95,46 +95,46 @@ CREATE TABLE `asset_usage_logs` (
 --
 
 INSERT INTO `asset_usage_logs` (`log_id`, `asset_id`, `log_date`, `metric_name`, `metric_value`) VALUES
-(1, 1, '2025-05-01', 'Operating Hours', '1125.00'),
-(2, 1, '2025-06-01', 'Operating Hours', '1250.50'),
-(3, 1, '2025-07-01', 'Operating Hours', '1380.00'),
-(4, 1, '2025-08-01', 'Operating Hours', '1510.75'),
-(5, 1, '2025-08-25', 'Operating Hours', '1650.00'),
-(6, 2, '2025-05-01', 'Mileage', '52100.00'),
-(7, 2, '2025-06-01', 'Mileage', '55430.00'),
-(8, 2, '2025-07-01', 'Mileage', '58900.00'),
-(9, 2, '2025-08-01', 'Mileage', '62150.00'),
-(10, 2, '2025-08-25', 'Mileage', '65500.00'),
-(11, 3, '2025-05-01', 'Operating Hours', '850.00'),
-(12, 3, '2025-06-01', 'Operating Hours', '940.50'),
-(13, 3, '2025-07-01', 'Operating Hours', '1030.00'),
-(14, 3, '2025-08-01', 'Operating Hours', '1125.25'),
-(15, 4, '2025-05-01', 'Operating Hours', '8750.00'),
-(16, 4, '2025-06-01', 'Operating Hours', '9450.00'),
-(17, 4, '2025-07-01', 'Operating Hours', '10150.00'),
-(18, 4, '2025-08-01', 'Operating Hours', '10850.00'),
-(19, 5, '2025-05-01', 'Mileage', '18300.00'),
-(20, 5, '2025-06-01', 'Mileage', '22500.00'),
-(21, 5, '2025-07-01', 'Mileage', '26700.00'),
-(22, 5, '2025-08-01', 'Mileage', '31200.00'),
-(23, 5, '2025-08-25', 'Mileage', '34850.00'),
-(24, 6, '2025-05-01', 'Operating Hours', '2000.00'),
-(25, 6, '2025-06-01', 'Operating Hours', '2150.00'),
-(26, 6, '2025-07-01', 'Operating Hours', '2300.50'),
-(27, 6, '2025-08-01', 'Operating Hours', '2450.00'),
-(28, 6, '2025-08-25', 'Operating Hours', '2580.00'),
-(29, 7, '2025-05-01', 'Days In Use', '1443.00'),
-(30, 7, '2025-06-01', 'Days In Use', '1474.00'),
-(31, 7, '2025-07-01', 'Days In Use', '1504.00'),
-(32, 7, '2025-08-01', 'Days In Use', '1535.00'),
-(33, 4, '2025-05-01', 'Operating Hours', '8750.00'),
-(34, 4, '2025-06-01', 'Operating Hours', '9450.00'),
-(35, 4, '2025-07-01', 'Operating Hours', '10150.00'),
-(36, 4, '2025-08-01', 'Operating Hours', '10850.00'),
-(37, 7, '2025-05-01', 'Days In Use', '1443.00'),
-(38, 7, '2025-06-01', 'Days In Use', '1474.00'),
-(39, 7, '2025-07-01', 'Days In Use', '1504.00'),
-(40, 7, '2025-08-01', 'Days In Use', '1535.00');
+(1, 1, '2025-05-01', 'Operating Hours', 1125.00),
+(2, 1, '2025-06-01', 'Operating Hours', 1250.50),
+(3, 1, '2025-07-01', 'Operating Hours', 1380.00),
+(4, 1, '2025-08-01', 'Operating Hours', 1510.75),
+(5, 1, '2025-08-25', 'Operating Hours', 1650.00),
+(6, 2, '2025-05-01', 'Mileage', 52100.00),
+(7, 2, '2025-06-01', 'Mileage', 55430.00),
+(8, 2, '2025-07-01', 'Mileage', 58900.00),
+(9, 2, '2025-08-01', 'Mileage', 62150.00),
+(10, 2, '2025-08-25', 'Mileage', 65500.00),
+(11, 3, '2025-05-01', 'Operating Hours', 850.00),
+(12, 3, '2025-06-01', 'Operating Hours', 940.50),
+(13, 3, '2025-07-01', 'Operating Hours', 1030.00),
+(14, 3, '2025-08-01', 'Operating Hours', 1125.25),
+(15, 4, '2025-05-01', 'Operating Hours', 8750.00),
+(16, 4, '2025-06-01', 'Operating Hours', 9450.00),
+(17, 4, '2025-07-01', 'Operating Hours', 10150.00),
+(18, 4, '2025-08-01', 'Operating Hours', 10850.00),
+(19, 5, '2025-05-01', 'Mileage', 18300.00),
+(20, 5, '2025-06-01', 'Mileage', 22500.00),
+(21, 5, '2025-07-01', 'Mileage', 26700.00),
+(22, 5, '2025-08-01', 'Mileage', 31200.00),
+(23, 5, '2025-08-25', 'Mileage', 34850.00),
+(24, 6, '2025-05-01', 'Operating Hours', 2000.00),
+(25, 6, '2025-06-01', 'Operating Hours', 2150.00),
+(26, 6, '2025-07-01', 'Operating Hours', 2300.50),
+(27, 6, '2025-08-01', 'Operating Hours', 2450.00),
+(28, 6, '2025-08-25', 'Operating Hours', 2580.00),
+(29, 7, '2025-05-01', 'Days In Use', 1443.00),
+(30, 7, '2025-06-01', 'Days In Use', 1474.00),
+(31, 7, '2025-07-01', 'Days In Use', 1504.00),
+(32, 7, '2025-08-01', 'Days In Use', 1535.00),
+(33, 4, '2025-05-01', 'Operating Hours', 8750.00),
+(34, 4, '2025-06-01', 'Operating Hours', 9450.00),
+(35, 4, '2025-07-01', 'Operating Hours', 10150.00),
+(36, 4, '2025-08-01', 'Operating Hours', 10850.00),
+(37, 7, '2025-05-01', 'Days In Use', 1443.00),
+(38, 7, '2025-06-01', 'Days In Use', 1474.00),
+(39, 7, '2025-07-01', 'Days In Use', 1504.00),
+(40, 7, '2025-08-01', 'Days In Use', 1535.00);
 
 -- --------------------------------------------------------
 
@@ -157,23 +157,23 @@ CREATE TABLE `bids` (
 --
 
 INSERT INTO `bids` (`id`, `po_id`, `supplier_id`, `bid_amount`, `notes`, `bid_date`, `status`) VALUES
-(7, 6, 10, '1233.00', 'penge pera', '2025-08-27 17:23:20', 'Pending'),
-(11, 104, 11, '155.00', NULL, '2025-04-10 06:00:00', 'Awarded'),
-(12, 104, 12, '160.00', NULL, '2025-04-10 06:05:00', 'Rejected'),
-(13, 105, 12, '158.00', NULL, '2025-06-15 07:30:00', 'Awarded'),
-(14, 105, 11, '162.00', NULL, '2025-06-15 07:35:00', 'Rejected'),
-(15, 106, 11, '165.00', NULL, '2025-08-05 02:00:00', 'Awarded'),
-(16, 106, 13, '168.00', NULL, '2025-08-05 02:05:00', 'Rejected'),
-(17, 107, 13, '55.00', NULL, '2025-05-20 01:00:00', 'Awarded'),
-(18, 107, 14, '58.00', NULL, '2025-05-20 01:05:00', 'Rejected'),
-(19, 108, 14, '54.00', NULL, '2025-07-18 03:45:00', 'Awarded'),
-(20, 108, 13, '57.00', NULL, '2025-07-18 03:50:00', 'Rejected'),
-(21, 109, 13, '60.00', NULL, '2025-08-22 08:00:00', 'Awarded'),
-(22, 109, 15, '62.00', NULL, '2025-08-22 08:05:00', 'Rejected'),
-(23, 110, 15, '25.00', NULL, '2025-05-01 00:00:00', 'Awarded'),
-(24, 110, 16, '26.50', NULL, '2025-05-01 00:05:00', 'Rejected'),
-(25, 111, 16, '25.50', NULL, '2025-07-10 05:00:00', 'Awarded'),
-(26, 111, 15, '27.00', NULL, '2025-07-10 05:05:00', 'Rejected');
+(7, 6, 10, 1233.00, 'penge pera', '2025-08-27 17:23:20', 'Pending'),
+(11, 104, 11, 155.00, NULL, '2025-04-10 06:00:00', 'Awarded'),
+(12, 104, 12, 160.00, NULL, '2025-04-10 06:05:00', 'Rejected'),
+(13, 105, 12, 158.00, NULL, '2025-06-15 07:30:00', 'Awarded'),
+(14, 105, 11, 162.00, NULL, '2025-06-15 07:35:00', 'Rejected'),
+(15, 106, 11, 165.00, NULL, '2025-08-05 02:00:00', 'Awarded'),
+(16, 106, 13, 168.00, NULL, '2025-08-05 02:05:00', 'Rejected'),
+(17, 107, 13, 55.00, NULL, '2025-05-20 01:00:00', 'Awarded'),
+(18, 107, 14, 58.00, NULL, '2025-05-20 01:05:00', 'Rejected'),
+(19, 108, 14, 54.00, NULL, '2025-07-18 03:45:00', 'Awarded'),
+(20, 108, 13, 57.00, NULL, '2025-07-18 03:50:00', 'Rejected'),
+(21, 109, 13, 60.00, NULL, '2025-08-22 08:00:00', 'Awarded'),
+(22, 109, 15, 62.00, NULL, '2025-08-22 08:05:00', 'Rejected'),
+(23, 110, 15, 25.00, NULL, '2025-05-01 00:00:00', 'Awarded'),
+(24, 110, 16, 26.50, NULL, '2025-05-01 00:05:00', 'Rejected'),
+(25, 111, 16, 25.50, NULL, '2025-07-10 05:00:00', 'Awarded'),
+(26, 111, 15, 27.00, NULL, '2025-07-10 05:05:00', 'Rejected');
 
 -- --------------------------------------------------------
 
@@ -216,7 +216,7 @@ CREATE TABLE `inventory` (
 --
 
 INSERT INTO `inventory` (`id`, `item_name`, `quantity`, `last_updated`) VALUES
-(4, 'tape', 23, '2025-08-21 16:19:06'),
+(4, 'tape', 50, '2025-08-30 15:28:48'),
 (5, 'Standard Pallets (48x40)', 150, '2025-08-21 16:15:36'),
 (6, 'Euro Pallets (1200x800)', 80, '2025-08-21 16:15:36'),
 (7, 'Heat Treated Pallets (ISPM-15)', 65, '2025-08-21 16:15:36'),
@@ -224,7 +224,7 @@ INSERT INTO `inventory` (`id`, `item_name`, `quantity`, `last_updated`) VALUES
 (9, 'Packing Tape Rolls', 400, '2025-08-21 16:15:36'),
 (10, 'Cardboard Boxes (Large)', 800, '2025-08-21 16:15:36'),
 (11, 'Cardboard Boxes (Medium)', 1200, '2025-08-21 16:15:36'),
-(12, 'Cardboard Boxes (Small)', 1500, '2025-08-21 16:15:36'),
+(12, 'Cardboard Boxes (Small)', 1490, '2025-08-30 15:28:56'),
 (13, 'Bubble Wrap Rolls', 75, '2025-08-21 16:15:36'),
 (14, 'Shipping Labels (Pack of 1000)', 50, '2025-08-21 16:15:36'),
 (15, 'Bill of Lading Forms (Pack of 500)', 59, '2025-08-26 20:09:22'),
@@ -250,21 +250,21 @@ CREATE TABLE `inventory_forecast_cache` (
 --
 
 INSERT INTO `inventory_forecast_cache` (`item_id`, `analysis`, `action`, `cached_at`) VALUES
-(4, 'Tape stock is declining rapidly.', 'Expedite Reorder', '2025-08-28 16:08:31'),
-(5, 'Standard pallets show a significant drop recently.', 'Expedite Reorder', '2025-08-28 16:08:31'),
-(6, 'Euro Pallets stock is steadily decreasing.', 'Reorder Soon', '2025-08-28 16:08:25'),
-(7, 'Heat Treated Pallets stock is consistently declining.', 'Reorder Soon', '2025-08-28 16:08:25'),
-(8, 'Shrink wrap stock is erratic, needs closer monitoring.', 'Monitor Stock', '2025-08-28 16:08:31'),
-(9, 'Packing Tape Rolls stock decreased then significantly increased.', 'Monitor Stock', '2025-08-28 16:08:25'),
-(10, 'Cardboard Boxes (Large) stock is consistently declining.', 'Expedite Reorder', '2025-08-28 16:08:25'),
-(11, 'Cardboard Boxes (Medium) stock shows a recent increase after a period of decline.', 'Monitor Stock', '2025-08-28 16:08:25'),
-(12, 'Cardboard Boxes (Small) stock is slowly decreasing.', 'Monitor Stock', '2025-08-28 16:08:25'),
-(13, 'Bubble Wrap Rolls stock is rapidly depleting.', 'Expedite Reorder', '2025-08-28 16:08:25'),
-(14, 'Shipping labels are depleting steadily.', 'Reorder Soon', '2025-08-28 16:08:31'),
-(15, 'Bill of Lading Forms stock is steadily decreasing.', 'Reorder Soon', '2025-08-28 16:08:25'),
-(17, 'Cargo Straps stock is steadily increasing.', 'Monitor Stock', '2025-08-28 16:08:25'),
-(18, 'Safety Box Cutters stock is slowly decreasing.', 'Monitor Stock', '2025-08-28 16:08:25'),
-(19, 'Work gloves stock shows some fluctuation but is generally stable.', 'Monitor Stock', '2025-08-28 16:08:31');
+(4, 'API Error', 'Error', '2025-08-30 15:28:39'),
+(5, 'API Error', 'Error', '2025-08-30 15:28:39'),
+(6, 'API Error', 'Error', '2025-08-30 15:28:31'),
+(7, 'API Error', 'Error', '2025-08-30 15:28:31'),
+(8, 'API Error', 'Error', '2025-08-30 15:28:39'),
+(9, 'API Error', 'Error', '2025-08-30 15:28:31'),
+(10, 'API Error', 'Error', '2025-08-30 15:28:31'),
+(11, 'API Error', 'Error', '2025-08-30 15:28:31'),
+(12, 'API Error', 'Error', '2025-08-30 15:28:31'),
+(13, 'API Error', 'Error', '2025-08-30 15:28:31'),
+(14, 'API Error', 'Error', '2025-08-30 15:28:39'),
+(15, 'API Error', 'Error', '2025-08-30 15:28:31'),
+(17, 'API Error', 'Error', '2025-08-30 15:28:31'),
+(18, 'API Error', 'Error', '2025-08-30 15:28:31'),
+(19, 'API Error', 'Error', '2025-08-30 15:28:39');
 
 -- --------------------------------------------------------
 
@@ -518,7 +518,9 @@ INSERT INTO `inventory_history` (`id`, `item_id`, `quantity`, `timestamp`) VALUE
 (241, 19, 98, '2025-06-26 09:06:00'),
 (242, 19, 95, '2025-07-06 09:06:00'),
 (243, 19, 92, '2025-07-16 09:06:00'),
-(244, 19, 90, '2025-07-26 09:06:00');
+(244, 19, 90, '2025-07-26 09:06:00'),
+(359, 4, 50, '2025-08-30 15:28:48'),
+(360, 12, 1490, '2025-08-30 15:28:56');
 
 -- --------------------------------------------------------
 
@@ -648,8 +650,9 @@ CREATE TABLE `price_forecast_cache` (
 --
 
 INSERT INTO `price_forecast_cache` (`item_name`, `forecast_text`, `cached_at`) VALUES
-('Cardboard Boxes (Large)', 'The price of large cardboard boxes has fluctuated slightly over the past few months, showing no clear upward or downward trend. Recommendation: Monitor.\n', '2025-08-29 15:29:11'),
-('Packing Tape Rolls', 'The price of packing tape rolls shows a generally increasing trend from May to August 2025, with some minor fluctuations. Recommendation: Wait.\n', '2025-08-29 15:29:11');
+('Cardboard Boxes (Large)', 'API Error', '2025-08-30 15:32:08'),
+('Packing Tape Rolls', 'API Error', '2025-08-30 15:32:08'),
+('Shrink Wrap Rolls', 'API Error', '2025-08-30 15:28:39');
 
 -- --------------------------------------------------------
 
@@ -984,13 +987,13 @@ ALTER TABLE `documents`
 -- AUTO_INCREMENT for table `inventory`
 --
 ALTER TABLE `inventory`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `inventory_history`
 --
 ALTER TABLE `inventory_history`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=359;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=361;
 
 --
 -- AUTO_INCREMENT for table `maintenance_history`

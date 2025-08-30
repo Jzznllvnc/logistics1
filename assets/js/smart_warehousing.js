@@ -348,20 +348,15 @@ function openStockModal(action) {
     // Get icon and title text elements
     const stockModalIcon = document.getElementById('stockModalIcon');
     const stockModalTitleText = document.getElementById('stockModalTitleText');
-    const supplierDiv = document.getElementById('supplier_selection_div');
-    const supplierSelect = document.getElementById('modal_supplier_id');
 
     // Update modal content based on action
     if (action === 'stock-in') {
         if (stockModalIcon) stockModalIcon.setAttribute('data-lucide', 'package-plus');
-        if (stockModalTitleText) stockModalTitleText.textContent = 'Request Stock In';
-        stockModalSubtitle.textContent = 'Create a purchase order to request new stock from a supplier.';
-        confirmStockBtn.textContent = 'Submit Request';
+        if (stockModalTitleText) stockModalTitleText.textContent = 'Stock In Items';
+        stockModalSubtitle.textContent = 'Add items to inventory or increase existing quantities.';
+        confirmStockBtn.textContent = 'Stock In';
         confirmStockBtn.className = 'btn-primary';
-        stockAction.value = 'create_po'; // Set action to create purchase order
-
-        if (supplierDiv) supplierDiv.classList.remove('hidden');
-        if (supplierSelect) supplierSelect.required = true;
+        stockAction.value = 'stock-in'; // Set action for stock in
 
     } else if (action === 'stock-out') {
         if (stockModalIcon) stockModalIcon.setAttribute('data-lucide', 'package-minus');
@@ -370,9 +365,6 @@ function openStockModal(action) {
         confirmStockBtn.textContent = 'Stock Out';
         confirmStockBtn.className = 'btn-primary-danger';
         stockAction.value = 'stock-out'; // Set action for stock out
-
-        if (supplierDiv) supplierDiv.classList.add('hidden');
-        if (supplierSelect) supplierSelect.required = false;
     }
 
     // Open the modal using the global function

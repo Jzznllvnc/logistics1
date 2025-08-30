@@ -35,9 +35,9 @@
 </script>
 
 <div class="header">
-  <div class="hamburger" id="hamburger">
-    <i class="fa-solid fa-bars hamburger-icon" id="barsIcon"></i>
-    <i class="fa-solid fa-angles-left close-icon" id="xmarkIcon"></i>
+  <div class="w-10 h-10 flex items-center justify-center mr-2.5 rounded-full text-[var(--text-color)] cursor-pointer hover:bg-[var(--dropdown-item-hover)] transition-colors duration-300" id="hamburger">
+    <i class="fa-solid fa-bars-staggered text-xl" id="barsIcon"></i>
+    <i class="fa-solid fa-bars text-xl hidden" id="xmarkIcon"></i>
   </div>
   <div>
     <h1><?php echo ($_SESSION['role'] === 'admin') ? 'Admin Panel' : 'Staff Panel'; ?> <span class="system-title">| LOGISTICS 1</span></h1>
@@ -65,7 +65,7 @@
 </div>
 <div class="header-line"></div>
 
-<div id="logoutConfirmModal" class="modal hidden fixed inset-0 flex items-center justify-center z-50">
+<div id="logoutConfirmModal" class="modal hidden fixed inset-0 flex items-center justify-center">
     <div class="modal-content bg-[var(--card-bg)] p-10 rounded-3xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto relative flex flex-col items-center justify-center text-center">
       <i data-lucide="user-round-minus" class="w-24 h-24 mb-4"></i>
       <h2 class="modal-title mb-4">Confirm Logout</h2>
@@ -77,7 +77,7 @@
     </div>
 </div>
 
-<div id="customConfirmModal" class="modal hidden fixed inset-0 flex items-center justify-center z-50">
+<div id="customConfirmModal" class="modal hidden fixed inset-0 flex items-center justify-center">
     <div class="modal-content bg-[var(--card-bg)] p-10 rounded-3xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto relative flex flex-col items-center justify-center text-center">
         <div id="confirmModalIcon" class="w-28 h-28 mb-4 text-yellow-500 flex items-center justify-center">
             <i data-lucide="alert-triangle" class="w-28 h-28"></i>

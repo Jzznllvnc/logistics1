@@ -46,13 +46,11 @@
       <form action="smart_warehousing.php" method="POST" id="stockManagementForm">
           <input type="hidden" name="action" id="stockAction" value="">
           
-          <div id="supplier_selection_div" class="hidden mb-5">
-              </select>
-          </div>
+
           
           <div class="mb-5">
               <label for="modal_item_name" class="block text-sm font-semibold mb-2 text-[var(--text-color)]">Item Name</label>
-              <input type="text" id="modal_item_name" name="item_name" list="inventory_items" placeholder="Type to see stock levels..." required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
+              <input type="text" id="modal_item_name" name="item_name" list="inventory_items" placeholder="Enter item name or select from list..." required class="w-full p-2.5 rounded-md border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--input-text)]">
               <datalist id="inventory_items">
                   <?php foreach ($allInventory as $item): ?>
                       <option value="<?php echo htmlspecialchars($item['item_name']); ?>">

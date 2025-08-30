@@ -126,6 +126,90 @@ body {
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
+/* Dashboard buttons and tabs - fix flashing */
+.chart-filter-button,
+.inventory-export-button {
+  background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #333333;
+  transition: none !important;
+}
+
+.chart-filter-button:hover,
+.inventory-export-button:hover {
+  background-color: #f0f0f0;
+}
+
+.inventory-tab {
+  background-color: transparent;
+  color: #464646;
+  transition: none !important;
+}
+
+.inventory-tab.active {
+  background-color: #ffffff;
+  color: #333333;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.inventory-tab:hover:not(.active) {
+  background-color: #f0f0f0;
+}
+
+.chart-filter-option {
+  background-color: transparent;
+  color: #333333;
+  transition: none !important;
+}
+
+.chart-filter-option:hover {
+  background-color: #f0f0f0;
+}
+
+.chart-filter-option.active {
+  background-color: #f0f0f0;
+}
+
+.dark-mode .chart-filter-button,
+.dark-mode .inventory-export-button {
+  background-color: #1e1e1e;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f5f5f5;
+}
+
+.dark-mode .chart-filter-button:hover,
+.dark-mode .inventory-export-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .inventory-tab {
+  background-color: transparent;
+  color: #b0b0b0;
+}
+
+.dark-mode .inventory-tab.active {
+  background-color: #1e1e1e;
+  color: #f5f5f5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .inventory-tab:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .chart-filter-option {
+  background-color: transparent;
+  color: #f5f5f5;
+}
+
+.dark-mode .chart-filter-option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .chart-filter-option.active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 /* Autofill Style Override */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
@@ -139,7 +223,7 @@ input:-webkit-autofill:active {
 
 .content {
   flex: 1;
-  padding: 40px;
+  padding: 0 40px 40px 40px; /* Remove top padding since header is now sticky */
 }
 
 /* Header content styles */
@@ -148,7 +232,23 @@ input:-webkit-autofill:active {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
-  padding-bottom: 15px;
+  margin-left: -40px;
+  margin-right: -40px;
+  padding: 25px 40px;
+  background-color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 150;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dark-mode .header {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .header h1 {
+  color: #ffffff;
 }
 
 .header h1 {
@@ -164,57 +264,12 @@ input:-webkit-autofill:active {
   margin-left: 10px;
 }
 
+/* Header line is now integrated into the header border-bottom, so this can be removed or kept for other uses */
 .header-line {
-  width: 100%;
-  height: 1px;
-  background-color: var(--border-color);
-  margin-bottom: 30px;
+  display: none; /* Hide since we now have border-bottom on header */
 }
 
-.hamburger {
-  font-size: 20px;
-  cursor: pointer;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-  border-radius: 50%;
-  color: var(--text-color);
-  transition: all 0.5s ease;
-  position: relative;
-}
 
-.hamburger:hover {
-  background: var(--dropdown-item-hover);
-}
-
-.hamburger .hamburger-icon,
-.hamburger .close-icon {
-  position: absolute;
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-.hamburger .hamburger-icon {
-  opacity: 1;
-  transform: rotate(0deg);
-}
-
-.hamburger .close-icon {
-  opacity: 0;
-  transform: rotate(-90deg);
-}
-
-body.sidebar-active .hamburger .hamburger-icon {
-  opacity: 0;
-  transform: rotate(90deg);
-}
-
-body.sidebar-active .hamburger .close-icon {
-  opacity: 1;
-  transform: rotate(0deg);
-}
 
 .admin-profile {
     display: flex;
@@ -248,7 +303,7 @@ body.sidebar-active .hamburger .close-icon {
     background-color: var(--card-bg);
     min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 100;
+    z-index: 160;
     border-radius: 8px;
     right: 0;
     top: 100%;
@@ -389,7 +444,7 @@ h2.page-title {
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 50;
+  z-index: 200;
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(8px);
   align-items: center;
@@ -487,7 +542,7 @@ select:focus {
   padding: 15px 25px;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  z-index: 1000;
+  z-index: 300;
   opacity: 0;
   transform: translateY(-20px);
   animation: fadeInOut 3s forwards;
@@ -506,12 +561,15 @@ select:focus {
 
 @media (max-width: 768px) {
   .content {
-    padding: 20px;
+    padding: 0 20px 20px 20px; /* Remove top padding since header is now sticky */
     margin-left: 0;
   }
   
   .header {
     gap: 10px;
+    margin-left: -20px;
+    margin-right: -20px;
+    padding: 15px 20px; /* Adjust padding for mobile */
   }
   
   .header h1 {
@@ -788,7 +846,7 @@ select:focus {
 
 /* Ensure dropdowns appear above other content */
 .action-dropdown {
-  z-index: 40 !important;
+  z-index: 150 !important;
   position: fixed !important; /* Use fixed positioning for better control */
 }
 

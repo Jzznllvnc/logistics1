@@ -29,6 +29,13 @@ if ($_SESSION['role'] === 'admin') {
     $operationalAssetsChange = getOperationalAssetsChange();
     $lowStockChange = getLowStockChange();
     $suppliersChange = getSuppliersChange();
+    
+
+    
+    // Fetch additional inventory insights
+    $inventoryStats = getInventoryStats();
+    $topStockedItems = getTopStockedItems(3);
+    $recentStockMovements = getRecentStockMovements(5);
 }
 ?>
 
@@ -46,7 +53,6 @@ if ($_SESSION['role'] === 'admin') {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha384-nRgPTkuX86pH8yjPJUAFuASXQSSl2/bBUiNV47vSYpKFxHJhbcrGnmlYpYJMeD7a" crossorigin="anonymous">
   <script src="https://cdn.tailwindcss.com"></script>
   <?php if ($_SESSION['role'] === 'admin'): ?>
-  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <?php endif; ?>
@@ -79,7 +85,7 @@ if ($_SESSION['role'] === 'admin') {
 
       <?php if ($_SESSION['role'] === 'admin'): ?>
         <!-- Admin Dashboard -->
-        <h1 class="font-semibold mb-1.5 page-title">Administrator Dashboard</h1>
+        <h1 class="font-semibold mb-1.5 page-title">System Dashboard</h1>
         <p class="lg:text-lg text-base text-[var(--subtitle-color)] mb-6 page-subtitle">Your overview of system activities, operations, and freight workflows.</p>
         
         <!-- KPI Cards -->
@@ -108,7 +114,7 @@ if ($_SESSION['role'] === 'admin') {
           <div style="background: var(--card-bg); border: 1px solid var(--card-border);" class="rounded-2xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 h-40 relative flex flex-col justify-center">
             <div class="absolute top-4 right-4">
               <div style="background: var(--icon-container-bg);" class="p-3.5 rounded-xl">
-                <i data-lucide="activity" class="w-7 h-7 text-[var(--description-color)]"></i>
+                <i data-lucide="align-end-horizontal" class="w-7 h-7 text-[var(--description-color)]"></i>
               </div>
             </div>
             <div class="pr-20">
@@ -124,21 +130,21 @@ if ($_SESSION['role'] === 'admin') {
             </div>
           </div>
 
-          <!-- Low Stock Items Card -->
+          <!-- Total Inventory Card -->
           <div style="background: var(--card-bg); border: 1px solid var(--card-border);" class="rounded-2xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 h-40 relative flex flex-col justify-center">
             <div class="absolute top-4 right-4">
               <div style="background: var(--icon-container-bg);" class="p-3.5 rounded-xl">
-                <i data-lucide="squares-subtract" class="w-7 h-7 text-[var(--description-color)]"></i>
+                <i data-lucide="package" class="w-7 h-7 text-[var(--description-color)]"></i>
               </div>
             </div>
             <div class="pr-20">
-              <p style="color: var(--subtitle-color);" class="text-sm font-medium mb-3 whitespace-nowrap">Low Stock Items</p>
-              <p style="color: var(--text-color);" class="text-4xl font-semibold mb-3"><?php echo $lowStockCount; ?></p>
+              <p style="color: var(--subtitle-color);" class="text-sm font-medium mb-3 whitespace-nowrap">Total Inventory</p>
+              <p style="color: var(--text-color);" class="text-4xl font-semibold mb-3"><?php echo number_format($inventoryStats['total_quantity']); ?></p>
               <div class="flex items-end text-sm">
-                <span style="color: var(--subtitle-color);" class="flex-grow mr-1 truncate min-w-24">Requires restocking</span>
-                <span class="<?php echo $lowStockChange['is_positive'] ? 'text-green-600' : 'text-red-600'; ?> font-medium whitespace-nowrap flex-shrink-0">
-                  <i data-lucide="<?php echo $lowStockChange['is_positive'] ? 'trending-down' : 'trending-up'; ?>" class="w-4 h-4 inline mr-1"></i>
-                  <?php echo $lowStockChange['is_positive'] ? '-' : '+'; ?><?php echo $lowStockChange['percentage']; ?>%
+                <span style="color: var(--subtitle-color);" class="flex-grow mr-1 truncate min-w-24"><?php echo $inventoryStats['total_items']; ?> unique items</span>
+                <span class="text-blue-600 font-medium whitespace-nowrap flex-shrink-0">
+                  <i data-lucide="package-check" class="w-4 h-4 inline mr-1"></i>
+                  <?php echo number_format($inventoryStats['avg_quantity'], 0); ?> avg
                 </span>
               </div>
             </div>
@@ -165,22 +171,71 @@ if ($_SESSION['role'] === 'admin') {
           </div>
         </div>
 
-        <!-- Middle Section: Area Chart and Asset Vehicles -->
+        <!-- Middle Section: Purchase Orders Chart and Asset Vehicles -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          <!-- Area Chart (Left - Takes 2 columns) -->
+          <!-- Purchase Orders Chart Card -->
           <div style="background: var(--card-bg); border: 1px solid var(--card-border);" class="lg:col-span-2 rounded-2xl shadow-md p-6">
-            <div class="mb-6">
-              <h3 style="color: var(--text-color);" class="text-lg font-semibold">Inventory Trends</h3>
+            <div class="mb-4">
+              <div class="flex items-start justify-between">
+                <div>
+                  <h3 style="color: var(--text-color);" class="text-lg font-semibold mb-1">Operations Overview</h3>
+                  <p style="color: var(--subtitle-color);" class="text-sm">Track purchase orders and SWS inventory activity</p>
+                </div>
+                <div class="relative">
+                  <button id="chartFilterButton" class="chart-filter-button inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors">
+                    <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                    <span id="currentFilterText">This Month</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 ml-2"></i>
+                  </button>
+                  
+                  <!-- Dropdown Menu -->
+                  <div id="chartFilterDropdown" class="absolute right-0 top-full mt-2 w-40 py-2 rounded-lg shadow-lg border z-10 hidden" style="background: var(--card-bg); border-color: var(--card-border);">
+                    <button class="chart-filter-option w-full text-left px-4 py-2 text-sm transition-colors" data-filter="This Week">
+                      <i data-lucide="calendar-days" class="w-4 h-4 inline mr-2"></i>
+                      This Week
+                    </button>
+                    <button class="chart-filter-option active w-full text-left px-4 py-2 text-sm transition-colors" data-filter="This Month">
+                      <i data-lucide="calendar" class="w-4 h-4 inline mr-2"></i>
+                      This Month
+                    </button>
+                    <button class="chart-filter-option w-full text-left px-4 py-2 text-sm transition-colors" data-filter="This Year">
+                      <i data-lucide="calendar-range" class="w-4 h-4 inline mr-2"></i>
+                      This Year
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="h-80 flex items-center justify-center">
-              <p style="color: var(--subtitle-color);" class="text-gray-500">Chart coming soon...</p>
+            
+            <!-- Chart Container -->
+            <div class="h-[450px]">
+              <div id="purchaseOrdersChart" class="w-full h-full"></div>
+              
+              <!-- Loading state -->
+              <div id="chartLoading" class="w-full h-full flex items-center justify-center" style="color: var(--subtitle-color);">
+                <div class="text-center">
+                  <i data-lucide="loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin"></i>
+                  <p class="text-sm">Loading chart data...</p>
+                </div>
+              </div>
+              
+              <!-- No data state -->
+              <div id="chartNoData" class="w-full h-full hidden items-center justify-center" style="color: var(--subtitle-color);">
+                <div class="text-center">
+                  <i data-lucide="bar-chart-3" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                  <p class="text-sm">No operations data found for this period</p>
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- Asset Vehicles Card (Right) -->
           <div style="background: var(--card-bg); border: 1px solid var(--card-border);" class="rounded-2xl shadow-md p-6 relative">
-            <div class="mb-4 flex items-center justify-between">
-              <h3 style="color: var(--text-color);" class="text-lg font-semibold">Registered Assets</h3>
+            <div class="mb-4 flex items-start justify-between">
+              <div>
+                <h3 style="color: var(--text-color);" class="text-lg font-semibold mb-1">Registered Assets</h3>
+                <p style="color: var(--subtitle-color);" class="text-sm">Browse fleet vehicles and equipment inventory</p>
+              </div>
               <a href="asset_lifecycle_maintenance.php#asset-registry" class="p-2 rounded-lg transition-all duration-200 hover:rounded-full" style="color: var(--subtitle-color);" title="View Asset Registry" onmouseover="this.style.backgroundColor='var(--close-btn-hover-bg)'" onmouseout="this.style.backgroundColor='transparent'">
                 <i data-lucide="arrow-up-right" class="w-7 h-7"></i>
               </a>
@@ -261,74 +316,177 @@ if ($_SESSION['role'] === 'admin') {
 
         <!-- Bottom Section: Low Stock Alert and Bidding History -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
-          <!-- Low Stock Alert (Left - Takes 2 columns) -->
+          <!-- Inventory Management Card with Tabs (Left - Takes 2 columns) -->
           <div style="background: var(--card-bg); border: 1px solid var(--card-border);" class="lg:col-span-2 rounded-2xl shadow-md overflow-hidden flex flex-col">
-          <div style="border-bottom: 1px solid var(--card-border);" class="p-6">
-              <div class="flex items-start justify-between">
-            <div>
-                  <h3 style="color: var(--text-color);" class="text-lg font-semibold mb-1">Stock Alerts</h3>
-                  <p style="color: var(--subtitle-color);" class="text-sm">Items requiring restocking/replenishment</p>
+            <!-- Header with Tabs -->
+            <div style="border-bottom: 1px solid var(--card-border);" class="p-6">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 style="color: var(--text-color);" class="text-lg font-semibold mb-1">Inventory Management</h3>
+                  <p style="color: var(--subtitle-color);" class="text-sm">Stock alerts, top items, and recent movements</p>
                 </div>
-                <div class="flex items-center space-x-3">
-                  <button id="exportStockAlerts" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" style="background: var(--icon-container-bg); color: var(--text-color);" onmouseover="this.style.backgroundColor='var(--close-btn-hover-bg)'" onmouseout="this.style.backgroundColor='var(--icon-container-bg)'">
+                <div class="flex items-center">
+                  <button id="exportInventoryData" class="inventory-export-button inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors">
                     <i data-lucide="file-spreadsheet" class="w-4 h-4 mr-2"></i>
-                    Export
-                  </button>
-                  <button id="filterStockAlerts" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" style="background: var(--icon-container-bg); color: var(--text-color);" onmouseover="this.style.backgroundColor='var(--close-btn-hover-bg)'" onmouseout="this.style.backgroundColor='var(--icon-container-bg)'">
-                    <i data-lucide="list-filter" class="w-4 h-4 mr-2"></i>
-                    Filter
+                    Export CSV
                   </button>
                 </div>
               </div>
-          </div>
-          
-            <div class="overflow-x-auto flex-1">
-              <table class="data-table h-full">
-              <thead>
-                <tr>
-                    <th class="py-4">Item Name</th>
-                    <th class="py-4">Current Stock</th>
-                    <th class="py-4">Status</th>
-                    <th class="py-4">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php if (empty($lowStockItems)): ?>
-                    <tr class="h-full">
-                      <td colspan="4" class="table-empty py-12 h-full align-middle">
-                      <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-2 text-green-500"></i>
-                      <p>All items are well stocked!</p>
-                    </td>
-                  </tr>
+              
+              <!-- Tab Navigation -->
+              <div class="inline-flex space-x-1 bg-gray-100 rounded-lg p-1" style="background: var(--icon-container-bg);">
+                <button id="tab-alerts" class="inventory-tab active flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200">
+                  <i data-lucide="alert-triangle" class="w-4 h-4 mr-2"></i>
+                  Stock Alerts
+                </button>
+                <button id="tab-top-items" class="inventory-tab flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200">
+                  <i data-lucide="trending-up" class="w-4 h-4 mr-2"></i>
+                  Well-Stocked
+                </button>
+                <button id="tab-movements" class="inventory-tab flex items-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200">
+                  <i data-lucide="activity" class="w-4 h-4 mr-2"></i>
+                  Recent Movements
+                </button>
+              </div>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="flex-1">
+              <!-- Stock Alerts Tab -->
+              <div id="content-alerts" class="inventory-tab-content active">
+                <div class="overflow-x-auto">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th class="py-4">Item Name</th>
+                        <th class="py-4">Current Stock</th>
+                        <th class="py-4">Status</th>
+                        <th class="py-4">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php if (empty($lowStockItems)): ?>
+                        <tr>
+                          <td colspan="4" class="table-empty py-12">
+                            <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-2 text-green-500"></i>
+                            <p>All items are well stocked!</p>
+                          </td>
+                        </tr>
+                      <?php else: ?>
+                        <?php foreach ($lowStockItems as $item): ?>
+                          <tr>
+                            <td class="py-4">
+                              <div class="flex items-center">
+                                <i data-lucide="package" class="w-5 h-5 text-gray-400 mr-3"></i>
+                                <div class="text-sm font-medium" style="color: var(--text-color);"><?php echo htmlspecialchars($item['item_name']); ?></div>
+                              </div>
+                            </td>
+                            <td class="py-4">
+                              <div class="text-sm font-bold text-red-600"><?php echo $item['quantity']; ?></div>
+                            </td>
+                            <td class="py-4">
+                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i>
+                                Critical Low
+                              </span>
+                            </td>
+                            <td class="py-4">
+                              <a href="smart_warehousing.php" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
+                                <i data-lucide="plus" class="w-3 h-3 mr-1"></i>
+                                Restock
+                              </a>
+                            </td>
+                          </tr>
+                        <?php endforeach; ?>
+                      <?php endif; ?>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Well-Stocked Items Tab -->
+              <div id="content-top-items" class="inventory-tab-content hidden">
+                <?php if (empty($topStockedItems)): ?>
+                  <div style="color: var(--subtitle-color);" class="text-center py-12">
+                    <i data-lucide="package" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                    <p class="text-sm">No inventory data found</p>
+                  </div>
                 <?php else: ?>
-                    <?php foreach ($lowStockItems as $index => $item): ?>
-                      <tr class="<?php echo count($lowStockItems) === 5 ? 'h-16' : 'h-20'; ?>">
-                        <td class="py-4">
+                  <div class="p-6 space-y-4">
+                    <?php foreach ($topStockedItems as $index => $item): ?>
+                      <div class="flex items-center justify-between py-3 <?php echo $index < count($topStockedItems) - 1 ? 'border-b border-[var(--card-border)]' : ''; ?>">
                         <div class="flex items-center">
-                          <i data-lucide="package" class="w-5 h-5 text-gray-400 mr-3"></i>
-                          <div class="text-sm font-medium" style="color: var(--text-color);"><?php echo htmlspecialchars($item['item_name']); ?></div>
+                          <div class="flex-shrink-0 mr-4">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center">
+                              <span class="text-white text-sm font-semibold"><?php echo $index + 1; ?></span>
+                            </div>
+                          </div>
+                          <div>
+                            <h4 style="color: var(--text-color);" class="text-sm font-medium">
+                              <?php echo htmlspecialchars($item['item_name']); ?>
+                            </h4>
+                            <p style="color: var(--subtitle-color);" class="text-xs">
+                              Updated <?php echo date('M d, Y', strtotime($item['last_updated'])); ?>
+                            </p>
+                          </div>
                         </div>
-                      </td>
-                        <td class="py-4">
-                        <div class="text-sm font-bold text-red-600"><?php echo $item['quantity']; ?></div>
-                      </td>
-                        <td class="py-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i>
-                          Critical Low
-                        </span>
-                      </td>
-                        <td class="py-4">
-                        <a href="smart_warehousing.php" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
-                          <i data-lucide="plus" class="w-3 h-3 mr-1"></i>
-                          Restock
-                        </a>
-                      </td>
-                    </tr>
-                  <?php endforeach; ?>
+                        <div class="text-right">
+                          <span style="color: var(--text-color);" class="text-lg font-semibold">
+                            <?php echo number_format($item['quantity']); ?>
+                          </span>
+                          <p style="color: var(--subtitle-color);" class="text-xs">units</p>
+                        </div>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
                 <?php endif; ?>
-              </tbody>
-            </table>
+              </div>
+
+              <!-- Recent Movements Tab -->
+              <div id="content-movements" class="inventory-tab-content hidden">
+                <?php if (empty($recentStockMovements)): ?>
+                  <div style="color: var(--subtitle-color);" class="text-center py-12">
+                    <i data-lucide="activity" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                    <p class="text-sm">No recent stock movements</p>
+                  </div>
+                <?php else: ?>
+                  <div class="p-6 space-y-3">
+                    <?php foreach ($recentStockMovements as $movement): ?>
+                      <div class="flex items-center justify-between py-3 border-b border-[var(--card-border)]">
+                        <div class="flex items-center">
+                          <div class="flex-shrink-0 mr-3">
+                            <?php if ($movement['change_amount'] > 0): ?>
+                              <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                <i data-lucide="trending-up" class="w-4 h-4 text-green-600"></i>
+                              </div>
+                            <?php else: ?>
+                              <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                                <i data-lucide="trending-down" class="w-4 h-4 text-red-600"></i>
+                              </div>
+                            <?php endif; ?>
+                          </div>
+                          <div>
+                            <h4 style="color: var(--text-color);" class="text-sm font-medium">
+                              <?php echo htmlspecialchars($movement['item_name']); ?>
+                            </h4>
+                            <p style="color: var(--subtitle-color);" class="text-xs">
+                              <?php echo date('M d, g:i A', strtotime($movement['timestamp'])); ?>
+                            </p>
+                          </div>
+                        </div>
+                        <div class="text-right">
+                          <span class="<?php echo $movement['change_amount'] > 0 ? 'text-green-600' : 'text-red-600'; ?> text-sm font-medium">
+                            <?php echo $movement['change_amount'] > 0 ? '+' : ''; ?><?php echo number_format($movement['change_amount']); ?>
+                          </span>
+                          <p style="color: var(--subtitle-color);" class="text-xs">
+                            to <?php echo number_format($movement['current_quantity']); ?>
+                          </p>
+                        </div>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+              </div>
             </div>
           </div>
 
@@ -397,7 +555,9 @@ if ($_SESSION['role'] === 'admin') {
           // Set dashboard data before loading the main dashboard script
           window.dashboardData = {
             totalAssets: <?php echo count($allAssets); ?>,
-            stockData: <?php echo json_encode($lowStockItems); ?>
+            stockData: <?php echo json_encode($lowStockItems); ?>,
+            topStockedItems: <?php echo json_encode($topStockedItems); ?>,
+            recentStockMovements: <?php echo json_encode($recentStockMovements); ?>
           };
         </script>
         
@@ -406,27 +566,27 @@ if ($_SESSION['role'] === 'admin') {
         
       <?php elseif ($_SESSION['role'] === 'smart_warehousing'): ?>
         <!-- Smart Warehousing Dashboard -->
-        <h1 class="font-semibold mb-1.5 page-title">Smart Warehousing Dashboard</h1>
+        <h1 class="font-semibold mb-1.5 page-title">Dashboard</h1>
         <p class="lg:text-lg text-base text-[var(--subtitle-color)] mb-4 page-subtitle">SWS dashboard content coming soon...</p>
         
       <?php elseif ($_SESSION['role'] === 'procurement'): ?>
         <!-- Procurement Dashboard -->
-        <h1 class="font-semibold mb-1.5 page-title">Procurement & Sourcing Dashboard</h1>
+        <h1 class="font-semibold mb-1.5 page-title">Dashboard</h1>
         <p class="lg:text-lg text-base text-[var(--subtitle-color)] mb-4 page-subtitle">PSM dashboard content coming soon...</p>
         
       <?php elseif ($_SESSION['role'] === 'plt'): ?>
         <!-- Project Logistics Tracker Dashboard -->
-        <h1 class="font-semibold mb-1.5 page-title">Project Logistics Tracker Dashboard</h1>
+        <h1 class="font-semibold mb-1.5 page-title">Dashboard</h1>
         <p class="lg:text-lg text-base text-[var(--subtitle-color)] mb-4 page-subtitle">PLT dashboard content coming soon...</p>
         
       <?php elseif ($_SESSION['role'] === 'alms'): ?>
         <!-- Asset Lifecycle & Maintenance Dashboard -->
-        <h1 class="font-semibold mb-1.5 page-title">Asset Lifecycle & Maintenance Dashboard</h1>
+        <h1 class="font-semibold mb-1.5 page-title">Dashboard</h1>
         <p class="lg:text-lg text-base text-[var(--subtitle-color)] mb-4 page-subtitle">ALMS dashboard content coming soon...</p>
         
       <?php elseif ($_SESSION['role'] === 'dtrs'): ?>
         <!-- Document Tracking & Logistics Records Dashboard -->
-        <h1 class="font-semibold mb-1.5 page-title">Document Tracking & Logistics Records Dashboard</h1>
+        <h1 class="font-semibold mb-1.5 page-title">Dashboard</h1>
         <p class="lg:text-lg text-base text-[var(--subtitle-color)] mb-4 page-subtitle">DTRS dashboard content coming soon...</p>
         
       <?php else: ?>
